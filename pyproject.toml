@@ -1,0 +1,9 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "foramgeniepy"
+version = "0.1.0"
+description = "A python wrapper package to analyse and visualise cGENIE model output"
+license = {text = "MIT"}

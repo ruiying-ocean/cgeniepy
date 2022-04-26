@@ -1,0 +1,20 @@
+Metadata-Version: 2.1
+Name: foramgeniepy
+Version: 0.1.0
+Summary: A python wrapper package to analyse and visualise cGENIE model output
+Author: Rui Ying
+Author-email: rui.ying@bristol.ac.uk
+License: MIT
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# About
+
+This is a simple python package used in my own PhD project to analyse and visualise cGENIE model output (mostly in netCDF format).
+
+
