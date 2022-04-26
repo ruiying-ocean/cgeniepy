@@ -1,0 +1,15 @@
+LICENSE
+README.md
+pyproject.toml
+setup.cfg
+src/foramgeniepy/__init__.py
+src/foramgeniepy/data.py
+src/foramgeniepy/foramgenie.py
+src/foramgeniepy/grid.py
+src/foramgeniepy/plot.py
+src/foramgeniepy/scores.py
+src/foramgeniepy/utils.py
+src/foramgeniepy.egg-info/PKG-INFO
+src/foramgeniepy.egg-info/SOURCES.txt
+src/foramgeniepy.egg-info/dependency_links.txt
+src/foramgeniepy.egg-info/top_level.txt

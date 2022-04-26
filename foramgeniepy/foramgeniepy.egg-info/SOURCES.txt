@@ -1,8 +1,0 @@
-LICENSE
-README.md
-pyproject.toml
-setup.cfg
-foramgeniepy/foramgeniepy.egg-info/PKG-INFO
-foramgeniepy/foramgeniepy.egg-info/SOURCES.txt
-foramgeniepy/foramgeniepy.egg-info/dependency_links.txt
-foramgeniepy/foramgeniepy.egg-info/top_level.txt
