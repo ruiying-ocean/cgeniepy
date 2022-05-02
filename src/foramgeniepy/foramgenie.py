@@ -9,7 +9,7 @@ import numpy as np
 from scipy.stats import sem
 import regionmask
 from netCDF4 import Dataset
-from pandas import DataFrame
+from pandas import DataFrame, IndexSlice
 
 from .plot import plot_GENIE
 from .grid import get_grid_area, reassign_GENIE, get_grid_volume, sum_grids, get_GENIE_lat, get_GENIE_lon, get_normal_lon
@@ -312,14 +312,20 @@ class ForamModel(object):
         "summarised model M-score compared to modern observations"
 
         foram_abbrev = list(get_foram_longname().keys())
-        foram_longname = list(get_foram_longname().values())
+        foram_longname = tuple(get_foram_longname().values())
         df = {
-            "biomass": [ForamVariable(i, self.model_path).carbon_biomass().m_score() for i in foram_abbrev],
-            "carbon export": [ForamVariable(i, self.model_path).POC_export().m_score() for i in foram_abbrev],
-            "relative abundance": [ForamVariable(i, self.model_path).POC_export().proportion().m_score() for i in foram_abbrev],
+            "Biomass": [ForamVariable(i, self.model_path).carbon_biomass().m_score() for i in foram_abbrev],
+            "Carbon Export": [ForamVariable(i, self.model_path).POC_export().m_score() for i in foram_abbrev],
+            "Relative Abundance": [ForamVariable(i, self.model_path).POC_export().proportion().m_score() for i in foram_abbrev],
         }
 
         df = DataFrame(df, index=foram_longname)
+        df['Column Total'] = df.sum(axis=1)
+        df.loc['Row Total',:]= df.sum(axis=0)
+
+        cm = plt.get_cmap("RdBu_r")
+        df = (df.style.set_caption("M-score across foraminifer groups and variables compared to modern observation").
+              text_gradient(cmap=cm, subset=(df.index[0:4], df.columns[0:3])))
 
         return df
 
