@@ -9,6 +9,7 @@ import numpy as np
 from scipy.stats import sem
 import regionmask
 from netCDF4 import Dataset
+from pandas import DataFrame
 
 from .plot import plot_GENIE
 from .grid import get_grid_area, reassign_GENIE, get_grid_volume, sum_grids, get_GENIE_lat, get_GENIE_lon, get_normal_lon
@@ -307,12 +308,20 @@ class ForamModel(object):
         grid_volume = get_grid_volume()
         return mask_array * grid_volume
 
-    def total_mscore(self):
+    def mscore_table(self):
         "summarised model M-score compared to modern observations"
-        total_mscore = 0
-        for foram in ["bn", "bs", "sn", "ss"]:
-            total_mscore += ForamVariable(foram, self.model_path).sum_mscore()
-        return total_mscore
+
+        foram_abbrev = list(get_foram_longname().keys())
+        foram_longname = list(get_foram_longname().values())
+        df = {
+            "biomass": [ForamVariable(i, self.model_path).carbon_biomass().m_score() for i in foram_abbrev],
+            "carbon export": [ForamVariable(i, self.model_path).POC_export().m_score() for i in foram_abbrev],
+            "relative abundance": [ForamVariable(i, self.model_path).POC_export().proportion().m_score() for i in foram_abbrev],
+        }
+
+        df = DataFrame(df, index=foram_longname)
+
+        return df
 
     def foram_POC(self):
         "Estimate total foraminiferal organic carbon flux rate"
