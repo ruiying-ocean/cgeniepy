@@ -1,7 +1,9 @@
+import pathlib
+
 import numpy as np
-#import xesmf as xe
 import pandas as pd
 import xarray
+
 
 def lon_n2g(x):
     """
@@ -34,13 +36,36 @@ def reassign_obs(data:xarray.Dataset)  -> xarray.Dataset:
 def reassign_GENIE(data:xarray.Dataset) -> xarray.Dataset:
     return data.assign_coords({"lon": list(map(lon_g2n, data.lon.values))}).sortby("lon")
 
-#show the cGENIE grid point
-#lat = np.rad2deg(np.arcsin(np.linspace(-0.97222222, 0.97222222, 36))) #sin(x) -> radian -> degree
-#lon = np.linspace(-255,95,36)
-#lon_edge = np.linspace(-260,100,37)
-#lat_edge = np.rad2deg(np.arcsin(np.linspace(-1, 1, 37)))
+def mask_Arctic_Med(array, policy="na"):
+    """
+    mask Arctic and Meditterean Sea in cGENIE modern continent configuration
+    """
+    if policy=="na":
+        array[34:36,:]=np.nan
+        array[27:30,25:30] = np.nan
+    elif policy=="zero":
+        array[34:36,:]=0
+        array[27:30,25:30] = 0
 
-def get_GENIE_lat(N=36, edge=False):
+    return array
+
+
+def GENIE_grid_mask(mask_Arc_Med=False):
+    """
+    Get a modern GENIE 16x16 horizontal continental array.
+
+    :returns: GENIE grid array where continent/ice cap is 0 and ocean is 1, default is 'worjh2'
+    """
+
+    file_path = pathlib.Path(__file__).parent.parent / "data/worjh2.csv"
+    grid_mask = np.genfromtxt(file_path, delimiter=",", dtype=int)
+
+    if mask_Arc_Med:
+        grid_mask = mask_Arctic_Med(grid_mask, policy="zero")
+
+    return grid_mask
+
+def GENIE_lat(N=36, edge=False):
     """
     return cGENIE latitude in log-sine normally degree resolution,
     if edge is False, then return midpoint
@@ -52,7 +77,7 @@ def get_GENIE_lat(N=36, edge=False):
         lat = np.rad2deg(np.arcsin(np.linspace(-0.97222222, 0.97222222, N)))
         return lat
 
-def get_GENIE_lon(N=36, edge=False):
+def GENIE_lon(N=36, edge=False):
     """
     return cGENIE longitude in 10 degree resolution,
     if edge is False, then return midpoint
@@ -64,7 +89,7 @@ def get_GENIE_lon(N=36, edge=False):
         lon = np.linspace(-255, 95, N)
         return lon
 
-def get_normal_lon(N=36, edge=False):
+def normal_lon(N=36, edge=False):
     """
     Normal longitude in 10 degree resolution,
     if edge is False, then return midpoint
@@ -76,9 +101,9 @@ def get_normal_lon(N=36, edge=False):
         lon = np.linspace(-175, 175, N)
         return lon
 
-def get_grid_area(exc_Arctic = False):
+def GENIE_grid_area():
     """
-    get grid_area array with unit of km^2, not masked with continent!
+    get grid_area array with unit of km^2, not masked with continent/Arctic/Mediterranean!
     """
     # x level
     lon_len = np.repeat(10, 36)
@@ -97,13 +122,9 @@ def get_grid_area(exc_Arctic = False):
     for i in range(36):
         grid_area[i,] = grid_area[i,] * np.cos(lat_rad)[i]
 
-    # exclude the Arctic grids
-    if exc_Arctic:
-        grid_area[-1,] = np.nan
-
     return grid_area
 
-def get_grid_volume():
+def GENIE_grid_vol():
     """
     get grid_volume array with unit of km^3, not masked with continent!
     """
@@ -112,7 +133,7 @@ def get_grid_volume():
     vertical_width_km = 80.8/1000
 
     # grid volumn: km^3
-    grid_volume = get_grid_area() * vertical_width_km
+    grid_volume = GENIE_grid_area() * vertical_width_km
 
     return grid_volume
 
@@ -122,7 +143,7 @@ def sum_grids(data_mmolC):
     """
 
     # km^3 -> m^3 (1E+9);
-    grid_volume = get_grid_volume() * 1e9
+    grid_volume = GENIE_grid_vol() * 1e9
 
     # mmol -> mol (1E-3) -> g(*12) -> Tg (1E-12)
     data_TgC = data_mmolC * 1e-3 * 12 * 1e-12
@@ -164,8 +185,8 @@ def sum_grids(data_mmolC):
 #     # get 10 times higher resolution
 #     #fine_lat = np.rad2deg(np.arcsin(np.linspace(-0.97222222, 0.97222222, 360)))  # sin(x) -> radian -> degree
 #     #fine_lon = np.linspace(coarse_data.lon[0], coarse_data.lon[-1], 360)
-#     fine_lat = get_GENIE_lat(360)
-#     fine_lon = get_GENIE_lon(360)
+#     fine_lat = GENIE_lat(360)
+#     fine_lon = GENIE_lon(360)
 
 #     # prepare finer grid
 #     fine_data = Dataset(
@@ -199,8 +220,6 @@ def sum_grids(data_mmolC):
 
 #     return fine_data
 
-# remove xarray/netcdf dependency
-
 
 def regrid_lat(x):
 
@@ -210,7 +229,7 @@ def regrid_lat(x):
     """
     if x >= -90 and x <= 90:
         lat_edge = np.rad2deg(np.arcsin(np.linspace(-1, 1, 37)))
-        lat = get_GENIE_lat()
+        lat = GENIE_lat()
 
         for i in range(36):
             if x > lat_edge[i] and x <= lat_edge[i+1]:
@@ -271,8 +290,8 @@ def regrid_dataframe(dataframe, low_threshold=None, new_low_bound=None, high_thr
     df_agg = df.groupby(["Longitude","Latitude"]).agg('mean')
 
     #Create a all-nan data frame with full cGENIE grids
-    lat = get_GENIE_lat()
-    lon = get_normal_lon()
+    lat = GENIE_lat()
+    lon = normal_lon()
     data = np.zeros([36*36])
     index = pd.MultiIndex.from_product([lon, lat],
                                        names=['Longitude', 'Latitude'])

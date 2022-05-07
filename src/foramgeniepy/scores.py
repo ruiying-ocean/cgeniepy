@@ -1,7 +1,8 @@
 import numpy as np
 from scipy.spatial import distance
 from netCDF4 import Dataset
-from .data import get_obs_data
+from .data import obs_data
+from .grid import mask_Arctic_Med
 
 def safe_unveil(data):
     "get pure array from a numpy masked array object"
@@ -35,6 +36,7 @@ def cal_mscore(data1: np.array, data2: np.array):
     Calculate skill metric M-score. See more in the paper Watterson, I. G. (1996)
 
     Use 2D array as input, order causes no difference.
+    NA will be removed.
     """
     indx = intersect_index(data1, data2)
     sub_data1 = data1[indx]
@@ -104,7 +106,7 @@ def get_foram_prop(file_path, var):
     total_foram = bn + bs + sn + ss
 
     #ignore divided by 0
-    with np.errstate(divide='ignore', invalid='ignore'):                
+    with np.errstate(divide='ignore', invalid='ignore'):
         one_foram = locals()[var]
         proportion =np.divide(one_foram, total_foram, out=np.zeros_like(one_foram), where=total_foram!=0)
 
@@ -114,17 +116,20 @@ def get_foram_prop(file_path, var):
 
 def quick_rmse(data, obs_source, var):
     "A wrapper function to calculate RMSE"
-    return cal_rmse(data, get_obs_data(obs_source, var))
+    return cal_rmse(data, obs_data(obs_source, var))
 
 
-def quick_mscore(data, obs_source, var):
+def quick_mscore(model, obs_source, var):
     "A wrapper function to calculate M-Score"
-    return cal_mscore(data, get_obs_data(obs_source, var))
+    masked_model = mask_Arctic_Med(model, policy="na")
+    masked_data = mask_Arctic_Med(obs_data(obs_source, var), policy="na")
+
+    return cal_mscore(masked_model, masked_data)
 
 
 def quick_cos_sim(data, obs_source, var):
     "A wrapper function to calculate cosine cimilarity"
-    return cal_cosine_similarity(data, get_obs_data(obs_source, var))
+    return cal_cosine_similarity(data, obs_data(obs_source, var))
 
 
 #consider convert data into getModelData(var)

@@ -1,7 +1,9 @@
 from typing import Union
+import pathlib
 
 from xarray import open_dataset
 import numpy as np
+from scipy.stats import sem
 
 from .grid import reassign_obs
 
@@ -10,30 +12,37 @@ def efficient_log(data: Union[int, float]) -> float:
     "keep NA, remove zeros"
     return np.where(data == 0, -10, np.log10(data))
 
-
-def get_obs_data(obs_source, var):
+def obs_data(source, var, summary=None):
     """
     Quickly fetch observational data from ForamData/data directory.
     The longitude coordinate will be assigned to fit GENIE output
 
-    :returns: numpy array
+    :returns: numpy 2D array
+    :raise ValueError:
     """
-    if obs_source == "core":
-        ds = open_dataset("../data/ForCenS_regridded.nc")
-    elif obs_source == "tow":
-        ds = open_dataset("../data/plankton_tow_regridded_abs.nc")
-    elif obs_source == "trap":
-        ds = open_dataset("../data/sediment_trap_regridded_organic.nc")
-    elif obs_source == "MARGO":
-        ds = open_dataset("../data/MARGO_regridded.nc")
+    if source == "core":
+        file_path = pathlib.Path(__file__).parent.parent / "data/ForCenS_regridded.nc"
+    elif source == "tow":
+        file_path = pathlib.Path(__file__).parent.parent / "data/plankton_tow_regridded_abs.nc"
+    elif source == "trap":
+        file_path = pathlib.Path(__file__).parent.parent /  "data/sediment_trap_regridded_organic.nc"
+    elif source == "MARGO":
+        file_path = pathlib.Path(__file__).parent.parent /  "data/MARGO_regridded.nc"
     else:
-        raise TypeError("type must be core, obs or trap!")
+        raise ValueError("type must be core, obs or trap!")
 
-    long_name = get_foram_longname()[var]
+    ds = open_dataset(file_path)
+    long_name = foram_names()[var]
     obs = ds[long_name]
     modified_obs = reassign_obs(obs).to_numpy()
 
-    return modified_obs
+    if not summary:
+        return modified_obs
+    else:
+        mean = np.nanmean(modified_obs)
+        sd = np.nanstd(modified_obs)
+        se = sem(modified_obs, nan_policy="omit", axis = None)
+        return mean, sd, se
 
 
 # def get_diff_xarray(filename, type, var):
@@ -42,9 +51,11 @@ def get_obs_data(obs_source, var):
 #
 #     return diff_xarray
 
-def get_foram_longname():
+def foram_names():
     """
     get a dictionary with foram abbrev (keys) and complete name (values).
+
+    :returns: dictionary
     """
     foram_names = {
         "bn": "symbiont-barren non-spinose",
@@ -56,9 +67,11 @@ def get_foram_longname():
     return foram_names
 
 
-def get_foramdict():
+def foram_dict():
     """
     get a dictionary with foram variable name (key) and corresponding data source name(value[0]), abbrev (value[1])
+
+    :returns: dictionary
     """
     foram_dict = {
         "eco2D_Plankton_C_016": ["tow", "bn"],
@@ -115,6 +128,7 @@ def filter_foram(dataframe, symbiosis: Union[str, bool], spinose: Union[str, boo
 
     query_string = "Symbiosis == '{}' & Spinose == '{}'".format(arglist[0], arglist[1])
     return dataframe.query(query_string)
+
 
 def POC_to_PIC(POC):
 

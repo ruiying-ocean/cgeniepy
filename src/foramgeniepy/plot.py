@@ -2,11 +2,14 @@ import numpy as np
 import cartopy.crs as ccrs
 from cartopy.feature import LAND
 from matplotlib import cm
+import matplotlib.pyplot as plt
 
 from .data import efficient_log
-from .grid import get_GENIE_lat, get_GENIE_lon
+from .grid import GENIE_lat, GENIE_lon
 
-def plot_GENIE(data, ax, log=False, grid_line = False, continent_outline=True, cmap=cm.Spectral_r,  *args, **kwargs):
+## TODO [] add contour layer
+
+def plot_GENIE(data, ax, log=False, grid_line = False, continent_outline=True, contour_layer=False, cmap=cm.Spectral_r, *args, **kwargs):
     """
     plot map for 2D GENIE time-slice data
 
@@ -32,11 +35,18 @@ def plot_GENIE(data, ax, log=False, grid_line = False, continent_outline=True, c
 
     # -------------------Plot-----------------------
     if log: data = efficient_log(data)
-    lon_edge = get_GENIE_lon(edge=True)
-    lat_edge = get_GENIE_lat(edge=True)
+    lon_edge = GENIE_lon(edge=True)
+    lat_edge = GENIE_lat(edge=True)
 
     #cartopy transform seems to help reassign the GENIE longitude to normal
     p = ax.pcolormesh(lon_edge, lat_edge, data, cmap=cmap, transform=data_crs, shading="flat", *args, **kwargs)
+
+    if contour_layer:
+        lat = GENIE_lat(edge=False)
+        lon = GENIE_lon(edge=False)
+        cs = ax.contour(lon, lat ,data, transform=ccrs.PlateCarree(), cmap=cmap)
+        #label every three levels
+        ax.clabel(cs, cs.levels[::3], colors=['black'], fontsize=8, inline=False)
 
     # -------------------Grid lines-----------------------
     if grid_line:
