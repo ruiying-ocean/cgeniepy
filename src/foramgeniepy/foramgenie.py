@@ -11,12 +11,13 @@ from scipy.stats import sem
 import regionmask
 from netCDF4 import Dataset
 from pandas import DataFrame, read_fwf
+import seaborn as sns
 
 from .plot import plot_GENIE
 from .grid import GENIE_grid_area, reassign_GENIE, GENIE_grid_vol, sum_grids, GENIE_lat, GENIE_lon, normal_lon
-from .data import foram_dict, POC_to_PIC, foram_names
+from .data import foram_dict, POC_to_PIC, foram_names, obs_stat_bytype, obs_stat_bysource
 from .scores import quick_mscore, quick_rmse, quick_cos_sim
-from .utils import file_exists
+from .utils import file_exists, set_sns_barwidth
 # from .GENIE_GRID import interp_GENIE
 
 
@@ -30,8 +31,9 @@ from .utils import file_exists
 # DONE [X] add totol POC/calcite/zonal average to ForamModel
 # DONE [X] include biogem/ecogem, 2d/3d
 # DONE [X] add quiver plot
+# DONE [X] add plot statisitcs
 # TODO [] add functional diversity
-# TODO [] add plot statisitcs
+
 
 class ForamArray(object):
 
@@ -166,22 +168,22 @@ class ForamArray(object):
         return np.min(self.array, *args, **kwargs)
 
     def sum(self, *args, **kwargs):
-        return np.sum(self.array, *args, **kwargs)
+        return np.sum(self.pure_array(), *args, **kwargs)
 
     def nansum(self, *args, **kwargs):
-        return np.nansum(self.array, *args, **kwargs)
+        return np.nansum(self.pure_array(), *args, **kwargs)
 
     def mean(self, *args, **kwargs):
-        return np.mean(self.array, *args, **kwargs)
+        return np.mean(self.pure_array(), *args, **kwargs)
 
     def nanmean(self, *args, **kwargs):
-        return np.nanmean(self.array, *args, **kwargs)
+        return np.nanmean(self.pure_array(), *args, **kwargs)
 
     def sd(self, *args, **kwargs):
-        return np.std(self.array, *args, **kwargs)
+        return np.std(self.pure_array(), *args, **kwargs)
 
     def nansd(self, *args, **kwargs):
-        return np.nanstd(self.array, *args, **kwargs)
+        return np.nanstd(self.pure_array(), *args, **kwargs)
 
     def se(self, *args, **kwargs):
         return sem(self.array, nan_policy="omit", axis=None, *args, **kwargs)
@@ -223,6 +225,7 @@ class ForamArray(object):
             return data.where(data > threshold, drop=True)
         else:
             return data.where(data < threshold, drop=True)
+
 
 # #def interpolate(self):
 # #    interp_GENIE()
@@ -330,7 +333,7 @@ class ForamModel(object):
         grid_volume = GENIE_grid_vol()
         return grid_mask * grid_volume
 
-    def mscore_table(self):
+    def mscore_table(self, table_styler=True):
         "summarised model M-score compared to modern observations"
 
         foram_abbrev = list(foram_names().keys())
@@ -344,16 +347,16 @@ class ForamModel(object):
         df = DataFrame(df, index=foram_fullname)
         df['Column Total'] = df.sum(axis=1)
         df.loc['Row Total',:]= df.sum(axis=0)
-        df = df.round(decimals=3)
 
-        cm = plt.get_cmap("RdBu_r")
-        df = (df.style.set_caption("M-score across foraminifer groups and variables compared to modern observation").
-              text_gradient(cmap=cm, subset=(df.index[0:4], df.columns[0:3])))
+        if table_styler:
+            cm = plt.get_cmap("RdBu_r")
+            df = (df.style.set_caption("M-score across foraminifer groups and variables compared to modern observation").
+                text_gradient(cmap=cm, subset=(df.index[0:4], df.columns[0:3])))
 
         return df
 
 
-    def rmse_table(self):
+    def rmse_table(self, table_styler=True):
         "summarised model M-score compared to modern observations"
 
         foram_abbrev = list(foram_names().keys())
@@ -367,15 +370,15 @@ class ForamModel(object):
         df = DataFrame(df, index=foram_fullname)
         df['Column Total'] = df.sum(axis=1)
         df.loc['Row Total',:]= df.sum(axis=0)
-        df = df.round(decimals=3)
 
-        cm = plt.get_cmap("RdBu_r")
-        df = (df.style.set_caption("RMSE across foraminifer groups and variables compared to modern observation").
-              text_gradient(cmap=cm, subset=(df.index[0:4], df.columns[0:3])))
+        if table_styler:
+            cm = plt.get_cmap("RdBu_r")
+            df = (df.style.set_caption("RMSE across foraminifer groups and variables compared to modern observation").
+                text_gradient(cmap=cm, subset=(df.index[0:4], df.columns[0:3])))
 
         return df
 
-    def summarise(self, method="mean"):
+    def summarise(self, method="mean", diff=False, diff_method="percentage", table_styler=True):
         """
         summarise basic statistics of foraminifer groups
         """
@@ -387,26 +390,36 @@ class ForamModel(object):
             df = {
                 "Biomass(mmol C/m3)": [ForamVariable(i, self.model_path).carbon_biomass().nanmean() for i in foram_abbrev],
                 "Carbon Export (mmol C/m3/d)": [ForamVariable(i, self.model_path).POC_export().nanmean() for i in foram_abbrev],
-                "Relative Abundance (%)": [ForamVariable(i, self.model_path).POC_export().proportion().nanmean() * 100 for i in foram_abbrev],
+                "Relative Abundance": [ForamVariable(i, self.model_path).POC_export().proportion().nanmean() for i in foram_abbrev],
             }
         elif method=="sd":
             df = {
-                "Biomass(mmol C/m3)": [ForamVariable(i, self.model_path).carbon_biomass().sd() for i in foram_abbrev],
-                "Carbon Export (mmol C/m3/d)": [ForamVariable(i, self.model_path).POC_export().sd() for i in foram_abbrev],
-                "Relative Abundance (%)": [ForamVariable(i, self.model_path).POC_export().proportion().sd() for i in foram_abbrev],
+                "Biomass(mmol C/m3)": [ForamVariable(i, self.model_path).carbon_biomass().nansd() for i in foram_abbrev],
+                "Carbon Export (mmol C/m3/d)": [ForamVariable(i, self.model_path).POC_export().nansd() for i in foram_abbrev],
+                "Relative Abundance": [ForamVariable(i, self.model_path).POC_export().proportion().nansd() for i in foram_abbrev],
             }
         elif method=="se":
             df = {
                 "Biomass(mmol C/m3)": [ForamVariable(i, self.model_path).carbon_biomass().se().values for i in foram_abbrev],
                 "Carbon Export (mmol C/m3/d)": [ForamVariable(i, self.model_path).POC_export().se().values for i in foram_abbrev],
-                "Relative Abundance (%)": [ForamVariable(i, self.model_path).POC_export().proportion().se().values for i in foram_abbrev],
+                "Relative Abundance": [ForamVariable(i, self.model_path).POC_export().proportion().se().values for i in foram_abbrev],
             }
-        #elif method="diff":
 
         df = DataFrame(df, index=foram_fullname)
-        df = df.round(decimals=3)
-        cm = plt.get_cmap("RdBu_r")
-        df = df.style.set_caption("Mean values across foraminifer groups").text_gradient(cmap=cm)
+
+        if diff:
+            obs = obs_stat_bytype(method)
+            diff = df - obs
+
+            if diff_method == "percentage":
+                diff_perc = diff/obs
+                return diff_perc
+            elif diff_method == "absolute":
+                return diff
+
+        if table_styler:
+            cm = plt.get_cmap("RdBu_r")
+            df = df.style.set_caption("Mean values across foraminifer groups").text_gradient(cmap=cm)
 
         return df
 
@@ -503,7 +516,7 @@ class ForamModel(object):
 
         return ax
 
-    def plot_biomass(self):
+    def plot_biomass(self, *args, **kwargs):
         """
         quick wrapper function to plot carbon biomass for 4 foram groups
         """
@@ -518,7 +531,7 @@ class ForamModel(object):
         for i,ax in enumerate(axes.flat):
                 vdata = self.select_var(varlst[i]).array
                 mean = np.nanmean(vdata)
-                p = plot_GENIE(vdata, ax, vmin=0, vmax=most_max)
+                p = plot_GENIE(vdata, ax, vmin=0, vmax=most_max, *args, **kwargs)
                 ax.set_title(f"({string.ascii_lowercase[i]}) {foram_fullnames[i]} {mean:.2E}", pad=10)
 
         cbar = fig.colorbar(p, ax=axes, orientation="horizontal", pad=0.05, shrink=0.7)
@@ -573,6 +586,91 @@ class ForamModel(object):
         cbar.set_label('Relative abundance', size=12)
 
         return p
+    
+    def barplot_comparison(self) -> plt.axes:
+
+        """
+        Overview barplot of biomass and POC export compared to observed data
+        :returns: matplotlib axes object
+        """
+
+        fname = list(foram_names().values())
+        foram_abbrev = foram_names().keys()
+
+        model_biomass_mean = [self.select_foram(i).carbon_biomass().nanmean() for i in foram_abbrev]
+        model_export_mean = [self.select_foram(i).POC_export().nanmean() for i in foram_abbrev]
+        model_biomass_se = [self.select_foram(i).carbon_biomass().se() for i in foram_abbrev]
+        model_export_se = [self.select_foram(i).POC_export().se() for i in foram_abbrev]
+        model_export_sum = [self.select_foram(i).POC_export().sum() for i in foram_abbrev]
+        model_biomass_sum = [self.select_foram(i).carbon_biomass().sum() for i in foram_abbrev]
+        obs_biomass_mean = obs_stat_bysource("tow").loc[:, "mean"]
+        obs_biomass_se = obs_stat_bysource("tow").loc[:, "se"]
+        obs_export_mean = obs_stat_bysource("trap").loc[:, "mean"]
+        obs_export_se = obs_stat_bysource("trap").loc[:, "se"]
+
+        model_biomass_sum = DataFrame({"group": fname, "value": model_biomass_sum})
+        model_export_sum = DataFrame({"group": fname, "value": model_export_sum})
+
+        data_to_plot = [[[model_biomass_mean, model_biomass_se,obs_biomass_mean, obs_biomass_se],
+                        [model_export_mean, model_export_se,obs_export_mean, obs_export_se]],
+                        [model_biomass_sum, model_export_sum]]
+        ## Plot starts
+        fig, axes = plt.subplots(2, 2, figsize=(8, 6), sharex=True)
+        bar_width = 0.3
+
+        # The x position of bars
+        x = np.arange(4)
+        xlabels = [w.replace(" ", "\n") for w in fname]
+
+        for i in range(2):
+            for j in range(2):
+                axes[i,j].yaxis.set_minor_locator(AutoMinorLocator(4))   
+                axes[i,j].set_axisbelow(True)
+                axes[i,j].yaxis.grid(color='gray', linestyle='dashed')
+                if i == 0:
+                    axes[i,j].bar(x - bar_width/2,
+                    data_to_plot[i][j][0], 
+                    width = bar_width, 
+                    color = sns.color_palette("Set1")[0], 
+                    edgecolor = 'black',
+                    yerr=data_to_plot[i][j][1],
+                    capsize=7, 
+                    label='model')
+
+                    axes[i,j].bar(x + bar_width/2, 
+                    data_to_plot[i][j][2],
+                    width = bar_width,
+                    color = sns.color_palette("Set1")[1],
+                    edgecolor = 'black',
+                    yerr=data_to_plot[i][j][3],
+                    capsize=7,
+                    label='obs')
+
+                    axes[i,j].set_xticks(x)
+                    axes[i,j].set_xticklabels(xlabels, rotation = 45, ha="right")
+                    axes[i,j].legend()
+                else:            
+                    sns.barplot(data=data_to_plot[i][j], x="group", y="value", ax=axes[i,j], edgecolor="black", palette="deep")
+                    axes[i,j].set_xticklabels(xlabels, rotation=45, ha="right")
+                    axes[i,j].set_xlabel("")
+                    axes[i,j].set_xticks(x)
+                    set_sns_barwidth(axes[i,j], bar_width)
+
+
+        axes[0,0].set_ylabel(r"mmol C m$^{-3}$")
+        axes[0,1].set_ylabel(r"mmol C m$^{-3}$ d$^{-1}$")
+
+        axes[0,0].set_title("(a)    global biomass mean/se",loc="left")
+        axes[0,1].set_title("(b)    global POC flux mean/se", loc="left")
+        axes[1,0].set_title("(c)    total biomass production",loc="left")
+        axes[1,1].set_title("(d)    total POC production rate", loc="left")
+
+        axes[1,0].set_ylabel("Tg C")
+        axes[1,1].set_ylabel(r"Tg C d$^{-1}$")
+
+        fig.tight_layout()
+
+        return axes
 
 
 class GenieVariable(ForamModel, ForamArray):

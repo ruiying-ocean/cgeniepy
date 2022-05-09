@@ -3,6 +3,7 @@ import pathlib
 
 from xarray import open_dataset
 import numpy as np
+import pandas as pd
 from scipy.stats import sem
 
 from .grid import reassign_obs
@@ -12,7 +13,7 @@ def efficient_log(data: Union[int, float]) -> float:
     "keep NA, remove zeros"
     return np.where(data == 0, -10, np.log10(data))
 
-def obs_data(source, var, summary=None):
+def obs_data(source, var, stat=None):
     """
     Quickly fetch observational data from ForamData/data directory.
     The longitude coordinate will be assigned to fit GENIE output
@@ -36,13 +37,36 @@ def obs_data(source, var, summary=None):
     obs = ds[long_name]
     modified_obs = reassign_obs(obs).to_numpy()
 
-    if not summary:
+    if not stat:
         return modified_obs
     else:
         mean = np.nanmean(modified_obs)
         sd = np.nanstd(modified_obs)
         se = sem(modified_obs, nan_policy="omit", axis = None)
         return mean, sd, se
+
+def obs_stat_bysource(source) -> pd.DataFrame:
+    obs = []
+    foram_abbrev = foram_names().keys()
+    foram_fullnames = foram_names().values()
+
+    for i in foram_abbrev:
+        tmp = obs_data(source=source, var=i, stat=True)
+        obs.append(tmp)
+
+    table = pd.DataFrame(obs, index=foram_fullnames, columns=["mean", "sd", "se"])
+    return table
+
+
+def obs_stat_bytype(type) -> pd.DataFrame:
+    tow = obs_stat_bysource("tow").loc[:, type]
+    trap = obs_stat_bysource("trap").loc[:, type]
+    core = obs_stat_bysource("core").loc[:, type]
+    #combination
+    data = pd.concat([tow, trap, core], axis=1)
+    data.columns = ["Biomass(mmol C/m3)", "Carbon Export (mmol C/m3/d)", "Relative Abundance"]
+
+    return data
 
 
 # def get_diff_xarray(filename, type, var):

@@ -137,13 +137,15 @@ def GENIE_grid_vol():
 
     return grid_volume
 
-def sum_grids(data_mmolC):
+def sum_grids(data_mmolC, mask=True):
     """
     summarise biomass/POC flux and convert unit from mmolC m-3 (day-1) to Tg C (day-1)
     """
 
     # km^3 -> m^3 (1E+9);
     grid_volume = GENIE_grid_vol() * 1e9
+    if mask:
+        grid_volume = mask_Arctic_Med(grid_volume)
 
     # mmol -> mol (1E-3) -> g(*12) -> Tg (1E-12)
     data_TgC = data_mmolC * 1e-3 * 12 * 1e-12
