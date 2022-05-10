@@ -2,6 +2,7 @@ import numpy as np
 from scipy.spatial import distance
 from netCDF4 import Dataset
 from .data import obs_data
+from .utils import remove_outliers
 from .grid import mask_Arctic_Med
 
 def safe_unveil(data):
@@ -114,22 +115,37 @@ def get_foram_prop(file_path, var):
 
     return proportion
 
-def quick_rmse(data, obs_source, var):
+def quick_rmse(data, obs_source, var, keep_outliers=False):
     "A wrapper function to calculate RMSE"
-    return cal_rmse(data, obs_data(obs_source, var))
 
-
-def quick_mscore(model, obs_source, var):
-    "A wrapper function to calculate M-Score"
     masked_model = mask_Arctic_Med(model, policy="na")
     masked_data = mask_Arctic_Med(obs_data(obs_source, var), policy="na")
+    if not keep_outliers:
+        masked_data = remove_outliers(masked_data)
+
+    return cal_rmse(masked_model, masked_data)
+
+
+def quick_mscore(model, obs_source, var, keep_outliers=False):
+    "A wrapper function to calculate M-Score"
+
+    masked_model = mask_Arctic_Med(model, policy="na")
+    masked_data = mask_Arctic_Med(obs_data(obs_source, var), policy="na")
+    if not keep_outliers:
+        masked_data = remove_outliers(masked_data)
 
     return cal_mscore(masked_model, masked_data)
 
 
-def quick_cos_sim(data, obs_source, var):
+def quick_cos_sim(data, obs_source, var, keep_outliers=False):
     "A wrapper function to calculate cosine cimilarity"
-    return cal_cosine_similarity(data, obs_data(obs_source, var))
+
+    masked_model = mask_Arctic_Med(model, policy="na")
+    masked_data = mask_Arctic_Med(obs_data(obs_source, var), policy="na")
+    if not keep_outliers:
+        masked_data = remove_outliers(masked_data)
+
+    return cal_cosine_similarity(masked_model, masked_data)
 
 
 #consider convert data into getModelData(var)

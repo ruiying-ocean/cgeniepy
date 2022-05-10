@@ -47,3 +47,16 @@ def mean_w_na(data, na_policy):
         return np.mean(np.nan_to_num(data))
     elif na_policy == "ignore":
         return np.nanmean(data)
+
+def remove_outliers(data, m=5):
+    """
+    remove extreme value (outliers) based on median absolute deviation (MAD) measurement
+    :param data: numpy array
+    :param m: tolerance, the larger `m` remove less outliers
+    :returns: numpy array with outlier removed
+    """
+    d = np.abs(data - np.nanmedian(data))
+    mdev = np.nanmedian(d)
+    s = d / (mdev if mdev else 1.)
+    np.putmask(data, s>m, np.nan)
+    return data

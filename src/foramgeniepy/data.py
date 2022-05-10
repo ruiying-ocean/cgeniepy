@@ -7,13 +7,14 @@ import pandas as pd
 from scipy.stats import sem
 
 from .grid import reassign_obs
+from .utils import remove_outliers
 
 
 def efficient_log(data: Union[int, float]) -> float:
     "keep NA, remove zeros"
     return np.where(data == 0, -10, np.log10(data))
 
-def obs_data(source, var, stat=None):
+def obs_data(source, var, stat=None, keep_outlier=False, *args, **kwargs):
     """
     Quickly fetch observational data from ForamData/data directory.
     The longitude coordinate will be assigned to fit GENIE output
@@ -36,6 +37,9 @@ def obs_data(source, var, stat=None):
     long_name = foram_names()[var]
     obs = ds[long_name]
     modified_obs = reassign_obs(obs).to_numpy()
+
+    if not keep_outlier:
+        modified_obs = remove_outliers(modified_obs, *args, **kwargs)
 
     if not stat:
         return modified_obs
