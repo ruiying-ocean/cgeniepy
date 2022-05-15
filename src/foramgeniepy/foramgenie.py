@@ -333,15 +333,15 @@ class ForamModel(object):
         grid_volume = GENIE_grid_vol()
         return grid_mask * grid_volume
 
-    def mscore_table(self, table_styler=True):
+    def mscore_table(self, table_styler=True, *args, **kwargs):
         "summarised model M-score compared to modern observations"
 
         foram_abbrev = list(foram_names().keys())
         foram_fullname = tuple(foram_names().values())
         df = {
-            "Biomass": [ForamVariable(i, self.model_path).carbon_biomass().m_score() for i in foram_abbrev],
-            "Carbon Export": [ForamVariable(i, self.model_path).POC_export().m_score() for i in foram_abbrev],
-            "Relative Abundance": [ForamVariable(i, self.model_path).POC_export().proportion().m_score() for i in foram_abbrev],
+            "Biomass": [ForamVariable(i, self.model_path).carbon_biomass().m_score(*args, **kwargs) for i in foram_abbrev],
+            "Carbon Export": [ForamVariable(i, self.model_path).POC_export().m_score(*args, **kwargs) for i in foram_abbrev],
+            "Relative Abundance": [ForamVariable(i, self.model_path).POC_export().proportion().m_score(*args, **kwargs) for i in foram_abbrev],
         }
 
         df = DataFrame(df, index=foram_fullname)
@@ -356,15 +356,15 @@ class ForamModel(object):
         return df
 
 
-    def rmse_table(self, table_styler=True):
+    def rmse_table(self, table_styler=True, *args, **kwargs):
         "summarised model M-score compared to modern observations"
 
         foram_abbrev = list(foram_names().keys())
         foram_fullname = tuple(foram_names().values())
         df = {
-            "Biomass": [ForamVariable(i, self.model_path).carbon_biomass().rmse() for i in foram_abbrev],
-            "Carbon Export": [ForamVariable(i, self.model_path).POC_export().rmse() for i in foram_abbrev],
-            "Relative Abundance": [ForamVariable(i, self.model_path).POC_export().proportion().rmse() for i in foram_abbrev],
+            "Biomass": [ForamVariable(i, self.model_path).carbon_biomass().rmse(*args, **kwargs) for i in foram_abbrev],
+            "Carbon Export": [ForamVariable(i, self.model_path).POC_export().rmse(*args, **kwargs) for i in foram_abbrev],
+            "Relative Abundance": [ForamVariable(i, self.model_path).POC_export().proportion().rmse(*args, **kwargs) for i in foram_abbrev],
         }
 
         df = DataFrame(df, index=foram_fullname)
@@ -586,7 +586,7 @@ class ForamModel(object):
         cbar.set_label('Relative abundance', size=12)
 
         return p
-    
+
     def barplot_comparison(self) -> plt.axes:
 
         """
@@ -624,20 +624,20 @@ class ForamModel(object):
 
         for i in range(2):
             for j in range(2):
-                axes[i,j].yaxis.set_minor_locator(AutoMinorLocator(4))   
+                axes[i,j].yaxis.set_minor_locator(AutoMinorLocator(4))
                 axes[i,j].set_axisbelow(True)
                 axes[i,j].yaxis.grid(color='gray', linestyle='dashed')
                 if i == 0:
                     axes[i,j].bar(x - bar_width/2,
-                    data_to_plot[i][j][0], 
-                    width = bar_width, 
-                    color = sns.color_palette("Set1")[0], 
+                    data_to_plot[i][j][0],
+                    width = bar_width,
+                    color = sns.color_palette("Set1")[0],
                     edgecolor = 'black',
                     yerr=data_to_plot[i][j][1],
-                    capsize=7, 
+                    capsize=7,
                     label='model')
 
-                    axes[i,j].bar(x + bar_width/2, 
+                    axes[i,j].bar(x + bar_width/2,
                     data_to_plot[i][j][2],
                     width = bar_width,
                     color = sns.color_palette("Set1")[1],
@@ -649,7 +649,7 @@ class ForamModel(object):
                     axes[i,j].set_xticks(x)
                     axes[i,j].set_xticklabels(xlabels, rotation = 45, ha="right")
                     axes[i,j].legend()
-                else:            
+                else:
                     sns.barplot(data=data_to_plot[i][j], x="group", y="value", ax=axes[i,j], edgecolor="black", palette="deep")
                     axes[i,j].set_xticklabels(xlabels, rotation=45, ha="right")
                     axes[i,j].set_xlabel("")
@@ -727,14 +727,14 @@ class ForamBiogeochem(ForamModel, ForamArray):
     def proportion(self):
         return ForamProportion(self.model_path, self.foram_name, self.biogeo_var)
 
-    def m_score(self):
-        return quick_mscore(self.pure_array(), self.biogeo_var, self.foram_name)
+    def m_score(self, *args, **kwargs):
+        return quick_mscore(self.pure_array(), self.biogeo_var, self.foram_name, *args, **kwargs)
 
-    def rmse(self):
-        return quick_rmse(self.pure_array(), self.biogeo_var, self.foram_name)
+    def rmse(self, *args, **kwargs):
+        return quick_rmse(self.pure_array(), self.biogeo_var, self.foram_name, *args, **kwargs)
 
-    def cos_sim(self):
-        return quick_cos_sim(self.pure_array(), self.biogeo_var, self.foram_name)
+    def cos_sim(self, *args, **kwargs):
+        return quick_cos_sim(self.pure_array(), self.biogeo_var, self.foram_name, *args, **kwargs)
 
 
 class ForamBiomass(ForamBiogeochem):
@@ -801,14 +801,14 @@ class ForamProportion(ForamBiogeochem):
 
         return proportion
 
-    def m_score(self, observation="core"):
-        return quick_mscore(self.pure_array(), observation, self.foram_name)
+    def m_score(self, observation="core", *args, **kwargs):
+        return quick_mscore(self.pure_array(), observation, self.foram_name, *args, **kwargs)
 
-    def rmse(self, observation="core"):
-        return quick_rmse(self.pure_array(), observation, self.foram_name)
+    def rmse(self, observation="core", *args, **kwargs):
+        return quick_rmse(self.pure_array(), observation, self.foram_name, *args, **kwargs)
 
-    def cos_sim(self, observation="core"):
-        return quick_cos_sim(self.pure_array(), observation, self.foram_name)
+    def cos_sim(self, observation="core", *args, **kwargs):
+        return quick_cos_sim(self.pure_array(), observation, self.foram_name, *args, **kwargs)
 
 
 class ForamCalcite(ForamArray, ForamModel):

@@ -5,5 +5,5 @@ This is a simple python package used in my own PhD project to analyse and visual
 # Installation
 
 ```shell
-python3 -m pip install --index-url https://test.pypi.org/simple/ foramgeniepy
+python3 -m pip install -i https://test.pypi.org/simple/ foramgeniepy==0.1.4
 ```

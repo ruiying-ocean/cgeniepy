@@ -14,7 +14,7 @@ def efficient_log(data: Union[int, float]) -> float:
     "keep NA, remove zeros"
     return np.where(data == 0, -10, np.log10(data))
 
-def obs_data(source, var, stat=None, keep_outlier=False, *args, **kwargs):
+def obs_data(source, var, stat=None, outlier_level=None):
     """
     Quickly fetch observational data from ForamData/data directory.
     The longitude coordinate will be assigned to fit GENIE output
@@ -38,8 +38,10 @@ def obs_data(source, var, stat=None, keep_outlier=False, *args, **kwargs):
     obs = ds[long_name]
     modified_obs = reassign_obs(obs).to_numpy()
 
-    if not keep_outlier:
-        modified_obs = remove_outliers(modified_obs, *args, **kwargs)
+    if not outlier_level:
+        pass
+    else:
+        modified_obs = remove_outliers(modified_obs, m=outlier_level)
 
     if not stat:
         return modified_obs

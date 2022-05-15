@@ -9,6 +9,7 @@ def check_rm(path):
     :param path: path string of target file
     """
     if os.path.isfile(path):
+        print(f"removing {path}")
         os.remove(path)
 
 def file_exists(path):

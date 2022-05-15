@@ -5,12 +5,13 @@ from .data import obs_data
 from .utils import remove_outliers
 from .grid import mask_Arctic_Med
 
-def safe_unveil(data):
+
+def safe_unveil(model_data):
     "get pure array from a numpy masked array object"
-    if data.__class__ != np.ma.core.MaskedArray:
-        return data
+    if model_data.__class__ != np.ma.core.MaskedArray:
+        return model_data
     else:
-        return data.filled(np.nan)
+        return model_data.filled(np.nan)
 
 def intersect_index(array1, array2, verbose=False):
     """
@@ -115,37 +116,31 @@ def get_foram_prop(file_path, var):
 
     return proportion
 
-def quick_rmse(data, obs_source, var, keep_outliers=False):
+def quick_rmse(model_data, obs_source, var, *args, **kwargs):
     "A wrapper function to calculate RMSE"
 
-    masked_model = mask_Arctic_Med(model, policy="na")
-    masked_data = mask_Arctic_Med(obs_data(obs_source, var), policy="na")
-    if not keep_outliers:
-        masked_data = remove_outliers(masked_data)
+    masked_model = mask_Arctic_Med(model_data, policy="na")
+    masked_data = mask_Arctic_Med(obs_data(obs_source, var, *args, **kwargs), policy="na")
 
     return cal_rmse(masked_model, masked_data)
 
 
-def quick_mscore(model, obs_source, var, keep_outliers=False):
+def quick_mscore(model, obs_source, var, *args, **kwargs):
     "A wrapper function to calculate M-Score"
 
     masked_model = mask_Arctic_Med(model, policy="na")
-    masked_data = mask_Arctic_Med(obs_data(obs_source, var), policy="na")
-    if not keep_outliers:
-        masked_data = remove_outliers(masked_data)
+    masked_data = mask_Arctic_Med(obs_data(obs_source, var, *args, **kwargs), policy="na")
 
     return cal_mscore(masked_model, masked_data)
 
 
-def quick_cos_sim(data, obs_source, var, keep_outliers=False):
+def quick_cos_sim(model_data, obs_source, var, *args, **kwargs):
+
     "A wrapper function to calculate cosine cimilarity"
 
-    masked_model = mask_Arctic_Med(model, policy="na")
-    masked_data = mask_Arctic_Med(obs_data(obs_source, var), policy="na")
-    if not keep_outliers:
-        masked_data = remove_outliers(masked_data)
+    masked_model = mask_Arctic_Med(model_data, policy="na")
+    masked_data = mask_Arctic_Med(obs_data(obs_source, var, *args, **kwargs), policy="na")
 
     return cal_cosine_similarity(masked_model, masked_data)
-
 
 #consider convert data into getModelData(var)
