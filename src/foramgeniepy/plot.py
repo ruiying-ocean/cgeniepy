@@ -2,14 +2,13 @@ import numpy as np
 import cartopy.crs as ccrs
 from cartopy.feature import LAND
 from matplotlib import cm
-import matplotlib.pyplot as plt
 
 from .data import efficient_log
 from .grid import GENIE_lat, GENIE_lon
 
 ## TODO [] add contour layer
 
-def plot_GENIE(data, ax, log=False, grid_line = False, continent_outline=True, contour_layer=False, cmap=cm.Spectral_r, *args, **kwargs):
+def plot_GENIE(ax, data, log=False, grid_line = False, continent_outline=True, contour_layer=False, cmap=cm.Spectral_r, *args, **kwargs):
     """
     plot map for 2D GENIE time-slice data
 
@@ -99,7 +98,7 @@ def plot_GENIE(data, ax, log=False, grid_line = False, continent_outline=True, c
     return p
 
 
-def scatter_map(df, ax, cmap=cm.Spectral_r, *args, **kwargs):
+def scatter_map(ax, df, cmap=cm.Spectral_r, *args, **kwargs):
     ax.set_global()
     ax.coastlines()
     ax.add_feature(LAND, zorder=0, facecolor="#B1B2B4", edgecolor="white")  # zorder is drawing sequence
@@ -113,15 +112,16 @@ def scatter_map(df, ax, cmap=cm.Spectral_r, *args, **kwargs):
 
     return p
 
-def scatter_on_GENIE(df, ax, vmin, vmax):
-    if 'organic_export_m3' in df.columns:
-        p = ax.scatter(y=df.Latitude, x=df.Longitude, c=df.organic_export_m3, s=22, linewidths=.5,
-                       cmap=cm.Spectral_r, vmin=vmin, vmax=vmax, edgecolors='black',
-                       transform = ccrs.PlateCarree())
-    elif 'biomass_Schiebel' in df.columns:
-        p = ax.scatter(y=df.Latitude, x=df.Longitude, c=efficient_log(df.biomass_Schiebel), s=22, linewidths=.5,
-                       cmap=cm.Spectral_r, vmin=vmin, vmax=vmax, edgecolors='black',
-                       transform = ccrs.PlateCarree())
-    else:
-        raise ValueError("Plase choose an approproiate variable as colormap")
+def scatter_on_GENIE(ax, df, var, cmap=cm.Spectral_r, log=False, *args, **kwargs):
+
+    if 'Latitude' not in df.columns or 'Longitude' not in df.columns:
+        raise ValueError("Input data lack Latitude/Longitude column")
+
+    if log:
+        df[var] = efficient_log(df[var])
+
+    p = ax.scatter(y=df.Latitude, x=df.Longitude, c=df[var], linewidths=.5,
+                   cmap=cmap, edgecolors='black',
+                   transform = ccrs.PlateCarree(), *args, **kwargs)
+
     return p

@@ -51,23 +51,23 @@ def obs_data(source, var, stat=None, outlier_level=None):
         se = sem(modified_obs, nan_policy="omit", axis = None)
         return mean, sd, se
 
-def obs_stat_bysource(source) -> pd.DataFrame:
+def obs_stat_bysource(source, *args, **kwargs) -> pd.DataFrame:
     obs = []
     foram_abbrev = foram_names().keys()
     foram_fullnames = foram_names().values()
 
     for i in foram_abbrev:
-        tmp = obs_data(source=source, var=i, stat=True)
+        tmp = obs_data(source=source, var=i, stat=True, *args, **kwargs)
         obs.append(tmp)
 
     table = pd.DataFrame(obs, index=foram_fullnames, columns=["mean", "sd", "se"])
     return table
 
 
-def obs_stat_bytype(type) -> pd.DataFrame:
-    tow = obs_stat_bysource("tow").loc[:, type]
-    trap = obs_stat_bysource("trap").loc[:, type]
-    core = obs_stat_bysource("core").loc[:, type]
+def obs_stat_bytype(type, *args, **kwargs) -> pd.DataFrame:
+    tow = obs_stat_bysource("tow", *args, **kwargs).loc[:, type]
+    trap = obs_stat_bysource("trap", *args, **kwargs).loc[:, type]
+    core = obs_stat_bysource("core", *args, **kwargs).loc[:, type]
     #combination
     data = pd.concat([tow, trap, core], axis=1)
     data.columns = ["Biomass(mmol C/m3)", "Carbon Export (mmol C/m3/d)", "Relative Abundance"]

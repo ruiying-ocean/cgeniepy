@@ -103,7 +103,7 @@ def normal_lon(N=36, edge=False):
 
 def GENIE_grid_area():
     """
-    get grid_area array with unit of km^2, not masked with continent/Arctic/Mediterranean!
+    get grid area array with unit of km^2, not masked with continent/Arctic/Mediterranean!
     """
     # x level
     lon_len = np.repeat(10, 36)
@@ -152,7 +152,11 @@ def sum_grids(data_mmolC, mask=True):
 
     sum_TgC = data_TgC * grid_volume
 
-    return np.nansum(sum_TgC.values.flatten())
+    if hasattr(sum_TgC, 'values'):
+        return np.nansum(sum_TgC.values.flatten())
+    else:
+        return np.nansum(sum_TgC.flatten())
+
 
 #check grid area (1)
 #print(marine_area.sum()*1e-8) #around 3.7

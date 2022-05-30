@@ -14,7 +14,7 @@ from pandas import DataFrame, read_fwf
 import seaborn as sns
 
 from .plot import plot_GENIE
-from .grid import GENIE_grid_area, reassign_GENIE, GENIE_grid_vol, sum_grids, GENIE_lat, GENIE_lon, normal_lon
+from .grid import GENIE_grid_area, GENIE_grid_mask, reassign_GENIE, GENIE_grid_vol, sum_grids, GENIE_lat, GENIE_lon, normal_lon
 from .data import foram_dict, POC_to_PIC, foram_names, obs_stat_bytype, obs_stat_bysource
 from .scores import quick_mscore, quick_rmse, quick_cos_sim
 from .utils import file_exists, set_sns_barwidth
@@ -61,6 +61,20 @@ class ForamArray(object):
         else:
             return self.array
 
+    def _value_sign(self, x):
+        if np.isnan(x) or x == 0:
+            return x
+        elif x > 0:
+            return 1
+        elif x < 0:
+            return -1
+
+    def value_sign(self):
+        vfunc = np.vectorize(self._value_sign)
+        x = ForamArray()
+        x.array = vfunc(self.pure_array())
+        return x
+
     def _to_foram_array(self):
         """
         designed for sub-classes to remove all attributes
@@ -90,7 +104,7 @@ class ForamArray(object):
             fig = plt.figure(dpi=75)
             ax = fig.add_subplot(111, projection=ccrs.EckertIV())
 
-        p = plot_GENIE(self.array, ax, *args, **kwargs)
+        p = plot_GENIE(ax=ax, data=self.array, *args, **kwargs)
 
         if cbar:
             cax = fig.add_axes([0.15, 0.1, 0.73, 0.07]) #xmin, ymin, dx, dy
@@ -387,25 +401,25 @@ class ForamModel(object):
         foram_fullname = tuple(foram_names().values())
 
         if method=="mean":
-            df = {
+            dic = {
                 "Biomass(mmol C/m3)": [ForamVariable(i, self.model_path).carbon_biomass().nanmean() for i in foram_abbrev],
                 "Carbon Export (mmol C/m3/d)": [ForamVariable(i, self.model_path).POC_export().nanmean() for i in foram_abbrev],
                 "Relative Abundance": [ForamVariable(i, self.model_path).POC_export().proportion().nanmean() for i in foram_abbrev],
             }
         elif method=="sd":
-            df = {
+            dic = {
                 "Biomass(mmol C/m3)": [ForamVariable(i, self.model_path).carbon_biomass().nansd() for i in foram_abbrev],
                 "Carbon Export (mmol C/m3/d)": [ForamVariable(i, self.model_path).POC_export().nansd() for i in foram_abbrev],
                 "Relative Abundance": [ForamVariable(i, self.model_path).POC_export().proportion().nansd() for i in foram_abbrev],
             }
         elif method=="se":
-            df = {
+            dic = {
                 "Biomass(mmol C/m3)": [ForamVariable(i, self.model_path).carbon_biomass().se().values for i in foram_abbrev],
                 "Carbon Export (mmol C/m3/d)": [ForamVariable(i, self.model_path).POC_export().se().values for i in foram_abbrev],
                 "Relative Abundance": [ForamVariable(i, self.model_path).POC_export().proportion().se().values for i in foram_abbrev],
             }
 
-        df = DataFrame(df, index=foram_fullname)
+        df = DataFrame(dic, index=foram_fullname)
 
         if diff:
             obs = obs_stat_bytype(method)
@@ -531,7 +545,7 @@ class ForamModel(object):
         for i,ax in enumerate(axes.flat):
                 vdata = self.select_var(varlst[i]).array
                 mean = np.nanmean(vdata)
-                p = plot_GENIE(vdata, ax, vmin=0, vmax=most_max, *args, **kwargs)
+                p = plot_GENIE(ax=ax, data=vdata, vmin=0, vmax=most_max, *args, **kwargs)
                 ax.set_title(f"({string.ascii_lowercase[i]}) {foram_fullnames[i]} {mean:.2E}", pad=10)
 
         cbar = fig.colorbar(p, ax=axes, orientation="horizontal", pad=0.05, shrink=0.7)
@@ -555,7 +569,7 @@ class ForamModel(object):
         for i,ax in enumerate(axes.flat):
                 vdata = self.select_var(varlst[i]).array
                 mean = np.nanmean(vdata)
-                p = plot_GENIE(vdata, ax, vmin=0, vmax=most_max)
+                p = plot_GENIE(ax=ax, data=vdata, vmin=0, vmax=most_max)
                 ax.set_title(f"({string.ascii_lowercase[i]}) {foram_fullnames[i]} {mean:.2E}", pad=10)
 
         cbar = fig.colorbar(p, ax=axes, orientation="horizontal", pad=0.05, shrink=0.7)
@@ -578,7 +592,7 @@ class ForamModel(object):
         for i, ax in enumerate(axes.flat):
             vdata = self.select_foram(varlst[i]).POC_export().proportion().array
             mean = np.nanmean(vdata) * 100
-            p = plot_GENIE(vdata, ax, vmin=0, vmax=1)
+            p = plot_GENIE(ax = ax, data = vdata, vmin=0, vmax=1)
             ax.set_title(f"({string.ascii_lowercase[i]}) {foram_fullnames[i]} {mean:.2f}%", pad=10)
 
         cbar = fig.colorbar(p, ax=axes, orientation="horizontal", pad=0.05, shrink=0.7)
@@ -587,7 +601,7 @@ class ForamModel(object):
 
         return p
 
-    def barplot_comparison(self) -> plt.axes:
+    def barplot_comparison(self, *args, **kwargs) -> plt.axes:
 
         """
         Overview barplot of biomass and POC export compared to observed data
@@ -603,10 +617,10 @@ class ForamModel(object):
         model_export_se = [self.select_foram(i).POC_export().se() for i in foram_abbrev]
         model_export_sum = [self.select_foram(i).POC_export().sum() for i in foram_abbrev]
         model_biomass_sum = [self.select_foram(i).carbon_biomass().sum() for i in foram_abbrev]
-        obs_biomass_mean = obs_stat_bysource("tow").loc[:, "mean"]
-        obs_biomass_se = obs_stat_bysource("tow").loc[:, "se"]
-        obs_export_mean = obs_stat_bysource("trap").loc[:, "mean"]
-        obs_export_se = obs_stat_bysource("trap").loc[:, "se"]
+        obs_biomass_mean = obs_stat_bysource("tow", *args, **kwargs).loc[:, "mean"]
+        obs_biomass_se = obs_stat_bysource("tow", *args, **kwargs).loc[:, "se"]
+        obs_export_mean = obs_stat_bysource("trap", *args, **kwargs).loc[:, "mean"]
+        obs_export_se = obs_stat_bysource("trap", *args, **kwargs).loc[:, "se"]
 
         model_biomass_sum = DataFrame({"group": fname, "value": model_biomass_sum})
         model_export_sum = DataFrame({"group": fname, "value": model_export_sum})
