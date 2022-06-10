@@ -64,30 +64,27 @@ def remove_outliers(data, m=5):
     np.putmask(data, s>m, np.nan)
     return data
 
+def powlaw(x, a, b) :
+    return a * np.power(x, b)
 
-def esd_powerlaw(N=8, esd_min=0.6, esd_max=1900):
+def esd_pow(n=8, esd_max=1900):
     """
-    ecosystem size structure builder
-    solve size=k(N^a)
-    """
-    k = esd_min
-    a = log(esd_max/esd_min, N)
-    size_count = np.linspace(1, N, N)
-    size = k * (size_count ** a)
-    return size
+    ecosystem size structure builder following power law, size=k(n^a).
+    build from scipy.curve_fit based on exisiting 8P8Z and 32P32Z size structure.
+    Principal is more size classes (`n`) should allocate more at smaller organisms
+    instead of interpolation or equal increment.
 
-def esd_linear(N=8, esd_min=0.6, esd_max=1900):
+    :param n: number of size classes
+    :param esd_max: maximum individual size (um)
     """
-    ecosystem size structure builder
-    solve size=kN+b
-    """
-    k = (esd_max - esd_min)/(N-1)
-    b = esd_min - k
-    size_count = np.linspace(1, N, N)
-    size = size_count * k + b
-    return size
 
-def esd_original(N=2, esd_min=0.6, k =1.3, esd_max=1900):
+    a = 8.5 + 0.25 * (n/8)
+    k = esd_max/n**a
+    x = powlaw(np.linspace(1, n, n), k, a)
+    return x
+
+
+def esd_ward(N=2, esd_min=0.6, k =1.3, esd_max=1900):
     """
     Ward et al. (2018) method
     :param N: the least size classes in each loop
@@ -105,25 +102,3 @@ def esd_original(N=2, esd_min=0.6, k =1.3, esd_max=1900):
     while esd.max() < esd_max:
         esd = np.append(esd, esd[-N:]*10)
     return esd
-
-
-def esd_ln(N=8, esd_min=0.6, esd_max=1900):
-    """
-    ecosystem size structure builder
-    solve size= a + b ln(x)
-    """
-    a = esd_min
-    b = (esd_max - a)/np.log(N)
-    size_count = np.linspace(1, N, N)
-    size = a + b * np.log(size_count)
-    return size
-
-def esd_logistic(N=8, esd_max=1900, k = 1.5):
-    """
-    ecosystem size structure builder following logistic model
-    """
-    l = esd_max
-    x0 = int(N/2)
-    size_count = np.linspace(1, N, N)
-    size = l/(1+np.e**(-k*(size_count - x0)))
-    return size

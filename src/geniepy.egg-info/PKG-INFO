@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
-Name: foramgeniepy
-Version: 0.1.4
+Name: geniepy
+Version: 0.1.5
 Summary: A Python wrapper package to analyse and visualise cGENIE model output
 Author: Rui Ying
 Author-email: rui.ying@bristol.ac.uk
@@ -15,3 +15,9 @@ License-File: LICENSE
 # About
 
 This is a simple python package used in my own PhD project to analyse and visualise cGENIE model output (mostly in netCDF format).
+
+# Installation
+
+```shell
+python3 -m pip install -i https://test.pypi.org/simple/ foramgeniepy==0.1.5
+```

@@ -50,20 +50,30 @@ def mask_Arctic_Med(array, policy="na"):
     return array
 
 
-def GENIE_grid_mask(mask_Arc_Med=False):
+def GENIE_grid_mask(base='worjh2', basin='ALL', basin_lvl='', mask_Arc_Med=False, invert=False):
     """
-    Get a modern GENIE 16x16 horizontal continental array.
+    Get a modern GENIE 36x36 mask array from input data.
+    The input array is flipped (left/right flip -> up/down flip) for easy recognition
+
+    :continent: worjh2, worlg4, worbe2, GIteiiaa, GIteiiaa, p0055c
+    :basin: Atlantic/Pacific/Indian/ALL/Tanzania
+    :basin_lvl: N/S/ALL, ALL means Southern Ocean section included
 
     :returns: GENIE grid array where continent/ice cap is 0 and ocean is 1, default is 'worjh2'
     """
 
-    file_path = pathlib.Path(__file__).parent.parent / "data/worjh2.csv"
-    grid_mask = np.genfromtxt(file_path, delimiter=",", dtype=int)
+    file_path = pathlib.Path(__file__).parent.parent / f"data/mask_{base}_{basin}{basin_lvl}.txt"
+    grid_mask_raw = np.loadtxt(file_path, dtype=int)
+    grid_mask = np.flip(np.fliplr(grid_mask_raw))
 
     if mask_Arc_Med:
         grid_mask = mask_Arctic_Med(grid_mask, policy="zero")
 
+    if invert:
+        grid_mask = ~grid_mask + 2
+
     return grid_mask
+
 
 def GENIE_lat(N=36, edge=False):
     """
@@ -88,6 +98,17 @@ def GENIE_lon(N=36, edge=False):
     else:
         lon = np.linspace(-255, 95, N)
         return lon
+
+def GENIE_depth(edge=False):
+    z_edge = np.array([0.0000, 80.8407, 174.7519, 283.8467, 410.5801,
+             557.8040, 728.8313, 927.5105, 1158.3124,
+             1426.4307, 1737.8987, 2099.7254, 2520.0527,
+             3008.3391, 3575.5723, 4234.45166, 5000.0000])
+    if edge:
+        return z_edge
+    else:
+        z = np.array([(z_edge[i]+z_edge[i+1])/2 for i in range(len(z_edge) - 1)])
+        return z
 
 def normal_lon(N=36, edge=False):
     """
@@ -129,7 +150,7 @@ def GENIE_grid_vol():
     get grid_volume array with unit of km^3, not masked with continent!
     """
 
-    #z level in 1st layer
+    #z_edge level in 1st layer
     vertical_width_km = 80.8/1000
 
     # grid volumn: km^3
@@ -261,6 +282,18 @@ def regrid_lon(x):
         raise ValueError("Longitude must be in [-180,180]")
 
     return x
+
+
+def new_basin_mask(mask_array, basin, filename):
+    """
+    a dirty way to copy the basin mask from worjh2 and facilitate further manual modification
+    """
+
+    x = mask_array + GENIE_grid_mask(base='worjh2', basin=basin)
+    o = np.where(x>1,1,0)
+    o = np.flip(np.fliplr(o))
+    np.savetxt(filename,o, fmt='%i')
+    print(f"array saved in {filename}")
 
 
 def regrid_dataframe(dataframe, low_threshold=None, new_low_bound=None, high_threshold=None, new_high_bound=None):

@@ -28,14 +28,14 @@ from .utils import file_exists, set_sns_barwidth
 # DONE [X] basic add/subtract
 # DONE [X] add streamfunction plot
 # DONE [X] redefine calcite class
-# DONE [X] add totol POC/calcite/zonal average to ForamModel
+# DONE [X] add totol POC/calcite/zonal average to GenieModel
 # DONE [X] include biogem/ecogem, 2d/3d
 # DONE [X] add quiver plot
 # DONE [X] add plot statisitcs
 # TODO [] add functional diversity
 
 
-class ForamArray(object):
+class GenieArray(object):
 
     def __init__(self, M=36, N=36):
         """
@@ -61,6 +61,9 @@ class ForamArray(object):
         else:
             return self.array
 
+    def dim(self):
+        return self.pure_array().ndim
+
     def _value_sign(self, x):
         if np.isnan(x) or x == 0:
             return x
@@ -71,7 +74,7 @@ class ForamArray(object):
 
     def value_sign(self):
         vfunc = np.vectorize(self._value_sign)
-        x = ForamArray()
+        x = GenieArray()
         x.array = vfunc(self.pure_array())
         return x
 
@@ -79,12 +82,12 @@ class ForamArray(object):
         """
         designed for sub-classes to remove all attributes
         """
-        empty = ForamArray()
+        empty = GenieArray()
         empty.array = self.array
         return empty
 
-    def plot_zonal_average(self, *args, **kwargs):
-        array_1d = self.mean(axis=1)
+    def zonal_average(self, *args, **kwargs):
+        array_1d = self.nanmean(axis=1)
         lat = GENIE_lat()
 
         fig = plt.figure(figsize=(6, 4))
@@ -154,24 +157,24 @@ class ForamArray(object):
         return ax
 
     def __add__(self, other):
-        sum = ForamArray()
+        sum = GenieArray()
         sum.array = self.array + other.array
         return sum
 
     def __sub__(self, other):
-        diff = ForamArray()
+        diff = GenieArray()
         diff.array = self.array - other.array
         return diff
 
     def __truediv__(self, other):
-        quotient = ForamArray()
+        quotient = GenieArray()
         quotient.array = np.divide(self.array, other.array,
                                out=np.zeros_like(self.array),
                                where=other.array!=0)
         return quotient
 
     def __mul__(self, other):
-        product = ForamArray()
+        product = GenieArray()
         product.array = self.array * other.array
         return product
 
@@ -246,7 +249,7 @@ class ForamArray(object):
 ## return a new foramarray instance
 
 
-class ForamModel(object):
+class GenieModel(object):
 
     def __init__(self, model_path):
         self.model_path = model_path
@@ -288,11 +291,14 @@ class ForamModel(object):
         for gem in ["biogem", "ecogem"]:
             for dim in ["2d", "3d"]:
                 nc_path = self.nc_path(gem, dim)
-                if self.search_var(var, nc_path):
+                if self.has_var(var, nc_path):
                     return nc_path
         raise ValueError("Variable not found in both ecogem and biogem, please check the spelling!")
 
-    def search_var(self, var, nc_path):
+    def has_var(self, var, nc_path):
+        """
+        check if variable exists
+        """
         t = Dataset(nc_path, "r")
         if_exist = var in t.variables.keys()
         t.close()
@@ -302,9 +308,9 @@ class ForamModel(object):
         "return specified or all available variables"
         if not var_name:
             t = Dataset(self.nc_path(*args, **kwargs), "r")
-            print(t.variables.keys())
+            tmp = t.variables.keys()
             t.close()
-            return None
+            return tmp
         else:
             return xr.open_dataset(self.nc_path(*args, **kwargs))[var_name]
 
@@ -451,7 +457,7 @@ class ForamModel(object):
     def foram_POC(self):
         "Estimate total foraminiferal organic carbon flux rate"
 
-        foram_poc = ForamArray()
+        foram_poc = GenieArray()
 
         for foram in ["bn", "bs", "sn", "ss"]:
             foram_poc += self.select_foram(foram).POC_export()
@@ -463,7 +469,7 @@ class ForamModel(object):
 
     def foram_biomass(self):
         "Estimate total foraminiferal biomass"
-        foram_biomass = ForamArray()
+        foram_biomass = GenieArray()
 
         for foram in ["bn", "bs", "sn", "ss"]:
             foram_biomass += self.select_foram(foram).carbon_biomass()
@@ -686,14 +692,55 @@ class ForamModel(object):
 
         return axes
 
+    def _ptf_presence(self, x, tol=1e-8):
+        """
+        to determine whethere a functional group present or not
+        :param tol: threshold of biomass (mmol C/m3)
+        """
+        if np.isnan(x):
+            return x
+        elif x >= tol:
+            return 1
+        else:
+            return 0
 
-class GenieVariable(ForamModel, ForamArray):
+    def pft_n(self):
+        full_lst = list(self.get_vars())
+        name_lst = [x for x in full_lst if 'eco2D_Export_C' in x]
+        n = len(name_lst)
+        return n
+
+    def pft_richness(self):
+        """
+        plankton functional group richness, note it is different from species richness,
+        because there should be more species in low size classes.
+        See `body size-species richness relationship` for more details.
+        """
+        vfunc = np.vectorize(self._ptf_presence)
+        total_sp = np.zeros((36, 36))
+        n = self.pft_n()
+
+        for i in range(n):
+            name  = f'eco2D_Plankton_C_0{i+1:02d}'
+            #select
+            arr = self.select_var(name).pure_array()
+            #conditional mask
+            sp = vfunc(arr)
+            #sum
+            total_sp += sp
+
+        x = GenieArray()
+        x.array = total_sp
+        return x
+
+
+class GenieVariable(GenieModel, GenieArray):
 
     def __init__(self, var, model_path):
         # initialise super class to inherite attributes
         self._var = var
-        ForamModel.__init__(self, model_path=model_path)
-        ForamArray.__init__(self)
+        GenieModel.__init__(self, model_path=model_path)
+        GenieArray.__init__(self)
 
     def _set_array(self):
         nc_path = self.auto_find_path(self._var)
@@ -701,11 +748,11 @@ class GenieVariable(ForamModel, ForamArray):
         return source_data[self._var]
 
 
-class ForamVariable(ForamModel):
+class ForamVariable(GenieModel):
 
     def __init__(self, foram_name, model_path):
         self.foram_name = foram_name
-        ForamModel.__init__(self, model_path = model_path)
+        GenieModel.__init__(self, model_path = model_path)
 
     def carbon_biomass(self):
         return ForamBiomass(model_path = self.model_path, foram_name = self.foram_name)
@@ -722,14 +769,14 @@ class ForamVariable(ForamModel):
         )
 
 
-class ForamBiogeochem(ForamModel, ForamArray):
+class ForamBiogeochem(GenieModel, GenieArray):
 
     def __init__(self, model_path:str, foram_name:str, biogeo_var:str):
         self.biogeo_var = biogeo_var
         self.foram_name = foram_name
-        ForamModel.__init__(self, model_path)
+        GenieModel.__init__(self, model_path)
         self.ecogem_path = self.nc_path("ecogem", "2d")
-        ForamArray.__init__(self)
+        GenieArray.__init__(self)
 
     def _set_array(self):
         source_data = self.open_nc(self.ecogem_path)
@@ -825,11 +872,11 @@ class ForamProportion(ForamBiogeochem):
         return quick_cos_sim(self.pure_array(), observation, self.foram_name, *args, **kwargs)
 
 
-class ForamCalcite(ForamArray, ForamModel):
+class ForamCalcite(GenieArray, GenieModel):
 
     def __init__(self, model_path):
         "default empty array, need to assign the array manually, such as ForamCarbonFlux.to_PIC()"
-        ForamModel.__init__(self, model_path=model_path)
+        GenieModel.__init__(self, model_path=model_path)
 
     def sum(self):
         """

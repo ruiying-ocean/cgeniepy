@@ -1,12 +1,15 @@
+import pathlib
+
 import numpy as np
+import pandas as pd
 import cartopy.crs as ccrs
 from cartopy.feature import LAND
 from matplotlib import cm
+from matplotlib.colors import ListedColormap
 
 from .data import efficient_log
 from .grid import GENIE_lat, GENIE_lon
 
-## TODO [] add contour layer
 
 def plot_GENIE(ax, data, log=False, grid_line = False, continent_outline=True, contour_layer=False, cmap=cm.Spectral_r, *args, **kwargs):
     """
@@ -125,3 +128,21 @@ def scatter_on_GENIE(ax, df, var, cmap=cm.Spectral_r, log=False, *args, **kwargs
                    transform = ccrs.PlateCarree(), *args, **kwargs)
 
     return p
+
+
+def wes_cmap(cmap_name, N=256, reverse=False):
+    """
+    :param cmap_name: Zissou1, FantasticFox, Rushmore, Darjeeling, ODV
+    :return: colormap
+    """
+    file_name = f"data/{cmap_name}.txt"
+    file_path = pathlib.Path(__file__).parent.parent / file_name
+
+    colors =  pd.read_csv(file_path, header=None).values.tolist()
+    colors = [colors[i][0] for i in range(len(colors))]
+
+    c = ListedColormap(colors, N=N)
+
+    if reverse:
+        return c.reversed()
+    return c
