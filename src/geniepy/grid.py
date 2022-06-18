@@ -364,3 +364,27 @@ def regrid_dataframe(dataframe, low_threshold=None, new_low_bound=None, high_thr
     df_genie_wide = df_genie.pivot_table(values='Observation', index='Latitude', columns='Longitude', dropna=False)
 
     return df_genie_wide
+
+
+def _geo_range(x, x0, x1):
+    if x0 < x1:
+        ans = x > x0 and x < x1
+    else:
+        ans = x > x1 and x < x0
+    return ans
+
+def detect_basin(lon, lat):
+    if _geo_range(lat, 0.1, 73) and _geo_range(lon, -80.2, -33):
+        return 'Atlantic'
+    elif _geo_range(lat, 0.1, 77) and _geo_range(lon, -33, 20):
+        return 'Atlantic'
+    elif _geo_range(lat, 0, -55) and _geo_range(lon, -60, 30):
+        return 'Atlantic'
+    elif _geo_range(lat, -40, -55) and _geo_range(lon, -22, 30):
+        return 'Atlantic'
+    elif _geo_range(lat, 0, 71) and _geo_range(lon, -70, 110):
+        return 'Pacific'
+    elif _geo_range(lat, 0, -66) and _geo_range(lon, -69.9, 125):
+        return 'Pacific'
+    elif _geo_range(lat, 25, -25) and _geo_range(lon, 30, 125):
+        return 'Indian'

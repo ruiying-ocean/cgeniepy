@@ -78,7 +78,7 @@ class GenieArray(object):
         x.array = vfunc(self.pure_array())
         return x
 
-    def _to_foram_array(self):
+    def _to_genie_array(self):
         """
         designed for sub-classes to remove all attributes
         """
