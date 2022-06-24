@@ -6,10 +6,13 @@ import cartopy.crs as ccrs
 from cartopy.feature import LAND
 from matplotlib import cm
 from matplotlib.colors import ListedColormap
+import matplotlib.pyplot as plt
 
 from .data import efficient_log
 from .grid import GENIE_lat, GENIE_lon
 
+
+# [] decorator for boundary line in pcolormesh object
 
 def plot_GENIE(ax, data, log=False, grid_line = False, continent_outline=True, contour_layer=False, cmap=cm.Spectral_r, *args, **kwargs):
     """
@@ -115,7 +118,8 @@ def scatter_map(ax, df, cmap=cm.Spectral_r, *args, **kwargs):
 
     return p
 
-def scatter_on_GENIE(ax, df, var, cmap=cm.Spectral_r, log=False, *args, **kwargs):
+def scatter_on_GENIE(ax, df, var, x='Longitude',
+                     y='Latitude', cmap=cm.Spectral_r, log=False, *args, **kwargs):
 
     if 'Latitude' not in df.columns or 'Longitude' not in df.columns:
         raise ValueError("Input data lack Latitude/Longitude column")
@@ -123,14 +127,14 @@ def scatter_on_GENIE(ax, df, var, cmap=cm.Spectral_r, log=False, *args, **kwargs
     if log:
         df[var] = efficient_log(df[var])
 
-    p = ax.scatter(y=df.Latitude, x=df.Longitude, c=df[var], linewidths=.5,
+    p = ax.scatter(x=df[x], y=df[y], c=df[var], linewidths=.5,
                    cmap=cmap, edgecolors='black',
                    transform = ccrs.PlateCarree(), *args, **kwargs)
 
     return p
 
 
-def wes_cmap(cmap_name, N=256, reverse=False):
+def genie_cmap(cmap_name, N=256, reverse=False):
     """
     :param cmap_name: Zissou1, FantasticFox, Rushmore, Darjeeling, ODV
     :return: colormap
@@ -146,3 +150,10 @@ def wes_cmap(cmap_name, N=256, reverse=False):
     if reverse:
         return c.reversed()
     return c
+
+def cbar_wrapper(func, *args, **kwarags):
+    def wrappered_func():
+        p = func(*args, **kwarags)
+        cbar = plt.colorbar(p, fraction=0.05, pad=0.04, orientation = 'vertical')
+        cbar.ax.tick_params(color='k', direction='in')
+    return wrappered_func

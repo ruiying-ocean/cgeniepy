@@ -1,9 +1,11 @@
+from . import ureg, Q_
 import pathlib
 
 import numpy as np
 import pandas as pd
 import xarray
-
+import geopandas as gpd
+from shapely.geometry import Point
 
 def lon_n2g(x):
     """
@@ -143,7 +145,9 @@ def GENIE_grid_area():
     for i in range(36):
         grid_area[i,] = grid_area[i,] * np.cos(lat_rad)[i]
 
-    return grid_area
+    unit = ureg("km^2")
+
+    return grid_area * unit
 
 def GENIE_grid_vol():
     """
@@ -151,32 +155,12 @@ def GENIE_grid_vol():
     """
 
     #z_edge level in 1st layer
-    vertical_width_km = 80.8/1000
+    vertical_width_km = Q_(80.8/1000, "km")
 
     # grid volumn: km^3
     grid_volume = GENIE_grid_area() * vertical_width_km
 
     return grid_volume
-
-def sum_grids(data_mmolC, mask=True):
-    """
-    summarise biomass/POC flux and convert unit from mmolC m-3 (day-1) to Tg C (day-1)
-    """
-
-    # km^3 -> m^3 (1E+9);
-    grid_volume = GENIE_grid_vol() * 1e9
-    if mask:
-        grid_volume = mask_Arctic_Med(grid_volume)
-
-    # mmol -> mol (1E-3) -> g(*12) -> Tg (1E-12)
-    data_TgC = data_mmolC * 1e-3 * 12 * 1e-12
-
-    sum_TgC = data_TgC * grid_volume
-
-    if hasattr(sum_TgC, 'values'):
-        return np.nansum(sum_TgC.values.flatten())
-    else:
-        return np.nansum(sum_TgC.flatten())
 
 
 #check grid area (1)
@@ -366,25 +350,16 @@ def regrid_dataframe(dataframe, low_threshold=None, new_low_bound=None, high_thr
     return df_genie_wide
 
 
-def _geo_range(x, x0, x1):
-    if x0 < x1:
-        ans = x > x0 and x < x1
-    else:
-        ans = x > x1 and x < x0
-    return ans
+def detect_ocean(lon, lat):
+    "use point-in-polygon strategy to detect ocean basin according to lon/lat"
 
-def detect_basin(lon, lat):
-    if _geo_range(lat, 0.1, 73) and _geo_range(lon, -80.2, -33):
-        return 'Atlantic'
-    elif _geo_range(lat, 0.1, 77) and _geo_range(lon, -33, 20):
-        return 'Atlantic'
-    elif _geo_range(lat, 0, -55) and _geo_range(lon, -60, 30):
-        return 'Atlantic'
-    elif _geo_range(lat, -40, -55) and _geo_range(lon, -22, 30):
-        return 'Atlantic'
-    elif _geo_range(lat, 0, 71) and _geo_range(lon, -70, 110):
-        return 'Pacific'
-    elif _geo_range(lat, 0, -66) and _geo_range(lon, -69.9, 125):
-        return 'Pacific'
-    elif _geo_range(lat, 25, -25) and _geo_range(lon, 30, 125):
-        return 'Indian'
+    file_path = pathlib.Path(__file__).parent.parent / "data/oceans/oceans.shp"
+
+    oceans = gpd.read_file(file_path)
+    p = Point(lon, lat)
+
+    ocean_name = oceans[oceans.contains(p)].Oceans.values
+    if ocean_name.size > 0:
+        return ocean_name[0]
+    else:
+        return ''

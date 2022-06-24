@@ -1,0 +1,10 @@
+@context(mw=0) biogeochemistry = bgc
+    # mw is the molecular weight of the species
+    # volume is the volume of the solution
+    # solvent_mass is the mass of solvent in the solution
+
+    # moles -> mass require the molecular weight
+    # rate = [substance] / [time]
+    [substance] / [time] -> [mass] / [time]: value * mw
+    [mass] / [time] -> [substance] / [time] : value / mw
+@end

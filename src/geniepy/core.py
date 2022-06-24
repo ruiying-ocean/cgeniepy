@@ -13,11 +13,13 @@ from netCDF4 import Dataset
 from pandas import DataFrame, read_fwf
 import seaborn as sns
 
+from . import ureg, Q_
 from .plot import plot_GENIE
-from .grid import GENIE_grid_area, GENIE_grid_mask, reassign_GENIE, GENIE_grid_vol, sum_grids, GENIE_lat, GENIE_lon, normal_lon
-from .data import foram_dict, POC_to_PIC, foram_names, obs_stat_bytype, obs_stat_bysource
+from .grid import GENIE_grid_area, reassign_GENIE, GENIE_grid_mask, GENIE_grid_vol, GENIE_lat, GENIE_lon, GENIE_depth, normal_lon
+from .data import foram_dict, foram_names, obs_stat_bytype, obs_stat_bysource
 from .scores import quick_mscore, quick_rmse, quick_cos_sim
 from .utils import file_exists, set_sns_barwidth
+from .chem import rm_element, molecular_weight
 # from .GENIE_GRID import interp_GENIE
 
 
@@ -33,75 +35,35 @@ from .utils import file_exists, set_sns_barwidth
 # DONE [X] add quiver plot
 # DONE [X] add plot statisitcs
 # TODO [] add functional diversity
+# TODO [] add unit
 
+class GeniePlottable(object):
 
-class GenieArray(object):
-
-    def __init__(self, M=36, N=36):
+    def plot_line(self, dim, *args, **kwargs):
+        """plot 1D data, e.g., zonal_average
         """
-        Create a 36x36 empty 2D array
-        """
-        self.M = M
-        self.N = N
-        self.array = self._set_array()
 
-    def _set_array(self):
-        return np.zeros((self.M, self.N))
-
-    def flip(self, axis=0):
-        return np.flip(self.array, axis=axis)
-
-    def flatten(self):
-        "flatten in row-major (C-style)"
-        return self.pure_array().flatten(order="C")
-
-    def pure_array(self):
-        if hasattr(self.array, 'values'):
-            return self.array.values
-        else:
-            return self.array
-
-    def dim(self):
-        return self.pure_array().ndim
-
-    def _value_sign(self, x):
-        if np.isnan(x) or x == 0:
-            return x
-        elif x > 0:
-            return 1
-        elif x < 0:
-            return -1
-
-    def value_sign(self):
-        vfunc = np.vectorize(self._value_sign)
-        x = GenieArray()
-        x.array = vfunc(self.pure_array())
-        return x
-
-    def _to_genie_array(self):
-        """
-        designed for sub-classes to remove all attributes
-        """
-        empty = GenieArray()
-        empty.array = self.array
-        return empty
-
-    def zonal_average(self, *args, **kwargs):
-        array_1d = self.nanmean(axis=1)
-        lat = GENIE_lat()
+        if self.dim() > 1:
+            raise ValueError("Data should be of 1 Dimension")
+        if dim=="lon":
+            x = GENIE_lat()
+        if dim=="lat":
+            x = GENIE_lon()
 
         fig = plt.figure(figsize=(6, 4))
         ax = fig.add_subplot(111)
-        ax.xaxis.set_minor_locator(AutoMinorLocator())
-        ax.yaxis.set_minor_locator(AutoMinorLocator())
+        ax.minorticks_on()
 
-        p = ax.plot(lat, array_1d, 'k', *args, **kwargs)
+        p = ax.plot(x, self.array, 'k', *args, **kwargs)
+
         return p
 
     def plot_map(self, ax=None, cbar=True, *args, **kwargs):
 
+        """plot lat-lon 2D array"""
+
         plt.rcParams['font.family'] = 'sans-serif'
-        plt.rcParams['font.sans-serif'] = ['Helvetica']
+        plt.rcParams['font.sans-serif'] = ['Arial']
 
         if not ax:
             fig = plt.figure(dpi=75)
@@ -118,43 +80,119 @@ class GenieArray(object):
 
         return p
 
-    def plot_overturning(self):
-        "only for phys_opsi variable"
+    def cross_section(self, ax=None, cmap='YlGnBu_r', *args, **kwargs):
+        """plot 3D array, tracers and stream function
+        """
 
-        if not hasattr(self.array, "lat_moc"):
-            raise AttributeError("Not availble MOC array such as 'phys_opsi'!")
+        data = self.array
 
-        moc = self.array
-        lat = self.array.lat_moc
-        zt = self.array.zt_moc/1000
-        X, Y = np.meshgrid(lat, zt)
+        # visualise
+        if not ax:
+            fig, ax = plt.subplots(figsize=(8, 4))
 
-        fig = plt.figure(figsize=(6, 4))
-        ax = fig.add_subplot(111)
-        ax.patch.set_color("grey")
-        fig.gca().invert_yaxis()
+        lat_edge = GENIE_lat(edge=True)
+        z_edge = GENIE_depth(edge=True)/1000
+        lat = GENIE_lat(edge=False)
+        z = GENIE_depth(edge=False)/1000
 
-        #contour/controuf
-        contourf_cmap = plt.get_cmap("RdBu_r")
-        contourf_max = np.max(moc)//10 * 10
-        controuf_N = int(contourf_max*2/10 + 1)
-        contourf_level = np.linspace(contourf_max*-1, contourf_max, controuf_N)
+        # pcolormesh
+        p = ax.pcolormesh(lat_edge, z_edge, data, cmap=cmap, *args, **kwargs)
 
-        CS = ax.contourf(X, Y, moc, corner_mask=False, levels=contourf_level, cmap=contourf_cmap)
-        ax.clabel(CS, inline=False, fontsize=8, colors='k')
+        # contourf
+        # contourf_max = np.max(moc)//10 * 10
+        # controuf_N = int(contourf_max*2/10 + 1)
+        # contourf_level = np.linspace(contourf_max*-1, contourf_max, controuf_N)
+        # cs = ax.contourf(lat, z, data, corner_mask=False, levels=contourf_level, cmap=contourf_cmap)
 
-        ax.contour(X, Y, moc, colors=('k',), linewidths=(1,))
+        # contour
+        cs = ax.contour(lat, z, data, linewidths=0.6, colors='black', linestyles='solid')
+        ax.clabel(cs, cs.levels[::1], colors=['black'], fontsize=8.5, inline=False)
 
-        # x/y labels
-        ax.set_ylabel("Depth (km)")
-        ax.set_xlabel("Latitude (North)")
+        # colorbar, ticks & labels
+        # divider = make_axes_locatable(ax)
+        # cax = divider.append_axes('right', size='5%', pad=0.05)
+        cbar = plt.colorbar(p, fraction=0.05, pad=0.04, orientation = 'vertical')
+        cbar.ax.tick_params(color='k', direction='in')
+        # cbar.set_label("Stream function (Sv)")
 
-        # colorbar
-        cax = fig.add_axes([0.92, 0.12, 0.05, 0.75]) #xmin, ymin, dx, dy
-        cbar = fig.colorbar(CS, cax = cax, orientation = 'vertical', extend="both")
-        cbar.set_label("Stream function (Sv)")
+        plt.rcParams["font.family"] = "Arial"
+        ax.patch.set_color("#999DA0")
+        ax.set_ylim(ax.get_ylim()[::-1])
+        ax.set_xlabel(r"Latitude ($\degree$N)", fontsize=13)
+        ax.set_ylabel("Depth (km)", fontsize=12)
+        ax.minorticks_on()
+        ax.tick_params('both', length=4, width=1, which='major')
 
-        return ax
+        return p
+
+
+class GenieArray(GeniePlottable):
+
+    def __init__(self, M=36, N=36):
+        """
+        Create a 36x36 empty 2D array
+        """
+        # set dimension
+        self.M = M
+        self.N = N
+        # set data
+        self.array = self._set_array()
+        # set unit
+        if hasattr(self.array, "unit"):
+            self.unit = self.array.units
+        else:
+            self.unit = ""
+
+    def _set_array(self):
+        return np.zeros((self.M, self.N))
+
+    def pure_array(self):
+        "get a numpy array"
+        if hasattr(self.array, 'values'):
+            return self.array.values
+        else:
+            return self.array
+
+    def uarray(self):
+        "array with unit"
+        unit = rm_element(self.unit)
+        uarray = Q_(self.pure_array(), unit)
+        return uarray
+
+    def dim(self):
+        return self.pure_array().ndim
+
+    def flip(self, axis=0):
+        return np.flip(self.array, axis=axis)
+
+    def flatten(self):
+        "flatten in row-major (C-style)"
+        return self.pure_array().flatten(order="C")
+
+    def _value_sign(self, x):
+        if np.isnan(x) or x == 0:
+            return x
+        elif x > 0:
+            return 1
+        elif x < 0:
+            return -1
+
+    def value_sign(self):
+        vfunc = np.vectorize(self._value_sign)
+        x = GenieArray()
+        x.array = vfunc(self.pure_array())
+        return x
+
+    def reassign_array(self):
+        return reassign_GENIE(self.array)
+
+    def _to_genie_array(self):
+        """
+        designed for sub-classes to remove all attributes
+        """
+        empty = GenieArray()
+        empty.array = self.array
+        return empty
 
     def __add__(self, other):
         sum = GenieArray()
@@ -196,6 +234,9 @@ class GenieArray(object):
     def nanmean(self, *args, **kwargs):
         return np.nanmean(self.pure_array(), *args, **kwargs)
 
+    def ptp(self, *args, **kwargs):
+        return np.ptp(self.pure_array(), *args, **kwargs)
+
     def sd(self, *args, **kwargs):
         return np.std(self.pure_array(), *args, **kwargs)
 
@@ -205,19 +246,53 @@ class GenieArray(object):
     def se(self, *args, **kwargs):
         return sem(self.array, nan_policy="omit", axis=None, *args, **kwargs)
 
-    def reassign_array(self):
-        return reassign_GENIE(self.array)
-
-    def select_basin(self, basin_name):
+    def select_basin(self, basin):
         ocean = regionmask.defined_regions.ar6.ocean
-        index = ocean.map_keys(basin_name)
+        index = ocean.map_keys(basin)
         mask = ocean.mask(self.reassign_array())
         regional_data = self.reassign_array().where(mask == index)
 
         return regional_data
 
-    def search_grid(self, lat, lon):
-        return self.array.sel(lat=lat, lon=lon, method="nearest")
+    def mask_basin(self, base, basin, basin_lvl):
+        # mask data
+        data = self.pure_array()
+        mask = GENIE_grid_mask(base=base, basin=basin, basin_lvl=basin_lvl, invert=True)
+
+        if self.dim() > 2:
+            mask = np.broadcast_to(mask, (16, 36, 36))
+
+        mask_data = np.ma.array(data, mask=mask)
+        mask_data = np.ma.masked_invalid(mask_data)
+
+        garray = GenieArray()
+        garray.array = mask_data
+
+        return garray
+
+    def mean_along(self, dim):
+        # time, zt, lat, lon
+        if self.dim() == 2:
+            if dim=='lat':
+                ax = 0
+            elif dim=='lon':
+                ax = 1
+        elif self.dim() == 3:
+            if dim=='z':
+                ax = 0
+            if dim=='lat':
+                ax = 1
+            elif dim=='lon':
+                ax = 2
+
+        garray = GenieArray()
+        garray.array = self.nanmean(axis=ax)
+
+        return garray
+
+
+    def search_grid(self, *args, **kwargs):
+        return self.array.sel(*args, **kwargs, method="nearest")
 
     def search_range(self, lon_min=-255, lon_max=95, lat_min=0, lat_max=90):
         """
@@ -242,11 +317,6 @@ class GenieArray(object):
             return data.where(data > threshold, drop=True)
         else:
             return data.where(data < threshold, drop=True)
-
-
-# #def interpolate(self):
-# #    interp_GENIE()
-## return a new foramarray instance
 
 
 class GenieModel(object):
@@ -293,7 +363,7 @@ class GenieModel(object):
                 nc_path = self.nc_path(gem, dim)
                 if self.has_var(var, nc_path):
                     return nc_path
-        raise ValueError("Variable not found in both ecogem and biogem, please check the spelling!")
+        raise ValueError("Variable not found, please check the spelling!")
 
     def has_var(self, var, nc_path):
         """
@@ -345,13 +415,17 @@ class GenieModel(object):
         "grid area array in km2"
         grid_mask = self.grid_mask()
         grid_area = GENIE_grid_area()
-        return grid_mask * grid_area
+        mask_area = grid_area * grid_mask
+
+        return mask_area
 
     def marine_volume(self):
         "grid volume array in km3"
         grid_mask = self.grid_mask()
         grid_volume = GENIE_grid_vol()
-        return grid_mask * grid_volume
+        mask_volume = grid_volume * grid_mask
+
+        return mask_volume
 
     def mscore_table(self, table_styler=True, *args, **kwargs):
         "summarised model M-score compared to modern observations"
@@ -398,7 +472,8 @@ class GenieModel(object):
 
         return df
 
-    def summarise(self, method="mean", diff=False, diff_method="percentage", table_styler=True):
+    def summarise(self, method="mean", diff=False,
+            diff_method="percentage", table_styler=True, *args, **kwargs):
         """
         summarise basic statistics of foraminifer groups
         """
@@ -428,7 +503,7 @@ class GenieModel(object):
         df = DataFrame(dic, index=foram_fullname)
 
         if diff:
-            obs = obs_stat_bytype(method)
+            obs = obs_stat_bytype(type=method, *args, **kwargs)
             diff = df - obs
 
             if diff_method == "percentage":
@@ -479,9 +554,9 @@ class GenieModel(object):
 
         return biomass_total
 
-    def foram_PIC(self):
+    def foram_calcite(self):
         "Estimate total foraminiferal inorganic carbon flux rate"
-        return self.foram_POC().to_PIC()
+        return self.foram_POC().to_calcite()
 
     def foram_ldg(self, legend=True):
         "plot ldg: latitudinal diversity gradient"
@@ -686,11 +761,21 @@ class GenieModel(object):
         axes[1,1].set_title("(d)    total POC production rate", loc="left")
 
         axes[1,0].set_ylabel("Tg C")
-        axes[1,1].set_ylabel(r"Tg C d$^{-1}$")
+        axes[1,1].set_ylabel(r"Tg C yr$^{-1}$")
 
         fig.tight_layout()
 
         return axes
+
+    def diff(self, model2compare, var):
+        B =  GenieModel(model2compare)
+        diff = self.select_var(var) - B.select_var(var)
+        return diff
+
+    def div(self, model2compare, var):
+        B =  GenieModel(model2compare)
+        diff = self.select_var(var) / B.select_var(var)
+        return diff
 
     def _ptf_presence(self, x, tol=1e-8):
         """
@@ -731,6 +816,19 @@ class GenieModel(object):
 
         x = GenieArray()
         x.array = total_sp
+        return x
+
+
+    def select_pft(self, start, end):
+        total = np.zeros((36, 36))
+        end += 1
+        for i in range(start, end):
+            name  = f'eco2D_Plankton_C_0{i:02d}'
+            arr = self.select_var(name).pure_array()
+            total += arr
+
+        x = GenieArray()
+        x.array = total
         return x
 
 
@@ -802,40 +900,41 @@ class ForamBiomass(ForamBiogeochem):
 
     def __init__(self, model_path, foram_name):
         self.biogeo_var = "tow"
-        self.unit= 'mmol C m$^{-3}$'
         super(ForamBiomass, self).__init__(model_path, foram_name, self.biogeo_var)
+        self.unit = "mmol m$^-3$"
 
     def sum(self):
-        """
-        A sum of foram biomass across grids
-        mmol C/m3 -> Tg C
-        """
+        C_ = molecular_weight("C")
+        c = self.uarray().to_base_units()
+        v = self.marine_volume().to_base_units()
+        s = c * v
+        s = s.to("mol").to('g', 'chemistry', mw = C_ * ureg('g/mole')).to('Tg')
 
-        print("Unit: TgC")
-        return sum_grids(self.array)
+        return np.nansum(s)
 
 
 class ForamCarbonFlux(ForamBiogeochem):
 
     def __init__(self, model_path, foram_name):
         self.biogeo_var = "trap"
-        self.unit = 'mmol C m$^{-3}$ d$^{-1}$'
         super(ForamCarbonFlux, self).__init__(model_path, foram_name, self.biogeo_var)
+        self.unit = "mmol m$^-3$ d$^-1$"
 
-    def to_PIC(self):
+    def to_calcite(self):
         calcite = ForamCalcite(model_path = self.model_path)
-        calcite.array = POC_to_PIC(self.array)
+        calcite.array = self.array * 0.36
+
         return calcite
 
+    @ureg.with_context('bgc')
     def sum(self):
-        """
-        A sum of organic carbon export across grids
-        mmol C/m3/d -> Tg C/d
-        """
+        C_ = molecular_weight("C")
+        c = self.uarray().to_base_units()
+        v = self.marine_volume().to_base_units()
+        s = c * v
+        s = s.to("mol d^-1").to('g d^-1','bgc', mw = C_ * ureg('g/mol')).to("Tg yr^-1")
 
-        print("Unit: TgC/d")
-        return sum_grids(self.array)
-
+        return np.nansum(s)
 
 class ForamProportion(ForamBiogeochem):
 
@@ -877,17 +976,14 @@ class ForamCalcite(GenieArray, GenieModel):
     def __init__(self, model_path):
         "default empty array, need to assign the array manually, such as ForamCarbonFlux.to_PIC()"
         GenieModel.__init__(self, model_path=model_path)
+        self.unit = "mmol m$^-3$ d$^-1$"
 
+    @ureg.with_context('bgc')
     def sum(self):
-        """
-        A sum of calcite export across grids
-        g/m2/year -> Gt/m2/year -> Gt/year
-        """
+        CaCO3 = molecular_weight("CaCO3")
+        c = self.uarray().to_base_units()
+        v = self.marine_volume().to_base_units()
+        s = c * v
+        s = s.to("mol d^-1").to('g d^-1','bgc', mw = CaCO3 * ureg('g/mol')).to("Pg yr^-1")
 
-        area_m2 = self.marine_area() * 1e6
-        calcite_g_m2_yr = self.array
-        calcite_Gt_m2_yr = calcite_g_m2_yr * 1e-15
-        calcite_Gt_yr = calcite_Gt_m2_yr * area_m2
-
-        print("Unit: Gt/yr")
-        return calcite_Gt_yr.sum().values
+        return np.nansum(s)
