@@ -12,6 +12,7 @@ def safe_unveil(model_data):
     else:
         return model_data.filled(np.nan)
 
+
 def intersect_index(array1, array2, verbose=False):
     """
     Return the index where corresponding values are not
@@ -39,10 +40,12 @@ def cal_mscore(data1: np.array, data2: np.array):
     Use 2D array as input, order causes no difference.
     NA will be removed.
     """
+    # get common set
     indx = intersect_index(data1, data2)
     sub_data1 = data1[indx]
     sub_data2 = data2[indx]
 
+    # calculate M-score
     mse = np.square(np.subtract(sub_data1, sub_data2)).mean()
     v1 = sub_data1.var()
     v2 = sub_data2.var()
@@ -52,6 +55,18 @@ def cal_mscore(data1: np.array, data2: np.array):
     mscore = (2 / np.pi) * np.arcsin(1 - mse / (v1 + v2 + np.square(g1 - g2)))
 
     return mscore
+
+
+def cal_corr(data1, data2):
+    """
+    calculate pearson correlation coefficient for 2D array
+    """
+    indx = intersect_index(data1, data2)
+    sub_data1 = data1[indx].ravel()
+    sub_data2 = data2[indx].ravel()
+
+    corr = pearson_r(sub_data1, sub_data2)
+    return corr
 
 
 def cal_cosine_similarity(data1, data2):
@@ -74,7 +89,7 @@ def cal_cosine_similarity(data1, data2):
 
 def cal_rmse(data1, data2):
     """
-    Calculate Root Mean Sqaure Error (rmse) between two input arrays.
+    Calculate Root Mean Sqaure Error (rmse, or rmsd) between two input arrays.
 
     Use 2D array as input, order causes no difference.
     """
@@ -85,6 +100,23 @@ def cal_rmse(data1, data2):
 
     return rmse
 
+
+def cal_crmse(data1, data2):
+    """
+    Calculate centred Root Mean Sqaure Error (rmse, or rmsd) between two input arrays. See Talor, K. E. (2001) JGR
+
+    Use 2D array as input, order causes no difference.
+    """
+    indx = intersect_index(data1, data2)
+    sub_data1 = data1[indx].ravel()
+    sub_data2 = data2[indx].ravel()
+
+    sigma1 = np.std(sub_data1)
+    sigma2 = np.std(sub_data2)
+    corr = pearson_r(sub_data1, sub_data2)
+    crmse = sigma1**2 + sigma2**2 - 2 * sigma1 * sigma2 * corr
+
+    return crmse
 
 def get_foram_prop(file_path, var):
     """
@@ -115,9 +147,10 @@ def get_foram_prop(file_path, var):
 
     return proportion
 
+
 def quick_rmse(model, obs_source, var, *args, **kwargs):
     "A wrapper function to calculate RMSE"
-    
+
     if hasattr(model, "values"):
         model = model.values
     masked_model = mask_Arctic_Med(model, policy="na")
@@ -148,4 +181,15 @@ def quick_cos_sim(model, obs_source, var, *args, **kwargs):
 
     return cal_cosine_similarity(masked_model, masked_data)
 
-#consider convert data into getModelData(var)
+
+def pearson_r(data1, data2):
+    """
+    compute pearson correlation coefficient, which reflect linear similarity between two 1D arrays
+
+    data1: 1D array
+    data2: 1D array
+    """
+
+    # Compute corr matrix
+    corr_mat = np.corrcoef(data1, data2)
+    return corr_mat[0,1]

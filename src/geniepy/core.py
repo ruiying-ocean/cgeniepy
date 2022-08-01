@@ -14,14 +14,12 @@ from pandas import DataFrame, read_fwf
 import seaborn as sns
 
 from . import ureg, Q_
-from .plot import plot_GENIE
-from .grid import GENIE_grid_area, reassign_GENIE, GENIE_grid_mask, GENIE_grid_vol, GENIE_lat, GENIE_lon, GENIE_depth, normal_lon
+from .plot import plot_GENIE, GeniePlottable
+from .grid import GENIE_grid_area, reassign_GENIE, GENIE_grid_mask, GENIE_grid_vol, GENIE_lat, GENIE_lon, normal_lon
 from .data import foram_dict, foram_names, obs_stat_bytype, obs_stat_bysource
 from .scores import quick_mscore, quick_rmse, quick_cos_sim
 from .utils import file_exists, set_sns_barwidth
 from .chem import rm_element, molecular_weight
-# from .GENIE_GRID import interp_GENIE
-
 
 # DONE [X] reassign_array
 # DONE [X] basin
@@ -34,96 +32,8 @@ from .chem import rm_element, molecular_weight
 # DONE [X] include biogem/ecogem, 2d/3d
 # DONE [X] add quiver plot
 # DONE [X] add plot statisitcs
+# DONE [X] add unit system
 # TODO [] add functional diversity
-# TODO [] add unit
-
-class GeniePlottable(object):
-
-    def plot_line(self, dim, *args, **kwargs):
-        """plot 1D data, e.g., zonal_average
-        """
-
-        if self.dim() > 1:
-            raise ValueError("Data should be of 1 Dimension")
-        if dim=="lon":
-            x = GENIE_lat()
-        if dim=="lat":
-            x = GENIE_lon()
-
-        fig = plt.figure(figsize=(6, 4))
-        ax = fig.add_subplot(111)
-        ax.minorticks_on()
-
-        p = ax.plot(x, self.array, 'k', *args, **kwargs)
-
-        return p
-
-    def plot_map(self, ax=None, cbar=True, *args, **kwargs):
-
-        """plot lat-lon 2D array"""
-
-        plt.rcParams['font.family'] = 'sans-serif'
-        plt.rcParams['font.sans-serif'] = ['Arial']
-
-        if not ax:
-            fig = plt.figure(dpi=75)
-            ax = fig.add_subplot(111, projection=ccrs.EckertIV())
-
-        p = plot_GENIE(ax=ax, data=self.array, *args, **kwargs)
-
-        if cbar:
-            cax = fig.add_axes([0.15, 0.1, 0.73, 0.07]) #xmin, ymin, dx, dy
-            cbar = fig.colorbar(p, cax = cax, orientation = 'horizontal', pad=0.04)
-            cbar.minorticks_on()
-            if hasattr(self, "unit"):
-                cbar.set_label(self.unit, size=12)
-
-        return p
-
-    def cross_section(self, ax=None, cmap='YlGnBu_r', *args, **kwargs):
-        """plot 3D array, tracers and stream function
-        """
-
-        data = self.array
-
-        # visualise
-        if not ax:
-            fig, ax = plt.subplots(figsize=(8, 4))
-
-        lat_edge = GENIE_lat(edge=True)
-        z_edge = GENIE_depth(edge=True)/1000
-        lat = GENIE_lat(edge=False)
-        z = GENIE_depth(edge=False)/1000
-
-        # pcolormesh
-        p = ax.pcolormesh(lat_edge, z_edge, data, cmap=cmap, *args, **kwargs)
-
-        # contourf
-        # contourf_max = np.max(moc)//10 * 10
-        # controuf_N = int(contourf_max*2/10 + 1)
-        # contourf_level = np.linspace(contourf_max*-1, contourf_max, controuf_N)
-        # cs = ax.contourf(lat, z, data, corner_mask=False, levels=contourf_level, cmap=contourf_cmap)
-
-        # contour
-        cs = ax.contour(lat, z, data, linewidths=0.6, colors='black', linestyles='solid')
-        ax.clabel(cs, cs.levels[::1], colors=['black'], fontsize=8.5, inline=False)
-
-        # colorbar, ticks & labels
-        # divider = make_axes_locatable(ax)
-        # cax = divider.append_axes('right', size='5%', pad=0.05)
-        cbar = plt.colorbar(p, fraction=0.05, pad=0.04, orientation = 'vertical')
-        cbar.ax.tick_params(color='k', direction='in')
-        # cbar.set_label("Stream function (Sv)")
-
-        plt.rcParams["font.family"] = "Arial"
-        ax.patch.set_color("#999DA0")
-        ax.set_ylim(ax.get_ylim()[::-1])
-        ax.set_xlabel(r"Latitude ($\degree$N)", fontsize=13)
-        ax.set_ylabel("Depth (km)", fontsize=12)
-        ax.minorticks_on()
-        ax.tick_params('both', length=4, width=1, which='major')
-
-        return p
 
 
 class GenieArray(GeniePlottable):
@@ -138,7 +48,7 @@ class GenieArray(GeniePlottable):
         # set data
         self.array = self._set_array()
         # set unit
-        if hasattr(self.array, "unit"):
+        if hasattr(self.array, "units"):
             self.unit = self.array.units
         else:
             self.unit = ""
@@ -169,22 +79,17 @@ class GenieArray(GeniePlottable):
         "flatten in row-major (C-style)"
         return self.pure_array().flatten(order="C")
 
-    def _value_sign(self, x):
-        if np.isnan(x) or x == 0:
-            return x
-        elif x > 0:
-            return 1
-        elif x < 0:
-            return -1
-
-    def value_sign(self):
-        vfunc = np.vectorize(self._value_sign)
+    def apply(self, f):
+        vfunc = np.vectorize(f)
         x = GenieArray()
         x.array = vfunc(self.pure_array())
         return x
 
     def reassign_array(self):
-        return reassign_GENIE(self.array)
+        "if self.array is xarray, then reassign the coordinate"
+        x = GenieArray()
+        x.array = reassign_GENIE(self.array).to_numpy()
+        return x
 
     def _to_genie_array(self):
         """
@@ -206,21 +111,41 @@ class GenieArray(GeniePlottable):
 
     def __truediv__(self, other):
         quotient = GenieArray()
-        quotient.array = np.divide(self.array, other.array,
+        if hasattr(other, "array"):
+            quotient.array = np.divide(self.array, other.array,
                                out=np.zeros_like(self.array),
                                where=other.array!=0)
+        else:
+            try:
+                quotient.array = np.divide(self.array, other)
+            except ValueError:
+                print("Sorry, either number and GenieArray are accepted")
+
         return quotient
 
     def __mul__(self, other):
         product = GenieArray()
-        product.array = self.array * other.array
+        if hasattr(other, "array"):
+            product.array = self.array * other.array
+        else:
+            try:
+                product.array = self.array * other
+            except ValueError:
+                print("Sorry, either number and GenieArray are accepted")
+
         return product
 
     def max(self, *args, **kwargs):
         return np.max(self.array, *args, **kwargs)
 
+    def nanmax(self, *args, **kwargs):
+        return np.nanmax(self.array, *args, **kwargs)
+
     def min(self, *args, **kwargs):
         return np.min(self.array, *args, **kwargs)
+
+    def nanmin(self, *args, **kwargs):
+        return np.nanmin(self.array, *args, **kwargs)
 
     def sum(self, *args, **kwargs):
         return np.sum(self.pure_array(), *args, **kwargs)
@@ -696,8 +621,8 @@ class GenieModel(object):
         model_export_mean = [self.select_foram(i).POC_export().nanmean() for i in foram_abbrev]
         model_biomass_se = [self.select_foram(i).carbon_biomass().se() for i in foram_abbrev]
         model_export_se = [self.select_foram(i).POC_export().se() for i in foram_abbrev]
-        model_export_sum = [self.select_foram(i).POC_export().sum() for i in foram_abbrev]
-        model_biomass_sum = [self.select_foram(i).carbon_biomass().sum() for i in foram_abbrev]
+        model_export_sum = [self.select_foram(i).POC_export().sum().magnitude for i in foram_abbrev]
+        model_biomass_sum = [self.select_foram(i).carbon_biomass().sum().magnitude for i in foram_abbrev]
         obs_biomass_mean = obs_stat_bysource("tow", *args, **kwargs).loc[:, "mean"]
         obs_biomass_se = obs_stat_bysource("tow", *args, **kwargs).loc[:, "se"]
         obs_export_mean = obs_stat_bysource("trap", *args, **kwargs).loc[:, "mean"]
@@ -789,7 +714,8 @@ class GenieModel(object):
         else:
             return 0
 
-    def pft_n(self):
+    def pft_count(self):
+        "the number of plankton functional type"
         full_lst = list(self.get_vars())
         name_lst = [x for x in full_lst if 'eco2D_Export_C' in x]
         n = len(name_lst)
@@ -798,12 +724,11 @@ class GenieModel(object):
     def pft_richness(self):
         """
         plankton functional group richness, note it is different from species richness,
-        because there should be more species in low size classes.
-        See `body size-species richness relationship` for more details.
+        because there are more species in low size classes (i.e., body size-species richness relationship)
         """
         vfunc = np.vectorize(self._ptf_presence)
         total_sp = np.zeros((36, 36))
-        n = self.pft_n()
+        n = self.pft_count()
 
         for i in range(n):
             name  = f'eco2D_Plankton_C_0{i+1:02d}'
@@ -818,15 +743,30 @@ class GenieModel(object):
         x.array = total_sp
         return x
 
+    def select_pft(self, start=None, end=None, var="biomass"):
 
-    def select_pft(self, start, end):
+        # if not specify the groups, select all
+        if not start and not end:
+            start = 1
+            end = self.pft_count()
+
+        # biomass or export production
+        if var == "biomass":
+            v = "Plankton"
+        elif var == "export":
+            v = "Export"
+        else:
+            raise ValueError("Not correct variable")
+
+        # loop and sum
         total = np.zeros((36, 36))
         end += 1
         for i in range(start, end):
-            name  = f'eco2D_Plankton_C_0{i:02d}'
-            arr = self.select_var(name).pure_array()
+            name  = f'eco2D_{v}_C_0{i:02d}'
+            arr = self.select_var(name).array
             total += arr
 
+        # return
         x = GenieArray()
         x.array = total
         return x
@@ -921,6 +861,10 @@ class ForamCarbonFlux(ForamBiogeochem):
         self.unit = "mmol m$^-3$ d$^-1$"
 
     def to_calcite(self):
+        """
+        convert POC to Calcite given POC:PIC:CaCO3 mol ratio = 100:36:36 (mass ratio = 100:36:300)
+        """
+
         calcite = ForamCalcite(model_path = self.model_path)
         calcite.array = self.array * 0.36
 

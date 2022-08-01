@@ -9,8 +9,7 @@ from matplotlib.colors import ListedColormap
 import matplotlib.pyplot as plt
 
 from .data import efficient_log
-from .grid import GENIE_lat, GENIE_lon
-
+from .grid import GENIE_lat, GENIE_lon, GENIE_depth
 
 # [] decorator for boundary line in pcolormesh object
 
@@ -157,3 +156,240 @@ def cbar_wrapper(func, *args, **kwarags):
         cbar = plt.colorbar(p, fraction=0.05, pad=0.04, orientation = 'vertical')
         cbar.ax.tick_params(color='k', direction='in')
     return wrappered_func
+
+
+class GeniePlottable(object):
+
+    def plot_line(self, dim, *args, **kwargs):
+        """plot 1D data, e.g., zonal_average
+        """
+
+        if self.dim() > 1:
+            raise ValueError("Data should be of 1 Dimension")
+        if dim=="lon":
+            x = GENIE_lat()
+        if dim=="lat":
+            x = GENIE_lon()
+
+        fig = plt.figure(figsize=(6, 4))
+        ax = fig.add_subplot(111)
+        ax.minorticks_on()
+
+        p = ax.plot(x, self.array, 'k', *args, **kwargs)
+
+        return p
+
+    def plot_map(self, ax=None, cbar=True, *args, **kwargs):
+
+        """plot lat-lon 2D array"""
+
+        plt.rcParams['font.family'] = 'sans-serif'
+        plt.rcParams['font.sans-serif'] = ['Arial']
+
+        if not ax:
+            fig = plt.figure(dpi=75)
+            ax = fig.add_subplot(111, projection=ccrs.EckertIV())
+
+        if np.any(self.array < 0) and np.any(self.array > 0):
+            x = max(abs(self.nanmin()), self.nanmax())
+            #vmax = x/2
+            #vmin = vmax * -1
+            p = plot_GENIE(ax=ax, data=self.array, cmap="RdBu_r", *args, **kwargs)
+        else:
+            p = plot_GENIE(ax=ax, data=self.array, *args, **kwargs)
+
+        if cbar:
+            cax = fig.add_axes([0.15, 0.1, 0.73, 0.07]) #xmin, ymin, dx, dy
+            cbar = fig.colorbar(p, cax = cax, orientation = 'horizontal', pad=0.04)
+            cbar.minorticks_on()
+            if hasattr(self, "unit"):
+                cbar.set_label(self.unit, size=12)
+
+        return p
+
+    def cross_section(self, ax=None, cmap='YlGnBu_r', *args, **kwargs):
+        """plot 3D array, tracers and stream function
+        """
+
+        data = self.array
+
+        # visualise
+        if not ax:
+            fig, ax = plt.subplots(figsize=(8, 4))
+
+        lat_edge = GENIE_lat(edge=True)
+        z_edge = GENIE_depth(edge=True)/1000
+        lat = GENIE_lat(edge=False)
+        z = GENIE_depth(edge=False)/1000
+
+        # pcolormesh
+        p = ax.pcolormesh(lat_edge, z_edge, data, cmap=cmap, *args, **kwargs)
+
+        # contourf
+        # contourf_max = np.max(moc)//10 * 10
+        # controuf_N = int(contourf_max*2/10 + 1)
+        # contourf_level = np.linspace(contourf_max*-1, contourf_max, controuf_N)
+        # cs = ax.contourf(lat, z, data, corner_mask=False, levels=contourf_level, cmap=contourf_cmap)
+
+        # contour
+        cs = ax.contour(lat, z, data, linewidths=0.6, colors='black', linestyles='solid')
+        ax.clabel(cs, cs.levels[::1], colors=['black'], fontsize=8.5, inline=False)
+
+        # colorbar, ticks & labels
+        # divider = make_axes_locatable(ax)
+        # cax = divider.append_axes('right', size='5%', pad=0.05)
+        cbar = plt.colorbar(p, fraction=0.05, pad=0.04, orientation = 'vertical')
+        cbar.ax.tick_params(color='k', direction='in')
+        # cbar.set_label("Stream function (Sv)")
+
+        plt.rcParams["font.family"] = "Arial"
+        ax.patch.set_color("#999DA0")
+        ax.set_ylim(ax.get_ylim()[::-1])
+        ax.set_xlabel(r"Latitude ($\degree$N)", fontsize=13)
+        ax.set_ylabel("Depth (km)", fontsize=12)
+        ax.minorticks_on()
+        ax.tick_params('both', length=4, width=1, which='major')
+
+        return p
+
+
+class TaylorDiagram(object):
+    """
+    Taylor diagram.
+    Plot model standard deviation and correlation to reference data in a single-quadrant polar plot,
+    with r=stddev and theta=arccos(correlation).
+
+    modified from Yannick Copin, https://gist.github.com/ycopin/3342888
+    reference: https://matplotlib.org/stable/gallery/axisartist/demo_floating_axes.html
+    """
+
+    def __init__(self, refstd, fig=None, rect=111):
+
+        """
+        Set up Taylor diagram axes, i.e. single quadrant polar
+        plot, using `mpl_toolkits.axisartist.floating_axes`.
+
+        Parameters:
+
+        * refstd: reference standard deviation to be compared to
+        * fig: input Figure or None
+        * rect: subplot definition
+        * label: reference label
+        * range: stddev axis extension, in units of *refstd*
+        """
+
+        # floating axes
+        from matplotlib.projections import PolarAxes
+        import mpl_toolkits.axisartist.floating_axes as fa
+        import mpl_toolkits.axisartist.grid_finder as gf
+
+        # --------------- tickers --------------------------
+        # Correlation labels
+        cor_label = np.array([0, 0.2, 0.4, 0.6, 0.8, 0.9, 0.95, 0.99, 1])
+        # convert to polar angles
+        rad_loc = np.arccos(cor_label)
+        # ticker location
+        gl = gf.FixedLocator(rad_loc)
+        # ticker formatting (bind radian and correlation coefficient)
+        tf = gf.DictFormatter(dict(zip(rad_loc, map(str, cor_label))))
+
+        # --------------- coordinate -----------------------
+        # Standard deviation axis extent (in units of reference stddev)
+        self.refstd = refstd
+        self.xmin = self.refstd * 0
+        self.xmax = self.refstd * 1.5
+        # Diagram limited to positive correlations
+        self.tmax = np.pi/2
+
+        # ------- curvilinear coordinate definition -------
+        # use built-in polar transformation (i.e., from theta and r to x and y)
+        tr = PolarAxes.PolarTransform()
+        ghelper = fa.GridHelperCurveLinear(
+            tr,
+            extremes=(0, self.tmax, self.xmin, self.xmax),
+            grid_locator1=gl,
+            tick_formatter1=tf)
+
+        # ------- create floating axis -------
+        if fig is None:
+            fig = plt.figure(figsize=(4.5, 4.5), dpi=100)
+
+        ax = fa.FloatingSubplot(fig, rect, grid_helper=ghelper)
+        fig.add_subplot(ax)
+
+        # Adjust axes
+        # Angle axis
+        ax.axis["top"].set_axis_direction("bottom")
+        ax.axis["top"].toggle(ticklabels=True, label=True)
+        ax.axis["top"].major_ticklabels.set_axis_direction("top")
+        ax.axis["top"].label.set_axis_direction("top")
+        ax.axis["top"].label.set_text("Correlation Coefficient")
+
+        # X axis
+        ax.axis["left"].set_axis_direction("bottom")
+
+        # Y axis direction & label
+        ax.axis["right"].set_axis_direction("top")
+        ax.axis["right"].major_ticklabels.set_axis_direction("left")
+        ax.axis["right"].toggle(all=True)
+        ax.axis["right"].label.set_text("Standard deviation")
+
+        if self.xmin:
+            ax.axis["bottom"].toggle(ticklabels=False, label=False)
+        else:
+            ax.axis["bottom"].set_visible(False)
+
+        # Graphical axes
+        self._ax = ax
+        # grid line
+        self._ax.grid(True, zorder=0, linestyle='--')
+        # aspect ratio
+        self._ax.set_aspect(1)
+
+        # A parasite axes for further plotting data
+        self.ax = ax.get_aux_axes(tr)
+
+        # Add reference point
+        # slightly higher than 0 so star can be fully seen
+        l = self.ax.plot(0.01, self.refstd, 'k*', ls='', ms=10)
+        # xy for the point, xytext for the text
+        self.ax.annotate("Observation", xy = (0.01, self.refstd), xytext=(0.53, -0.1), xycoords='axes fraction')
+        # add stddev contour
+        t = np.linspace(0, self.tmax)
+        r = np.zeros_like(t) + self.refstd
+        self.ax.plot(t, r, 'k-', label='_')
+
+        # Collect sample points for latter use (e.g. legend)
+        self.samplePoints = [l]
+
+    def add_scatter(self, stddev, corrcoef, *args, **kwargs):
+        """
+        Add sample (*stddev*, *corrcoeff*) to the Taylor
+        diagram. *args* and *kwargs* are directly propagated to the
+        `Figure.plot` command.
+        """
+
+        l = self.ax.scatter(np.arccos(corrcoef), stddev, *args, **kwargs)  # (theta, radius)
+        self.samplePoints.append(l)
+
+        return l
+
+    def add_contours(self, levels=5, **kwargs):
+        """
+        Add constant centered RMS difference contours, defined by *levels*.
+        """
+
+        rs, ts = np.meshgrid(np.linspace(self.xmin, self.xmax),
+                             np.linspace(0, self.tmax))
+        # Compute centered RMS difference
+        crmse = np.sqrt(self.refstd**2 + rs**2 - 2*self.refstd*rs*np.cos(ts))
+        contours = self.ax.contour(ts, rs, crmse, levels, linestyles='--', **kwargs)
+        self.ax.clabel(contours, contours.levels[::1], inline=False)
+
+        return contours
+
+    def add_legend(self, *args, **kwargs):
+        self.ax.legend(*args, **kwargs)
+
+    def add_annotation(self, *args, **kwargs):
+        self.ax.annotation(*args, **kwargs)

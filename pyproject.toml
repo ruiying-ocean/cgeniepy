@@ -4,6 +4,6 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "geniepy"
-version = "0.2.0"
+version = "0.3.0"
 description = "A Python wrapper package to analyse and visualise cGENIE model output"
 license = {text = "MIT"}

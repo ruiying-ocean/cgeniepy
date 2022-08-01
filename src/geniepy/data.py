@@ -131,11 +131,11 @@ def get_calcite_rate(file, time=-1):
     df_ss = data.eco2D_Export_C_019
 
     POC_total = df_bn + df_bs + df_sn + df_ss  # mmol C/m3/day
-    shell_rate = POC_total * 12 * 1e3 / 0.845  # ind/m3/day
-    calcite_rate = shell_rate * 0.845 * 3 * 1e-3 * 80.8  # mg/m2/day
-    calcite_rate_g_yr = calcite_rate * 365 * 1e-3
+    ind_rate = POC_total * 12 * 1e3 / 0.845  # ind/m3/day
+    calcite_rate = ind_rate * 0.845 * 3 * 1e-3 * 80.8  # mg/m2/day
+    calcite_g_yr = calcite_rate * 365 * 1e-3
 
-    return calcite_rate_g_yr
+    return calcite_g_yr
 
 
 def filter_foram(dataframe, symbiosis: Union[str, bool], spinose: Union[str, bool]):
@@ -158,24 +158,6 @@ def filter_foram(dataframe, symbiosis: Union[str, bool], spinose: Union[str, boo
 
     query_string = "Symbiosis == '{}' & Spinose == '{}'".format(arglist[0], arglist[1])
     return dataframe.query(query_string)
-
-
-def POC_to_PIC(POC):
-
-    """
-    convert POC (mmol C/m3/day) to PIC (g/m2/yr)
-    """
-
-    # unit: ind/m3/day
-    shell_rate = POC * 12 * 1e3 / 0.845
-
-    # unit: mg/m2/day
-    calcite_rate = shell_rate * 0.845 * 3 * 1e-3 * 80.8
-
-    # unit: g/m2/year
-    calcite_rate_g_yr = calcite_rate * 365 * 1e-3
-
-    return calcite_rate_g_yr
 
 
 def groupped_obsdf(df):

@@ -36,6 +36,7 @@ def reassign_obs(data:xarray.Dataset)  -> xarray.Dataset:
     return data.assign_coords({"lon": list(map(lon_n2g, data.lon.values))}).sortby("lon")
 
 def reassign_GENIE(data:xarray.Dataset) -> xarray.Dataset:
+    ## if hasattr(data, "assign_coords"):
     return data.assign_coords({"lon": list(map(lon_g2n, data.lon.values))}).sortby("lon")
 
 def mask_Arctic_Med(array, policy="na"):

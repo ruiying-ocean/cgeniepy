@@ -2,7 +2,6 @@ from re import findall
 
 def molar_mass(element):
     "get molar mass (g/mol) of chemistry elements"
-
     d = {'H': 1.00794, 'He': 4.002602, 'Li': 6.941, 'Be': 9.012182, 'B': 10.811, 'C': 12.0107, 'N': 14.0067,
          'O': 15.9994, 'F': 18.9984032, 'Ne': 20.1797, 'Na': 22.98976928, 'Mg': 24.305, 'Al': 26.9815386,
          'Si': 28.0855, 'P': 30.973762, 'S': 32.065, 'Cl': 35.453, 'Ar': 39.948, 'K': 39.0983, 'Ca': 40.078,
@@ -26,7 +25,12 @@ def molar_mass(element):
     return d[element]
 
 def formula_parser(formula:str):
+    """
+    a chemical formular parser
 
+    :param formula: formula string
+    :returns: dictionary with element (key) and number (value)
+    """
     s = findall('([A-Z][a-z]?)([0-9]*)', formula)
     d = dict(s)
     for k,v in d.items():
@@ -37,6 +41,7 @@ def formula_parser(formula:str):
     return d
 
 def molecular_weight(formula:str):
+    "calculate molecular weight"
     d = formula_parser(formula)
     mw = sum([molar_mass(k)*v for k,v in d.items()])
     return mw
