@@ -1,11 +1,11 @@
 # About
 
-This is a simple python package used in my own Ph.D project to analyse and visualise cGENIE model output (mostly in netCDF format).
+This is a open-source Python package used in my own Ph.D project to analyse and visualise cGENIE model output (mostly in netCDF format).
 
 Main features:
 
 * unit system
-* visualisation (Map, Taylor diagram, etc)
+* visualisation (Map, Taylor diagram, extra colormap, etc)
 * chemistry system
 * ocean basin detection
 
@@ -20,6 +20,7 @@ python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.3.0
 Rui Ying, rui.ying@bristol.ac.uk
 
 # Todo
+
 - documentation
 - examples
 - unit tests
