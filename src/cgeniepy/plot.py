@@ -7,13 +7,16 @@ from cartopy.feature import LAND
 from matplotlib import cm
 from matplotlib.colors import ListedColormap
 import matplotlib.pyplot as plt
+from matplotlib.projections import PolarAxes
+import mpl_toolkits.axisartist.floating_axes as fa
+import mpl_toolkits.axisartist.grid_finder as gf
 
 from .data import efficient_log
 from .grid import GENIE_lat, GENIE_lon, GENIE_depth
 
 # [] decorator for boundary line in pcolormesh object
 
-def plot_GENIE(ax, data, log=False, grid_line = False, continent_outline=True, contour_layer=False, cmap=cm.Spectral_r, *args, **kwargs):
+def plot_genie(ax, data, log=False, grid_line = False, continent_outline=True, contour_layer=False, cmap=cm.Spectral_r, *args, **kwargs):
     """
     plot map for 2D GENIE time-slice data
 
@@ -117,7 +120,7 @@ def scatter_map(ax, df, cmap=cm.Spectral_r, *args, **kwargs):
 
     return p
 
-def scatter_on_GENIE(ax, df, var, x='Longitude',
+def scatter_on_genie(ax, df, var, x='Longitude',
                      y='Latitude', cmap=cm.Spectral_r, log=False, *args, **kwargs):
 
     if 'Latitude' not in df.columns or 'Longitude' not in df.columns:
@@ -191,12 +194,12 @@ class GeniePlottable(object):
             ax = fig.add_subplot(111, projection=ccrs.EckertIV())
 
         if np.any(self.array < 0) and np.any(self.array > 0):
-            x = max(abs(self.nanmin()), self.nanmax())
-            #vmax = x/2
-            #vmin = vmax * -1
-            p = plot_GENIE(ax=ax, data=self.array, cmap="RdBu_r", *args, **kwargs)
+            # x = max(abs(self.nanmin()), self.nanmax())
+            # vmax = x/2
+            # vmin = vmax * -1
+            p = plot_genie(ax=ax, data=self.array, cmap="RdBu_r", *args, **kwargs)
         else:
-            p = plot_GENIE(ax=ax, data=self.array, *args, **kwargs)
+            p = plot_genie(ax=ax, data=self.array, *args, **kwargs)
 
         if cbar:
             cax = fig.add_axes([0.15, 0.1, 0.73, 0.07]) #xmin, ymin, dx, dy
@@ -263,7 +266,8 @@ class TaylorDiagram(object):
     reference: https://matplotlib.org/stable/gallery/axisartist/demo_floating_axes.html
     """
 
-    def __init__(self, refstd, fig=None, rect=111):
+    def __init__(self, fig=None, subplot=111, xmax=None, tmax=np.pi/2,
+                 ylabel="Standard Deviation", rotation=None):
 
         """
         Set up Taylor diagram axes, i.e. single quadrant polar
@@ -271,35 +275,34 @@ class TaylorDiagram(object):
 
         Parameters:
 
-        * refstd: reference standard deviation to be compared to
         * fig: input Figure or None
-        * rect: subplot definition
-        * label: reference label
-        * range: stddev axis extension, in units of *refstd*
+        * subplot: subplot definition
+        * xmax: the length of radius, xmax can be 1.5* reference std
         """
 
-        # floating axes
-        from matplotlib.projections import PolarAxes
-        import mpl_toolkits.axisartist.floating_axes as fa
-        import mpl_toolkits.axisartist.grid_finder as gf
-
         # --------------- tickers --------------------------
-        # Correlation labels
+        # Correlation labels (if half round)
         cor_label = np.array([0, 0.2, 0.4, 0.6, 0.8, 0.9, 0.95, 0.99, 1])
-        # convert to polar angles
-        rad_loc = np.arccos(cor_label)
-        # ticker location
-        gl = gf.FixedLocator(rad_loc)
-        # ticker formatting (bind radian and correlation coefficient)
-        tf = gf.DictFormatter(dict(zip(rad_loc, map(str, cor_label))))
+
+        # add the negative ticks if more than half round
+        excess_theta = tmax - np.pi/2
+        if excess_theta > 0:
+            cor_label = np.concatenate((-cor_label[:0:-1], cor_label))
+
+        # convert to radian
+        rad = np.arccos(cor_label)
+        # tick location
+        gl = gf.FixedLocator(rad)
+        # tick formatting: bind radian and correlation coefficient
+        tf = gf.DictFormatter(dict(zip(rad, map(str, cor_label))))
 
         # --------------- coordinate -----------------------
         # Standard deviation axis extent (in units of reference stddev)
-        self.refstd = refstd
-        self.xmin = self.refstd * 0
-        self.xmax = self.refstd * 1.5
-        # Diagram limited to positive correlations
-        self.tmax = np.pi/2
+        # xmin must be 0, which is the centre of round
+
+        self.xmin = 0
+        self.xmax = xmax
+        self.tmax = tmax
 
         # ------- curvilinear coordinate definition -------
         # use built-in polar transformation (i.e., from theta and r to x and y)
@@ -312,32 +315,35 @@ class TaylorDiagram(object):
 
         # ------- create floating axis -------
         if fig is None:
-            fig = plt.figure(figsize=(4.5, 4.5), dpi=100)
-        ax = fa.FloatingSubplot(fig, rect, grid_helper=ghelper)
+            fig_height = 4.5
+            fig_width = fig_height * (1+ np.sin(excess_theta))
+            fig = plt.figure(figsize=(fig_width, fig_height), dpi=100)
+
+        ax = fa.FloatingSubplot(fig, subplot, grid_helper=ghelper)
         fig.add_subplot(ax)
 
         # Adjust axes
         # Angle axis
-        ax.axis["top"].set_axis_direction("bottom")
+        ax.axis["top"].label.set_text("Correlation Coefficient")
         ax.axis["top"].toggle(ticklabels=True, label=True)
+        # inverse the direction
+        ax.axis["top"].set_axis_direction("bottom")
         ax.axis["top"].major_ticklabels.set_axis_direction("top")
         ax.axis["top"].label.set_axis_direction("top")
-        ax.axis["top"].label.set_text("Correlation Coefficient")
 
         # X axis
         ax.axis["left"].set_axis_direction("bottom")
 
         # Y axis direction & label
-        ax.axis["right"].set_axis_direction("top")
-        ax.axis["right"].major_ticklabels.set_axis_direction("left")
         ax.axis["right"].toggle(all=True)
-        ax.axis["right"].label.set_text("Standard deviation")
+        ax.axis["right"].label.set_text(ylabel)
+        ax.axis["right"].set_axis_direction("top")
+        # ticklabel direction
+        ax.axis["right"].major_ticklabels.set_axis_direction("left")
 
-        if self.xmin:
-            ax.axis["bottom"].toggle(ticklabels=False, label=False)
-        else:
-            ax.axis["bottom"].set_visible(False)
+        ax.axis["bottom"].set_visible(False)
 
+        # ------- Set instance attribute ----------
         self.fig = fig
         # Graphical axes
         self._ax = ax
@@ -345,22 +351,28 @@ class TaylorDiagram(object):
         self._ax.grid(True, zorder=0, linestyle='--')
         # aspect ratio
         self._ax.set_aspect(1)
-
         # A parasite axes for further plotting data
         self.ax = ax.get_aux_axes(tr)
+        # Collect sample points for latter use (e.g. legend)
+        self.samplePoints = []
 
+    def add_ref(self, refstd, reflabel="Observation", linestyle = "-", color="k"):
+        """add a reference point
+        """
+        self.refstd = refstd
         # Add reference point
         # slightly higher than 0 so star can be fully seen
         l = self.ax.plot(0.01, self.refstd, 'k*', ls='', ms=10)
-        # xy for the point, xytext for the text
-        self.ax.annotate("Observation", xy = (0.01, self.refstd), xytext=(0.53, -0.1), xycoords='axes fraction')
+        # xy for the point, xytext for the text (the coordinates are
+        # defined in xycoords and textcoords, respectively)
+        self.ax.annotate(reflabel, xy = (0.01, self.refstd), xycoords="data",
+                         xytext=(-25, -30), textcoords='offset points')
         # add stddev contour
         t = np.linspace(0, self.tmax)
         r = np.zeros_like(t) + self.refstd
-        self.ax.plot(t, r, 'k-', label='_')
+        self.ax.plot(t, r, linestyle=linestyle, color=color)
+        self.samplePoints.append(l)
 
-        # Collect sample points for latter use (e.g. legend)
-        self.samplePoints = [l]
 
     def add_scatter(self, stddev, corrcoef, *args, **kwargs):
         """

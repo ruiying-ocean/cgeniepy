@@ -4,7 +4,6 @@ from netCDF4 import Dataset
 from .data import obs_data
 from .grid import mask_Arctic_Med
 
-
 def safe_unveil(model_data):
     "get pure array from a numpy masked array object"
     if model_data.__class__ != np.ma.core.MaskedArray:

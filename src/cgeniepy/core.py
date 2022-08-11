@@ -14,7 +14,7 @@ from pandas import DataFrame, read_fwf
 import seaborn as sns
 
 from . import ureg, Q_
-from .plot import plot_GENIE, GeniePlottable
+from .plot import plot_genie, GeniePlottable
 from .grid import GENIE_grid_area, reassign_GENIE, GENIE_grid_mask, GENIE_grid_vol, GENIE_lat, GENIE_lon, normal_lon
 from .data import foram_dict, foram_names, obs_stat_bytype, obs_stat_bysource
 from .scores import quick_mscore, quick_rmse, quick_cos_sim, quick_corr
@@ -167,6 +167,11 @@ class GenieArray(GeniePlottable):
 
     def nansd(self, *args, **kwargs):
         return np.nanstd(self.pure_array(), *args, **kwargs)
+
+    def cv(self):
+        "coefficient of variance, or normalized standard deviation"
+        cv = self.nansd()/self.nanmean()
+        return cv
 
     def se(self, *args, **kwargs):
         return sem(self.array, nan_policy="omit", axis=None, *args, **kwargs)
@@ -551,7 +556,7 @@ class GenieModel(object):
         for i,ax in enumerate(axes.flat):
                 vdata = self.select_var(varlst[i]).array
                 mean = np.nanmean(vdata)
-                p = plot_GENIE(ax=ax, data=vdata, vmin=0, vmax=most_max, *args, **kwargs)
+                p = plot_genie(ax=ax, data=vdata, vmin=0, vmax=most_max, *args, **kwargs)
                 ax.set_title(f"({string.ascii_lowercase[i]}) {foram_fullnames[i]} {mean:.2E}", pad=10)
 
         cbar = fig.colorbar(p, ax=axes, orientation="horizontal", pad=0.05, shrink=0.7)
@@ -575,7 +580,7 @@ class GenieModel(object):
         for i,ax in enumerate(axes.flat):
                 vdata = self.select_var(varlst[i]).array
                 mean = np.nanmean(vdata)
-                p = plot_GENIE(ax=ax, data=vdata, vmin=0, vmax=most_max)
+                p = plot_genie(ax=ax, data=vdata, vmin=0, vmax=most_max)
                 ax.set_title(f"({string.ascii_lowercase[i]}) {foram_fullnames[i]} {mean:.2E}", pad=10)
 
         cbar = fig.colorbar(p, ax=axes, orientation="horizontal", pad=0.05, shrink=0.7)
@@ -598,7 +603,7 @@ class GenieModel(object):
         for i, ax in enumerate(axes.flat):
             vdata = self.select_foram(varlst[i]).export_c().proportion().array
             mean = np.nanmean(vdata) * 100
-            p = plot_GENIE(ax = ax, data = vdata, vmin=0, vmax=1)
+            p = plot_genie(ax = ax, data = vdata, vmin=0, vmax=1)
             ax.set_title(f"({string.ascii_lowercase[i]}) {foram_fullnames[i]} {mean:.2f}%", pad=10)
 
         cbar = fig.colorbar(p, ax=axes, orientation="horizontal", pad=0.05, shrink=0.7)
