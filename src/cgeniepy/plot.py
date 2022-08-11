@@ -113,7 +113,6 @@ def scatter_map(ax, df, cmap=cm.Spectral_r, *args, **kwargs):
 
     p = ax.scatter(y=df.Latitude,
                    x=df.Longitude,
-                   s=23,
                    transform=ccrs.PlateCarree(),
                    cmap=cmap,
                    *args, **kwargs)
@@ -266,7 +265,7 @@ class TaylorDiagram(object):
     reference: https://matplotlib.org/stable/gallery/axisartist/demo_floating_axes.html
     """
 
-    def __init__(self, fig=None, subplot=111, xmax=None, tmax=np.pi/2,
+    def __init__(self, fig=None, figscale=1, subplot=111, xmax=None, tmax=np.pi/2,
                  ylabel="Standard Deviation", rotation=None):
 
         """
@@ -315,7 +314,7 @@ class TaylorDiagram(object):
 
         # ------- create floating axis -------
         if fig is None:
-            fig_height = 4.5
+            fig_height = 4.5 * figscale
             fig_width = fig_height * (1+ np.sin(excess_theta))
             fig = plt.figure(figsize=(fig_width, fig_height), dpi=100)
 
@@ -324,7 +323,7 @@ class TaylorDiagram(object):
 
         # Adjust axes
         # Angle axis
-        ax.axis["top"].label.set_text("Correlation Coefficient")
+        ax.axis["top"].label.set_text("Correlation")
         ax.axis["top"].toggle(ticklabels=True, label=True)
         # inverse the direction
         ax.axis["top"].set_axis_direction("bottom")
@@ -401,10 +400,10 @@ class TaylorDiagram(object):
         return contours
 
     def add_legend(self, *args, **kwargs):
-        self.ax.legend(*args, **kwargs)
+        return self.ax.legend(*args, **kwargs)
 
     def add_annotation(self, *args, **kwargs):
-        self.ax.annotation(*args, **kwargs)
+        return self.ax.annotation(*args, **kwargs)
 
     def savefig(self, *args, **kwargs):
         self.fig.savefig(*args, **kwargs)
