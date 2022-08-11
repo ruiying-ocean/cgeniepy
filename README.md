@@ -1,11 +1,11 @@
 # About
 
-This is a open-source Python package used in my own Ph.D project to analyse and visualise cGENIE model output (mostly in netCDF format).
+This is aq open-source Python package used in my Ph.D project to analyse and visualise cGENIE model output (mostly in netCDF format).
 
 Main features:
 
 * unit system
-* visualisation (Map, Taylor diagram, extra colormap, etc)
+* visualisation based on Matplotlib
 * chemistry system
 * ocean basin detection
 
