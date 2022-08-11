@@ -57,7 +57,7 @@ def obs_stat_bysource(source, *args, **kwargs) -> pd.DataFrame:
     foram_fullnames = foram_names().values()
 
     for i in foram_abbrev:
-        tmp = obs_data(source=source, var=i, stat=True, *args, **kwargs)
+        tmp = obs_data(source=source, var=i, stat="Yes", *args, **kwargs)
         obs.append(tmp)
 
     table = pd.DataFrame(obs, index=foram_fullnames, columns=["mean", "sd", "se"])
@@ -138,33 +138,24 @@ def get_calcite_rate(file, time=-1):
     return calcite_g_yr
 
 
-def filter_foram(dataframe, symbiosis: Union[str, bool], spinose: Union[str, bool]):
+def filter_foramdf(dataframe, foram_group=None):
     """
+    select data based on foraminifer group, either pass foraminifer abbrev
+    or explicitly pass boolean values to `symbiosi` & `spinose`
+
     :param dataframe: pandas dataframe
-    :param symbiosis: "Yes" | "No", True | False
-    :param spinose: "Yes" | "No", True | False
+    :param foram_group: abbreviation name of foraminifer
 
     :returns: a subsetted dataframe
     """
-    if type(symbiosis) != type(spinose):
-        raise TypeError("Argument symbiosis and spinose should be in the same type!")
+    foram_bool = {
+        "bn": ["No", "No"],
+        "bs": ["No", "Yes"],
+        "sn": ["Yes", "No"],
+        "ss": ["Yes", "Yes"],
+    }
 
-    arglist = [symbiosis, spinose]
-    for i, arg in enumerate(arglist):
-        if arg == True:
-            arglist[i] = "Yes"
-        elif arg == False:
-            arglist[i] = "No"
+    trait = foram_bool[foram_group]
 
-    query_string = "Symbiosis == '{}' & Spinose == '{}'".format(arglist[0], arglist[1])
+    query_string = "Symbiosis == '{}' & Spinose == '{}'".format(trait[0], trait[1])
     return dataframe.query(query_string)
-
-
-def groupped_obsdf(df):
-    log_lst = [False, True]
-    data_list = []
-    for i in log_lst:
-        for j in log_lst:
-            data_list.append(filter_foram(df, i, j))
-
-    return data_list
