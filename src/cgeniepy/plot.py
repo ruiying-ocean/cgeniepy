@@ -16,7 +16,18 @@ from .grid import GENIE_lat, GENIE_lon, GENIE_depth
 
 # [] decorator for boundary line in pcolormesh object
 
-def plot_genie(ax, data, log=False, grid_line = False, continent_outline=True, contour_layer=False, cmap=cm.Spectral_r, *args, **kwargs):
+
+def plot_genie(
+    ax,
+    data,
+    log=False,
+    grid_line=False,
+    continent_outline=True,
+    contour_layer=False,
+    cmap=cm.Spectral_r,
+    *args,
+    **kwargs,
+):
     """
     plot map for 2D GENIE time-slice data
 
@@ -34,30 +45,47 @@ def plot_genie(ax, data, log=False, grid_line = False, continent_outline=True, c
     data_crs = ccrs.PlateCarree()  # should not change
 
     # -------------------Box line------------------------
-    ax.spines['geo'].set_edgecolor('black')
-    ax.spines['geo'].set_linewidth(1)
+    ax.spines["geo"].set_edgecolor("black")
+    ax.spines["geo"].set_linewidth(1)
 
     # -------------------Facecolor-----------------------
     ax.patch.set_color("silver")
 
     # -------------------Plot-----------------------
-    if log: data = efficient_log(data)
-    lon_edge = GENIE_lon(edge=True)
-    lat_edge = GENIE_lat(edge=True)
+    if log:
+        data = efficient_log(data)
+        lon_edge = GENIE_lon(edge=True)
+        lat_edge = GENIE_lat(edge=True)
 
-    #cartopy transform seems to help reassign the GENIE longitude to normal
-    p = ax.pcolormesh(lon_edge, lat_edge, data, cmap=cmap, transform=data_crs, shading="flat", *args, **kwargs)
+    # cartopy transform seems to help reassign the GENIE longitude to normal
+    p = ax.pcolormesh(
+        lon_edge,
+        lat_edge,
+        data,
+        cmap=cmap,
+        transform=data_crs,
+        shading="flat",
+        *args,
+        **kwargs,
+    )
 
     if contour_layer:
         lat = GENIE_lat(edge=False)
         lon = GENIE_lon(edge=False)
-        cs = ax.contour(lon, lat ,data, transform=ccrs.PlateCarree(), cmap=cmap)
-        #label every three levels
-        ax.clabel(cs, cs.levels[::3], colors=['black'], fontsize=8, inline=False)
+        cs = ax.contour(lon, lat, data, transform=ccrs.PlateCarree(), cmap=cmap)
+        # label every three levels
+        ax.clabel(cs, cs.levels[::3], colors=["black"], fontsize=8, inline=False)
 
     # -------------------Grid lines-----------------------
     if grid_line:
-        ax.gridlines(crs=data_crs, draw_labels=False, linewidth=0.5, color='gray', alpha=0.5, linestyle='-')
+        ax.gridlines(
+            crs=data_crs,
+            draw_labels=False,
+            linewidth=0.5,
+            color="gray",
+            alpha=0.5,
+            linestyle="-",
+        )
 
     # -------------------Continent lines-----------------------
     if continent_outline:
@@ -65,8 +93,8 @@ def plot_genie(ax, data, log=False, grid_line = False, continent_outline=True, c
         outline_width = 1
         mask_array = np.where(~np.isnan(data), 1, 0)
 
-        Nlat_edge  = len(lat_edge)
-        Nlon_edge  = len(lon_edge)
+        Nlat_edge = len(lat_edge)
+        Nlon_edge = len(lon_edge)
         # dimension of array
         Nlat_array = Nlat_edge - 1
         Nlon_array = Nlon_edge - 1
@@ -80,28 +108,37 @@ def plot_genie(ax, data, log=False, grid_line = False, continent_outline=True, c
         for i in range(Nlat_array):
             for j in range(Nlon_array):
                 # compare with the right grid, and plot vertical line if different
-                if j < Nlon_index and mask_array[i, j] != mask_array[i, j+1]:
+                if j < Nlon_index and mask_array[i, j] != mask_array[i, j + 1]:
                     ax.vlines(
-                        lon_edge[j+1],
+                        lon_edge[j + 1],
                         lat_edge[i],
-                        lat_edge[i+1],
-                        color=outline_color, linewidth=outline_width, transform=data_crs)
+                        lat_edge[i + 1],
+                        color=outline_color,
+                        linewidth=outline_width,
+                        transform=data_crs,
+                    )
 
                 # connect the circular longitude axis
                 if j == Nlon_index and mask_array[i, j] != mask_array[i, 0]:
                     ax.vlines(
-                        lon_edge[j+1],
+                        lon_edge[j + 1],
                         lat_edge[i],
-                        lat_edge[i+1],
-                        color=outline_color, linewidth=outline_width, transform=data_crs)
+                        lat_edge[i + 1],
+                        color=outline_color,
+                        linewidth=outline_width,
+                        transform=data_crs,
+                    )
 
                 # compare with the above grid, and plot horizontal line if different
-                if i < Nlat_index and mask_array[i, j] != mask_array[i+1, j]:
+                if i < Nlat_index and mask_array[i, j] != mask_array[i + 1, j]:
                     ax.hlines(
-                        lat_edge[i+1],
+                        lat_edge[i + 1],
                         lon_edge[j],
-                        lon_edge[j+1],
-                        colors=outline_color,linewidth=outline_width, transform=data_crs)
+                        lon_edge[j + 1],
+                        colors=outline_color,
+                        linewidth=outline_width,
+                        transform=data_crs,
+                    )
 
     return p
 
@@ -109,28 +146,51 @@ def plot_genie(ax, data, log=False, grid_line = False, continent_outline=True, c
 def scatter_map(ax, df, cmap=cm.Spectral_r, *args, **kwargs):
     ax.set_global()
     ax.coastlines()
-    ax.add_feature(LAND, zorder=0, facecolor="#B1B2B4", edgecolor="white")  # zorder is drawing sequence
+    ax.add_feature(
+        LAND, zorder=0, facecolor="#B1B2B4", edgecolor="white"
+    )  # zorder is drawing sequence
 
-    p = ax.scatter(y=df.Latitude,
-                   x=df.Longitude,
-                   transform=ccrs.PlateCarree(),
-                   cmap=cmap,
-                   *args, **kwargs)
+    p = ax.scatter(
+        y=df.Latitude,
+        x=df.Longitude,
+        transform=ccrs.PlateCarree(),
+        cmap=cmap,
+        *args,
+        **kwargs,
+    )
 
     return p
 
-def scatter_on_genie(ax, df, var, x='Longitude',
-                     y='Latitude', cmap=cm.Spectral_r, log=False, *args, **kwargs):
 
-    if 'Latitude' not in df.columns or 'Longitude' not in df.columns:
+def scatter_on_genie(
+    ax,
+    df,
+    var,
+    x="Longitude",
+    y="Latitude",
+    cmap=cm.Spectral_r,
+    log=False,
+    *args,
+    **kwargs,
+):
+
+    if "Latitude" not in df.columns or "Longitude" not in df.columns:
         raise ValueError("Input data lack Latitude/Longitude column")
 
     if log:
         df[var] = efficient_log(df[var])
 
-    p = ax.scatter(x=df[x], y=df[y], c=df[var], linewidths=.5,
-                   cmap=cmap, edgecolors='black',
-                   transform = ccrs.PlateCarree(), *args, **kwargs)
+    p = ax.scatter(
+        x=df[x],
+        y=df[y],
+        c=df[var],
+        linewidths=0.5,
+        cmap=cmap,
+        edgecolors="black",
+        transform=ccrs.PlateCarree(),
+        *args,
+        **kwargs,
+    )
 
     return p
 
@@ -143,7 +203,7 @@ def genie_cmap(cmap_name, N=256, reverse=False):
     file_name = f"data/{cmap_name}.txt"
     file_path = pathlib.Path(__file__).parent.parent / file_name
 
-    colors =  pd.read_csv(file_path, header=None).values.tolist()
+    colors = pd.read_csv(file_path, header=None).values.tolist()
     colors = [colors[i][0] for i in range(len(colors))]
 
     c = ListedColormap(colors, N=N)
@@ -152,32 +212,32 @@ def genie_cmap(cmap_name, N=256, reverse=False):
         return c.reversed()
     return c
 
+
 def cbar_wrapper(func, *args, **kwarags):
     def wrappered_func():
         p = func(*args, **kwarags)
-        cbar = plt.colorbar(p, fraction=0.05, pad=0.04, orientation = 'vertical')
-        cbar.ax.tick_params(color='k', direction='in')
+        cbar = plt.colorbar(p, fraction=0.05, pad=0.04, orientation="vertical")
+        cbar.ax.tick_params(color="k", direction="in")
+
     return wrappered_func
 
 
 class GeniePlottable(object):
-
     def plot_line(self, dim, *args, **kwargs):
-        """plot 1D data, e.g., zonal_average
-        """
+        """plot 1D data, e.g., zonal_average"""
 
         if self.dim() > 1:
             raise ValueError("Data should be of 1 Dimension")
-        if dim=="lon":
+        if dim == "lon":
             x = GENIE_lat()
-        if dim=="lat":
+        if dim == "lat":
             x = GENIE_lon()
 
         fig = plt.figure(figsize=(6, 4))
         ax = fig.add_subplot(111)
         ax.minorticks_on()
 
-        p = ax.plot(x, self.array, 'k', *args, **kwargs)
+        p = ax.plot(x, self.array, "k", *args, **kwargs)
 
         return p
 
@@ -185,8 +245,8 @@ class GeniePlottable(object):
 
         """plot lat-lon 2D array"""
 
-        plt.rcParams['font.family'] = 'sans-serif'
-        plt.rcParams['font.sans-serif'] = ['Arial']
+        plt.rcParams["font.family"] = "sans-serif"
+        plt.rcParams["font.sans-serif"] = ["Arial"]
 
         if not ax:
             fig = plt.figure(dpi=75)
@@ -201,17 +261,16 @@ class GeniePlottable(object):
             p = plot_genie(ax=ax, data=self.array, *args, **kwargs)
 
         if cbar:
-            cax = fig.add_axes([0.15, 0.1, 0.73, 0.07]) #xmin, ymin, dx, dy
-            cbar = fig.colorbar(p, cax = cax, orientation = 'horizontal', pad=0.04)
+            cax = fig.add_axes([0.15, 0.1, 0.73, 0.07])  # xmin, ymin, dx, dy
+            cbar = fig.colorbar(p, cax=cax, orientation="horizontal", pad=0.04)
             cbar.minorticks_on()
             if hasattr(self, "unit"):
                 cbar.set_label(self.unit, size=12)
 
         return p
 
-    def cross_section(self, ax=None, cmap='YlGnBu_r', *args, **kwargs):
-        """plot 3D array, tracers and stream function
-        """
+    def cross_section(self, ax=None, cmap="YlGnBu_r", *args, **kwargs):
+        """plot 3D array, tracers and stream function"""
 
         data = self.array
 
@@ -220,9 +279,9 @@ class GeniePlottable(object):
             fig, ax = plt.subplots(figsize=(8, 4))
 
         lat_edge = GENIE_lat(edge=True)
-        z_edge = GENIE_depth(edge=True)/1000
+        z_edge = GENIE_depth(edge=True) / 1000
         lat = GENIE_lat(edge=False)
-        z = GENIE_depth(edge=False)/1000
+        z = GENIE_depth(edge=False) / 1000
 
         # pcolormesh
         p = ax.pcolormesh(lat_edge, z_edge, data, cmap=cmap, *args, **kwargs)
@@ -234,14 +293,16 @@ class GeniePlottable(object):
         # cs = ax.contourf(lat, z, data, corner_mask=False, levels=contourf_level, cmap=contourf_cmap)
 
         # contour
-        cs = ax.contour(lat, z, data, linewidths=0.6, colors='black', linestyles='solid')
-        ax.clabel(cs, cs.levels[::1], colors=['black'], fontsize=8.5, inline=False)
+        cs = ax.contour(
+            lat, z, data, linewidths=0.6, colors="black", linestyles="solid"
+        )
+        ax.clabel(cs, cs.levels[::1], colors=["black"], fontsize=8.5, inline=False)
 
         # colorbar, ticks & labels
         # divider = make_axes_locatable(ax)
         # cax = divider.append_axes('right', size='5%', pad=0.05)
-        cbar = plt.colorbar(p, fraction=0.05, pad=0.04, orientation = 'vertical')
-        cbar.ax.tick_params(color='k', direction='in')
+        cbar = plt.colorbar(p, fraction=0.05, pad=0.04, orientation="vertical")
+        cbar.ax.tick_params(color="k", direction="in")
         # cbar.set_label("Stream function (Sv)")
 
         plt.rcParams["font.family"] = "Arial"
@@ -250,7 +311,7 @@ class GeniePlottable(object):
         ax.set_xlabel(r"Latitude ($\degree$N)", fontsize=13)
         ax.set_ylabel("Depth (km)", fontsize=12)
         ax.minorticks_on()
-        ax.tick_params('both', length=4, width=1, which='major')
+        ax.tick_params("both", length=4, width=1, which="major")
 
         return p
 
@@ -265,8 +326,16 @@ class TaylorDiagram(object):
     reference: https://matplotlib.org/stable/gallery/axisartist/demo_floating_axes.html
     """
 
-    def __init__(self, fig=None, figscale=1, subplot=111, xmax=None, tmax=np.pi/2,
-                 ylabel="Standard Deviation", rotation=None):
+    def __init__(
+        self,
+        fig=None,
+        figscale=1,
+        subplot=111,
+        xmax=None,
+        tmax=np.pi / 2,
+        ylabel="Standard Deviation",
+        rotation=None,
+    ):
 
         """
         Set up Taylor diagram axes, i.e. single quadrant polar
@@ -284,7 +353,7 @@ class TaylorDiagram(object):
         cor_label = np.array([0, 0.2, 0.4, 0.6, 0.8, 0.9, 0.95, 0.99, 1])
 
         # add the negative ticks if more than half round
-        excess_theta = tmax - np.pi/2
+        excess_theta = tmax - np.pi / 2
         if excess_theta > 0:
             cor_label = np.concatenate((-cor_label[:0:-1], cor_label))
 
@@ -310,12 +379,13 @@ class TaylorDiagram(object):
             tr,
             extremes=(0, self.tmax, self.xmin, self.xmax),
             grid_locator1=gl,
-            tick_formatter1=tf)
+            tick_formatter1=tf,
+        )
 
         # ------- create floating axis -------
         if fig is None:
             fig_height = 4.5 * figscale
-            fig_width = fig_height * (1+ np.sin(excess_theta))
+            fig_width = fig_height * (1 + np.sin(excess_theta))
             fig = plt.figure(figsize=(fig_width, fig_height), dpi=100)
 
         ax = fa.FloatingSubplot(fig, subplot, grid_helper=ghelper)
@@ -347,7 +417,7 @@ class TaylorDiagram(object):
         # Graphical axes
         self._ax = ax
         # grid line
-        self._ax.grid(True, zorder=0, linestyle='--')
+        self._ax.grid(True, zorder=0, linestyle="--")
         # aspect ratio
         self._ax.set_aspect(1)
         # A parasite axes for further plotting data
@@ -355,23 +425,26 @@ class TaylorDiagram(object):
         # Collect sample points for latter use (e.g. legend)
         self.samplePoints = []
 
-    def add_ref(self, refstd, reflabel="Observation", linestyle = "-", color="k"):
-        """add a reference point
-        """
+    def add_ref(self, refstd, reflabel="Observation", linestyle="-", color="k"):
+        """add a reference point"""
         self.refstd = refstd
         # Add reference point
         # slightly higher than 0 so star can be fully seen
-        l = self.ax.plot(0.01, self.refstd, 'k*', ls='', ms=10)
+        l = self.ax.plot(0.01, self.refstd, "k*", ls="", ms=10)
         # xy for the point, xytext for the text (the coordinates are
         # defined in xycoords and textcoords, respectively)
-        self.ax.annotate(reflabel, xy = (0.01, self.refstd), xycoords="data",
-                         xytext=(-25, -30), textcoords='offset points')
+        self.ax.annotate(
+            reflabel,
+            xy=(0.01, self.refstd),
+            xycoords="data",
+            xytext=(-25, -30),
+            textcoords="offset points",
+        )
         # add stddev contour
         t = np.linspace(0, self.tmax)
         r = np.zeros_like(t) + self.refstd
         self.ax.plot(t, r, linestyle=linestyle, color=color)
         self.samplePoints.append(l)
-
 
     def add_scatter(self, stddev, corrcoef, *args, **kwargs):
         """
@@ -380,7 +453,9 @@ class TaylorDiagram(object):
         `Figure.plot` command.
         """
 
-        l = self.ax.scatter(np.arccos(corrcoef), stddev, *args, **kwargs)  # (theta, radius)
+        l = self.ax.scatter(
+            np.arccos(corrcoef), stddev, *args, **kwargs
+        )  # (theta, radius)
         self.samplePoints.append(l)
 
         return l
@@ -390,11 +465,12 @@ class TaylorDiagram(object):
         Add constant centered RMS difference contours, defined by *levels*.
         """
 
-        rs, ts = np.meshgrid(np.linspace(self.xmin, self.xmax),
-                             np.linspace(0, self.tmax))
+        rs, ts = np.meshgrid(
+            np.linspace(self.xmin, self.xmax), np.linspace(0, self.tmax)
+        )
         # Compute centered RMS difference
-        crmse = np.sqrt(self.refstd**2 + rs**2 - 2*self.refstd*rs*np.cos(ts))
-        contours = self.ax.contour(ts, rs, crmse, levels, linestyles='--', **kwargs)
+        crmse = np.sqrt(self.refstd**2 + rs**2 - 2 * self.refstd * rs * np.cos(ts))
+        contours = self.ax.contour(ts, rs, crmse, levels, linestyles="--", **kwargs)
         self.ax.clabel(contours, contours.levels[::1], inline=False)
 
         return contours

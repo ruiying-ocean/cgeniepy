@@ -4,6 +4,7 @@ from netCDF4 import Dataset
 from .data import obs_data
 from .grid import mask_Arctic_Med
 
+
 def safe_unveil(model_data):
     "get pure array from a numpy masked array object"
     if model_data.__class__ != np.ma.core.MaskedArray:
@@ -117,6 +118,7 @@ def cal_crmse(data1, data2):
 
     return crmse
 
+
 def get_foram_prop(file_path, var):
     """
     Quick calculation of [modelled] relative abundance, based on carbon export flux
@@ -130,17 +132,19 @@ def get_foram_prop(file_path, var):
 
     f = Dataset(file_path)
 
-    bn = safe_unveil(f.variables['eco2D_Export_C_016'][-1,:,:])
-    bs = safe_unveil(f.variables['eco2D_Export_C_017'][-1,:,:])
-    sn = safe_unveil(f.variables['eco2D_Export_C_018'][-1,:,:])
-    ss = safe_unveil(f.variables['eco2D_Export_C_019'][-1,:,:])
+    bn = safe_unveil(f.variables["eco2D_Export_C_016"][-1, :, :])
+    bs = safe_unveil(f.variables["eco2D_Export_C_017"][-1, :, :])
+    sn = safe_unveil(f.variables["eco2D_Export_C_018"][-1, :, :])
+    ss = safe_unveil(f.variables["eco2D_Export_C_019"][-1, :, :])
 
     total_foram = bn + bs + sn + ss
 
-    #ignore divided by 0
-    with np.errstate(divide='ignore', invalid='ignore'):
+    # ignore divided by 0
+    with np.errstate(divide="ignore", invalid="ignore"):
         one_foram = locals()[var]
-        proportion =np.divide(one_foram, total_foram, out=np.zeros_like(one_foram), where=total_foram!=0)
+        proportion = np.divide(
+            one_foram, total_foram, out=np.zeros_like(one_foram), where=total_foram != 0
+        )
 
     f.close()
 
@@ -152,8 +156,10 @@ def quick_rmse(model, obs_source, var, *args, **kwargs):
 
     if hasattr(model, "values"):
         model = model.values
-    masked_model = mask_Arctic_Med(model, policy="na")
-    masked_data = mask_Arctic_Med(obs_data(obs_source, var, *args, **kwargs), policy="na")
+        masked_model = mask_Arctic_Med(model, policy="na")
+        masked_data = mask_Arctic_Med(
+            obs_data(obs_source, var, *args, **kwargs), policy="na"
+        )
 
     return cal_rmse(masked_model, masked_data)
 
@@ -165,7 +171,9 @@ def quick_mscore(model, obs_source, var, *args, **kwargs):
         model = model.values
 
     masked_model = mask_Arctic_Med(model, policy="na")
-    masked_data = mask_Arctic_Med(obs_data(obs_source, var, *args, **kwargs), policy="na")
+    masked_data = mask_Arctic_Med(
+        obs_data(obs_source, var, *args, **kwargs), policy="na"
+    )
 
     return cal_mscore(masked_model, masked_data)
 
@@ -175,17 +183,22 @@ def quick_cos_sim(model, obs_source, var, *args, **kwargs):
     "A wrapper function to calculate cosine cimilarity"
     if hasattr(model, "values"):
         model = model.values
-    masked_model = mask_Arctic_Med(model, policy="na")
-    masked_data = mask_Arctic_Med(obs_data(obs_source, var, *args, **kwargs), policy="na")
+        masked_model = mask_Arctic_Med(model, policy="na")
+        masked_data = mask_Arctic_Med(
+            obs_data(obs_source, var, *args, **kwargs), policy="na"
+        )
 
     return cal_cosine_similarity(masked_model, masked_data)
+
 
 def quick_corr(model, obs_source, var, *args, **kwargs):
     "A wrapper function to calculate Pearson's correlation coefficient"
     if hasattr(model, "values"):
         model = model.values
-    masked_model = mask_Arctic_Med(model, policy="na")
-    masked_data = mask_Arctic_Med(obs_data(obs_source, var, *args, **kwargs), policy="na")
+        masked_model = mask_Arctic_Med(model, policy="na")
+        masked_data = mask_Arctic_Med(
+            obs_data(obs_source, var, *args, **kwargs), policy="na"
+        )
 
     return cal_corr(masked_model, masked_data)
 
@@ -200,4 +213,4 @@ def pearson_r(data1, data2):
 
     # Compute corr matrix
     corr_mat = np.corrcoef(data1, data2)
-    return corr_mat[0,1]
+    return corr_mat[0, 1]

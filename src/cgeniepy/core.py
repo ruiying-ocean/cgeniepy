@@ -15,32 +15,25 @@ import seaborn as sns
 
 from . import ureg, Q_
 from .plot import plot_genie, GeniePlottable
-from .grid import GENIE_grid_area, reassign_GENIE, GENIE_grid_mask, GENIE_grid_vol, GENIE_lat, GENIE_lon, normal_lon
+from .grid import (
+    GENIE_grid_area,
+    reassign_GENIE,
+    GENIE_grid_mask,
+    GENIE_grid_vol,
+    GENIE_lat,
+    GENIE_lon,
+    normal_lon,
+)
 from .data import foram_dict, foram_names, obs_stat_bytype, obs_stat_bysource
 from .scores import quick_mscore, quick_rmse, quick_cos_sim, quick_corr
-from .utils import file_exists, set_sns_barwidth
+from .utils import file_exists, set_sns_barwidth, distance
 from .chem import rm_element, molecular_weight
-
-# DONE [X] reassign_array
-# DONE [X] basin
-# DONE [X] M-score
-# DONE [X] search grid
-# DONE [X] basic add/subtract
-# DONE [X] add streamfunction plot
-# DONE [X] redefine calcite class
-# DONE [X] add totol POC/calcite/zonal average to GenieModel
-# DONE [X] include biogem/ecogem, 2d/3d
-# DONE [X] add quiver plot
-# DONE [X] add plot statisitcs
-# DONE [X] add unit system
-# TODO [] add functional diversity
 
 
 class GenieArray(GeniePlottable):
-
     def __init__(self, M=36, N=36):
         """
-        Create a 36x36 empty 2D array
+        Create an empty 2D array, default as 36x36
         """
         # set dimension
         self.M = M
@@ -58,7 +51,7 @@ class GenieArray(GeniePlottable):
 
     def pure_array(self):
         "get a numpy array"
-        if hasattr(self.array, 'values'):
+        if hasattr(self.array, "values"):
             return self.array.values
         else:
             return self.array
@@ -93,7 +86,7 @@ class GenieArray(GeniePlottable):
 
     def _to_genie_array(self):
         """
-        designed for sub-classes to remove all attributes
+        remove all attributes
         """
         empty = GenieArray()
         empty.array = self.array
@@ -101,20 +94,29 @@ class GenieArray(GeniePlottable):
 
     def __add__(self, other):
         sum = GenieArray()
-        sum.array = self.array + other.array
+        if hasattr(other, "array"):
+            sum.array = self.array + other.array
+        else:
+            sum.array = self.array + other
         return sum
 
     def __sub__(self, other):
         diff = GenieArray()
-        diff.array = self.array - other.array
+        if hasattr(other, "array"):
+            diff.array = self.array - other.array
+        else:
+            diff.array = self.array - other
         return diff
 
     def __truediv__(self, other):
         quotient = GenieArray()
         if hasattr(other, "array"):
-            quotient.array = np.divide(self.array, other.array,
-                               out=np.zeros_like(self.array),
-                               where=other.array!=0)
+            quotient.array = np.divide(
+                self.array,
+                other.array,
+                out=np.zeros_like(self.array),
+                where=other.array != 0,
+            )
         else:
             try:
                 quotient.array = np.divide(self.array, other)
@@ -131,7 +133,7 @@ class GenieArray(GeniePlottable):
             try:
                 product.array = self.array * other
             except ValueError:
-                print("Sorry, either number and GenieArray are accepted")
+                print("Sorry, only number and GenieArray are accepted")
 
         return product
 
@@ -149,6 +151,12 @@ class GenieArray(GeniePlottable):
 
     def sum(self, *args, **kwargs):
         return np.sum(self.pure_array(), *args, **kwargs)
+
+    def square(self, *arg, **kwargs):
+        return np.square(self.pure_array())
+
+    def sqrt(self, *arg, **kwargs):
+        return np.sqrt(self.pure_array())
 
     def nansum(self, *args, **kwargs):
         return np.nansum(self.pure_array(), *args, **kwargs)
@@ -170,7 +178,7 @@ class GenieArray(GeniePlottable):
 
     def cv(self):
         "coefficient of variance, or normalized standard deviation"
-        cv = self.nansd()/self.nanmean()
+        cv = self.nansd() / self.nanmean()
         return cv
 
     def se(self, *args, **kwargs):
@@ -203,23 +211,22 @@ class GenieArray(GeniePlottable):
     def mean_along(self, dim):
         # time, zt, lat, lon
         if self.dim() == 2:
-            if dim=='lat':
+            if dim == "lat":
                 ax = 0
-            elif dim=='lon':
+            elif dim == "lon":
                 ax = 1
         elif self.dim() == 3:
-            if dim=='z':
+            if dim == "z":
                 ax = 0
-            if dim=='lat':
+            if dim == "lat":
                 ax = 1
-            elif dim=='lon':
+            elif dim == "lon":
                 ax = 2
 
         garray = GenieArray()
         garray.array = self.nanmean(axis=ax)
 
         return garray
-
 
     def search_grid(self, *args, **kwargs):
         return self.array.sel(*args, **kwargs, method="nearest")
@@ -232,12 +239,14 @@ class GenieArray(GeniePlottable):
         if lon_min > lon_max or lat_min > lat_max:
             raise ValueError("longitude/latitude min must be less than max!")
 
-        lon = self.array.coords['lon']
-        lat = self.array.coords['lat']
+        lon = self.array.coords["lon"]
+        lat = self.array.coords["lat"]
 
         return self.array.loc[
-            dict(lat=lat[(lat >= lat_min) & (lat <= lat_max)],
-                 lon=lon[(lon >= lon_min) & (lon <= lon_max)])
+            dict(
+                lat=lat[(lat >= lat_min) & (lat <= lat_max)],
+                lon=lon[(lon >= lon_min) & (lon <= lon_max)],
+            )
         ]
 
     def filter(self, threshold, greater_sign=True):
@@ -250,7 +259,6 @@ class GenieArray(GeniePlottable):
 
 
 class GenieModel(object):
-
     def __init__(self, model_path):
         self.model_path = model_path
         self._time = -1
@@ -263,7 +271,7 @@ class GenieModel(object):
     def time(self, value):
         if not isinstance(value, int):
             time_array = self.vars(var_name="time")
-            raise ValueError(f'Please select [time index] (integer) from {time_array}')
+            raise ValueError(f"Please select [time index] (integer) from {time_array}")
         self._time = value
 
     def nc_path(self, gem="ecogem", dim="2d"):
@@ -314,30 +322,30 @@ class GenieModel(object):
         else:
             return xr.open_dataset(self.nc_path(*args, **kwargs))[var_name]
 
-    def select_foram(self, foram_name:str):
+    def select_foram(self, foram_name: str):
         "a optimised version of select_var()"
-        return ForamVariable(foram_name = foram_name, model_path = self.model_path)
+        return ForamVariable(foram_name=foram_name, model_path=self.model_path)
 
-    def select_var(self, var:str):
-        return GenieVariable(var = var, model_path = self.model_path)
+    def select_var(self, var: str):
+        return GenieVariable(var=var, model_path=self.model_path)
 
     def grid_mask(self, source="ecogem", Arctic=True, Med=True):
         """
         cGENIE continent mask array (by setting zero values),
         either calculated from existing data or using biogem.grid_mask
         """
-        if source=="ecogem":
+        if source == "ecogem":
             data = self.select_var("eco2D_xGamma_T").array
             grid_mask = xr.where(~np.isnan(data), 1, 0).values
-        elif source=="biogem":
+        elif source == "biogem":
             grid_mask = self.select_var("grid_mask").array
         else:
             raise ValueError("source only accept ecogem or biogem")
 
         if Arctic:
-            grid_mask[34:36,:]=0
+            grid_mask[34:36, :] = 0
         if Med:
-            grid_mask[27:30,25:30] = 0
+            grid_mask[27:30, 25:30] = 0
 
         return grid_mask
 
@@ -363,22 +371,34 @@ class GenieModel(object):
         foram_abbrev = list(foram_names().keys())
         foram_fullname = tuple(foram_names().values())
         df = {
-            "Biomass": [ForamVariable(i, self.model_path).biomass_c().m_score(*args, **kwargs) for i in foram_abbrev],
-            "Carbon Export": [ForamVariable(i, self.model_path).export_c().m_score(*args, **kwargs) for i in foram_abbrev],
-            "Relative Abundance": [ForamVariable(i, self.model_path).export_c().proportion().m_score(*args, **kwargs) for i in foram_abbrev],
+            "Biomass": [
+                ForamVariable(i, self.model_path).biomass_c().m_score(*args, **kwargs)
+                for i in foram_abbrev
+            ],
+            "Carbon Export": [
+                ForamVariable(i, self.model_path).export_c().m_score(*args, **kwargs)
+                for i in foram_abbrev
+            ],
+            "Relative Abundance": [
+                ForamVariable(i, self.model_path)
+                .export_c()
+                .proportion()
+                .m_score(*args, **kwargs)
+                for i in foram_abbrev
+            ],
         }
 
         df = DataFrame(df, index=foram_fullname)
-        df['Column Total'] = df.sum(axis=1)
-        df.loc['Row Total',:]= df.sum(axis=0)
+        df["Column Total"] = df.sum(axis=1)
+        df.loc["Row Total", :] = df.sum(axis=0)
 
         if table_styler:
             cm = plt.get_cmap("RdBu_r")
-            df = (df.style.set_caption("M-score across foraminifer groups and variables compared to modern observation").
-                text_gradient(cmap=cm, subset=(df.index[0:4], df.columns[0:3])))
+            df = df.style.set_caption(
+                "M-score across foraminifer groups and variables compared to modern observation"
+            ).text_gradient(cmap=cm, subset=(df.index[0:4], df.columns[0:3]))
 
         return df
-
 
     def rmse_table(self, table_styler=True, *args, **kwargs):
         "summarised model M-score compared to modern observations"
@@ -386,24 +406,44 @@ class GenieModel(object):
         foram_abbrev = list(foram_names().keys())
         foram_fullname = tuple(foram_names().values())
         df = {
-            "Biomass": [ForamVariable(i, self.model_path).biomass_c().rmse(*args, **kwargs) for i in foram_abbrev],
-            "Carbon Export": [ForamVariable(i, self.model_path).export_c().rmse(*args, **kwargs) for i in foram_abbrev],
-            "Relative Abundance": [ForamVariable(i, self.model_path).export_c().proportion().rmse(*args, **kwargs) for i in foram_abbrev],
+            "Biomass": [
+                ForamVariable(i, self.model_path).biomass_c().rmse(*args, **kwargs)
+                for i in foram_abbrev
+            ],
+            "Carbon Export": [
+                ForamVariable(i, self.model_path).export_c().rmse(*args, **kwargs)
+                for i in foram_abbrev
+            ],
+            "Relative Abundance": [
+                ForamVariable(i, self.model_path)
+                .export_c()
+                .proportion()
+                .rmse(*args, **kwargs)
+                for i in foram_abbrev
+            ],
         }
 
         df = DataFrame(df, index=foram_fullname)
-        df['Column Total'] = df.sum(axis=1)
-        df.loc['Row Total',:]= df.sum(axis=0)
+        df["Column Total"] = df.sum(axis=1)
+        df.loc["Row Total", :] = df.sum(axis=0)
 
         if table_styler:
             cm = plt.get_cmap("RdBu_r")
-            df = (df.style.set_caption("RMSE across foraminifer groups and variables compared to modern observation").
-                text_gradient(cmap=cm, subset=(df.index[0:4], df.columns[0:3])))
+            df = df.style.set_caption(
+                "RMSE across foraminifer groups and variables compared to modern observation"
+            ).text_gradient(cmap=cm, subset=(df.index[0:4], df.columns[0:3]))
 
         return df
 
-    def summarise(self, method="mean", diff=False,
-            diff_method="percentage", table_styler=True, *args, **kwargs):
+    def summarise(
+        self,
+        method="mean",
+        diff=False,
+        diff_method="percentage",
+        table_styler=True,
+        *args,
+        **kwargs,
+    ):
         """
         summarise basic statistics of foraminifer groups
         """
@@ -411,23 +451,54 @@ class GenieModel(object):
         foram_abbrev = list(foram_names().keys())
         foram_fullname = tuple(foram_names().values())
 
-        if method=="mean":
+        if method == "mean":
             dic = {
-                "Biomass(mmol C/m3)": [ForamVariable(i, self.model_path).biomass_c().nanmean() for i in foram_abbrev],
-                "Carbon Export (mmol C/m3/d)": [ForamVariable(i, self.model_path).export_c().nanmean() for i in foram_abbrev],
-                "Relative Abundance": [ForamVariable(i, self.model_path).export_c().proportion().nanmean() for i in foram_abbrev],
+                "Biomass(mmol C/m3)": [
+                    ForamVariable(i, self.model_path).biomass_c().nanmean()
+                    for i in foram_abbrev
+                ],
+                "Carbon Export (mmol C/m3/d)": [
+                    ForamVariable(i, self.model_path).export_c().nanmean()
+                    for i in foram_abbrev
+                ],
+                "Relative Abundance": [
+                    ForamVariable(i, self.model_path).export_c().proportion().nanmean()
+                    for i in foram_abbrev
+                ],
             }
-        elif method=="sd":
+        elif method == "sd":
             dic = {
-                "Biomass(mmol C/m3)": [ForamVariable(i, self.model_path).biomass_c().nansd() for i in foram_abbrev],
-                "Carbon Export (mmol C/m3/d)": [ForamVariable(i, self.model_path).export_c().nansd() for i in foram_abbrev],
-                "Relative Abundance": [ForamVariable(i, self.model_path).export_c().proportion().nansd() for i in foram_abbrev],
+                "Biomass(mmol C/m3)": [
+                    ForamVariable(i, self.model_path).biomass_c().nansd()
+                    for i in foram_abbrev
+                ],
+                "Carbon Export (mmol C/m3/d)": [
+                    ForamVariable(i, self.model_path).export_c().nansd()
+                    for i in foram_abbrev
+                ],
+                "Relative Abundance": [
+                    ForamVariable(i, self.model_path).export_c().proportion().nansd()
+                    for i in foram_abbrev
+                ],
             }
-        elif method=="se":
+        elif method == "se":
             dic = {
-                "Biomass(mmol C/m3)": [ForamVariable(i, self.model_path).biomass_c().se().values for i in foram_abbrev],
-                "Carbon Export (mmol C/m3/d)": [ForamVariable(i, self.model_path).export_c().se().values for i in foram_abbrev],
-                "Relative Abundance": [ForamVariable(i, self.model_path).export_c().proportion().se().values for i in foram_abbrev],
+                "Biomass(mmol C/m3)": [
+                    ForamVariable(i, self.model_path).biomass_c().se().values
+                    for i in foram_abbrev
+                ],
+                "Carbon Export (mmol C/m3/d)": [
+                    ForamVariable(i, self.model_path).export_c().se().values
+                    for i in foram_abbrev
+                ],
+                "Relative Abundance": [
+                    ForamVariable(i, self.model_path)
+                    .export_c()
+                    .proportion()
+                    .se()
+                    .values
+                    for i in foram_abbrev
+                ],
             }
 
         df = DataFrame(dic, index=foram_fullname)
@@ -437,14 +508,16 @@ class GenieModel(object):
             diff = df - obs
 
             if diff_method == "percentage":
-                diff_perc = diff/obs
+                diff_perc = diff / obs
                 return diff_perc
             elif diff_method == "absolute":
                 return diff
 
         if table_styler:
             cm = plt.get_cmap("RdBu_r")
-            df = df.style.set_caption("Mean values across foraminifer groups").text_gradient(cmap=cm)
+            df = df.style.set_caption(
+                "Mean values across foraminifer groups"
+            ).text_gradient(cmap=cm)
 
         return df
 
@@ -506,15 +579,20 @@ class GenieModel(object):
         ax = fig.add_subplot(111)
 
         for n in range(4):
-            ax.plot(lat, foram_array_list[n], label = foram_fullname[n])
+            ax.plot(lat, foram_array_list[n], label=foram_fullname[n])
 
         if legend:
-            ax.legend(loc = 'lower center', ncol = 2, bbox_to_anchor=(0.5, -0.35), edgecolor="black")
+            ax.legend(
+                loc="lower center",
+                ncol=2,
+                bbox_to_anchor=(0.5, -0.35),
+                edgecolor="black",
+            )
 
         ax.set_xlabel("Latitude")
         ax.set_ylabel("Relative abundance")
-        ax.tick_params(axis="y",direction="in")
-        ax.tick_params(axis="x",direction="in")
+        ax.tick_params(axis="y", direction="in")
+        ax.tick_params(axis="x", direction="in")
 
         return ax
 
@@ -546,22 +624,28 @@ class GenieModel(object):
         quick wrapper function to plot carbon biomass for 4 foram groups
         """
 
-        fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(10,7),
-                         subplot_kw=dict(projection=ccrs.EckertIV()))
+        fig, axes = plt.subplots(
+            nrows=2,
+            ncols=2,
+            figsize=(10, 7),
+            subplot_kw=dict(projection=ccrs.EckertIV()),
+        )
 
-        varlst = ["eco2D_Plankton_C_01" + str(i) for i in range(6,10)]
+        varlst = ["eco2D_Plankton_C_01" + str(i) for i in range(6, 10)]
         most_max = max([self.select_var(varlst[i]).max() for i in range(4)])
         foram_fullnames = list(foram_names().values())
 
-        for i,ax in enumerate(axes.flat):
-                vdata = self.select_var(varlst[i]).array
-                mean = np.nanmean(vdata)
-                p = plot_genie(ax=ax, data=vdata, vmin=0, vmax=most_max, *args, **kwargs)
-                ax.set_title(f"({string.ascii_lowercase[i]}) {foram_fullnames[i]} {mean:.2E}", pad=10)
+        for i, ax in enumerate(axes.flat):
+            vdata = self.select_var(varlst[i]).array
+            mean = np.nanmean(vdata)
+            p = plot_genie(ax=ax, data=vdata, vmin=0, vmax=most_max, *args, **kwargs)
+            ax.set_title(
+                f"({string.ascii_lowercase[i]}) {foram_fullnames[i]} {mean:.2E}", pad=10
+            )
 
         cbar = fig.colorbar(p, ax=axes, orientation="horizontal", pad=0.05, shrink=0.7)
         cbar.minorticks_on()
-        cbar.set_label(r'carbon biomass $mmol C m$^{-3}$)', size=12)
+        cbar.set_label(r"carbon biomass $mmol C m$^{-3}$)", size=12)
 
         return p
 
@@ -570,22 +654,28 @@ class GenieModel(object):
         quick wrapper function to plot carbon export for 4 foram groups
         """
 
-        fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(10,7),
-                         subplot_kw=dict(projection=ccrs.EckertIV()))
+        fig, axes = plt.subplots(
+            nrows=2,
+            ncols=2,
+            figsize=(10, 7),
+            subplot_kw=dict(projection=ccrs.EckertIV()),
+        )
 
-        varlst = ["eco2D_Export_C_01" + str(i) for i in range(6,10)]
+        varlst = ["eco2D_Export_C_01" + str(i) for i in range(6, 10)]
         most_max = max([self.select_var(varlst[i]).max() for i in range(4)])
         foram_fullnames = list(foram_names().values())
 
-        for i,ax in enumerate(axes.flat):
-                vdata = self.select_var(varlst[i]).array
-                mean = np.nanmean(vdata)
-                p = plot_genie(ax=ax, data=vdata, vmin=0, vmax=most_max)
-                ax.set_title(f"({string.ascii_lowercase[i]}) {foram_fullnames[i]} {mean:.2E}", pad=10)
+        for i, ax in enumerate(axes.flat):
+            vdata = self.select_var(varlst[i]).array
+            mean = np.nanmean(vdata)
+            p = plot_genie(ax=ax, data=vdata, vmin=0, vmax=most_max)
+            ax.set_title(
+                f"({string.ascii_lowercase[i]}) {foram_fullnames[i]} {mean:.2E}", pad=10
+            )
 
         cbar = fig.colorbar(p, ax=axes, orientation="horizontal", pad=0.05, shrink=0.7)
         cbar.minorticks_on()
-        cbar.set_label(r'POC export at 80.8 m (mmol C m$^{-3}$ d$^{-1})$', size=12)
+        cbar.set_label(r"POC export at 80.8 m (mmol C m$^{-3}$ d$^{-1})$", size=12)
 
         return p
 
@@ -594,8 +684,12 @@ class GenieModel(object):
         quick wrapper function to plot relative abundance for 4 foram groups
         """
 
-        fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(10,7),
-                         subplot_kw=dict(projection=ccrs.EckertIV()))
+        fig, axes = plt.subplots(
+            nrows=2,
+            ncols=2,
+            figsize=(10, 7),
+            subplot_kw=dict(projection=ccrs.EckertIV()),
+        )
 
         varlst = list(foram_names().keys())
         foram_fullnames = list(foram_names().values())
@@ -603,12 +697,15 @@ class GenieModel(object):
         for i, ax in enumerate(axes.flat):
             vdata = self.select_foram(varlst[i]).export_c().proportion().array
             mean = np.nanmean(vdata) * 100
-            p = plot_genie(ax = ax, data = vdata, vmin=0, vmax=1)
-            ax.set_title(f"({string.ascii_lowercase[i]}) {foram_fullnames[i]} {mean:.2f}%", pad=10)
+            p = plot_genie(ax=ax, data=vdata, vmin=0, vmax=1)
+            ax.set_title(
+                f"({string.ascii_lowercase[i]}) {foram_fullnames[i]} {mean:.2f}%",
+                pad=10,
+            )
 
         cbar = fig.colorbar(p, ax=axes, orientation="horizontal", pad=0.05, shrink=0.7)
         cbar.minorticks_on()
-        cbar.set_label('Relative abundance', size=12)
+        cbar.set_label("Relative abundance", size=12)
 
         return p
 
@@ -622,12 +719,20 @@ class GenieModel(object):
         fname = list(foram_names().values())
         foram_abbrev = foram_names().keys()
 
-        model_biomass_mean = [self.select_foram(i).biomass_c().nanmean() for i in foram_abbrev]
-        model_export_mean = [self.select_foram(i).export_c().nanmean() for i in foram_abbrev]
+        model_biomass_mean = [
+            self.select_foram(i).biomass_c().nanmean() for i in foram_abbrev
+        ]
+        model_export_mean = [
+            self.select_foram(i).export_c().nanmean() for i in foram_abbrev
+        ]
         model_biomass_se = [self.select_foram(i).biomass_c().se() for i in foram_abbrev]
         model_export_se = [self.select_foram(i).export_c().se() for i in foram_abbrev]
-        model_export_sum = [self.select_foram(i).export_c().sum().magnitude for i in foram_abbrev]
-        model_biomass_sum = [self.select_foram(i).biomass_c().sum().magnitude for i in foram_abbrev]
+        model_export_sum = [
+            self.select_foram(i).export_c().sum().magnitude for i in foram_abbrev
+        ]
+        model_biomass_sum = [
+            self.select_foram(i).biomass_c().sum().magnitude for i in foram_abbrev
+        ]
         obs_biomass_mean = obs_stat_bysource("tow", *args, **kwargs).loc[:, "mean"]
         obs_biomass_se = obs_stat_bysource("tow", *args, **kwargs).loc[:, "se"]
         obs_export_mean = obs_stat_bysource("trap", *args, **kwargs).loc[:, "mean"]
@@ -636,9 +741,18 @@ class GenieModel(object):
         model_biomass_sum = DataFrame({"group": fname, "value": model_biomass_sum})
         model_export_sum = DataFrame({"group": fname, "value": model_export_sum})
 
-        data_to_plot = [[[model_biomass_mean, model_biomass_se,obs_biomass_mean, obs_biomass_se],
-                        [model_export_mean, model_export_se,obs_export_mean, obs_export_se]],
-                        [model_biomass_sum, model_export_sum]]
+        data_to_plot = [
+            [
+                [
+                    model_biomass_mean,
+                    model_biomass_se,
+                    obs_biomass_mean,
+                    obs_biomass_se,
+                ],
+                [model_export_mean, model_export_se, obs_export_mean, obs_export_se],
+            ],
+            [model_biomass_sum, model_export_sum],
+        ]
         ## Plot starts
         fig, axes = plt.subplots(2, 2, figsize=(8, 6), sharex=True)
         bar_width = 0.3
@@ -649,61 +763,71 @@ class GenieModel(object):
 
         for i in range(2):
             for j in range(2):
-                axes[i,j].yaxis.set_minor_locator(AutoMinorLocator(4))
-                axes[i,j].set_axisbelow(True)
-                axes[i,j].yaxis.grid(color='gray', linestyle='dashed')
+                axes[i, j].yaxis.set_minor_locator(AutoMinorLocator(4))
+                axes[i, j].set_axisbelow(True)
+                axes[i, j].yaxis.grid(color="gray", linestyle="dashed")
                 if i == 0:
-                    axes[i,j].bar(x - bar_width/2,
-                    data_to_plot[i][j][0],
-                    width = bar_width,
-                    color = sns.color_palette("Set1")[0],
-                    edgecolor = 'black',
-                    yerr=data_to_plot[i][j][1],
-                    capsize=7,
-                    label='model')
+                    axes[i, j].bar(
+                        x - bar_width / 2,
+                        data_to_plot[i][j][0],
+                        width=bar_width,
+                        color=sns.color_palette("Set1")[0],
+                        edgecolor="black",
+                        yerr=data_to_plot[i][j][1],
+                        capsize=7,
+                        label="model",
+                    )
 
-                    axes[i,j].bar(x + bar_width/2,
-                    data_to_plot[i][j][2],
-                    width = bar_width,
-                    color = sns.color_palette("Set1")[1],
-                    edgecolor = 'black',
-                    yerr=data_to_plot[i][j][3],
-                    capsize=7,
-                    label='obs')
+                    axes[i, j].bar(
+                        x + bar_width / 2,
+                        data_to_plot[i][j][2],
+                        width=bar_width,
+                        color=sns.color_palette("Set1")[1],
+                        edgecolor="black",
+                        yerr=data_to_plot[i][j][3],
+                        capsize=7,
+                        label="obs",
+                    )
 
-                    axes[i,j].set_xticks(x)
-                    axes[i,j].set_xticklabels(xlabels, rotation = 45, ha="right")
-                    axes[i,j].legend()
+                    axes[i, j].set_xticks(x)
+                    axes[i, j].set_xticklabels(xlabels, rotation=45, ha="right")
+                    axes[i, j].legend()
                 else:
-                    sns.barplot(data=data_to_plot[i][j], x="group", y="value", ax=axes[i,j], edgecolor="black", palette="deep")
-                    axes[i,j].set_xticklabels(xlabels, rotation=45, ha="right")
-                    axes[i,j].set_xlabel("")
-                    axes[i,j].set_xticks(x)
-                    set_sns_barwidth(axes[i,j], bar_width)
+                    sns.barplot(
+                        data=data_to_plot[i][j],
+                        x="group",
+                        y="value",
+                        ax=axes[i, j],
+                        edgecolor="black",
+                        palette="deep",
+                    )
+                    axes[i, j].set_xticklabels(xlabels, rotation=45, ha="right")
+                    axes[i, j].set_xlabel("")
+                    axes[i, j].set_xticks(x)
+                    set_sns_barwidth(axes[i, j], bar_width)
 
+        axes[0, 0].set_ylabel(r"mmol C m$^{-3}$")
+        axes[0, 1].set_ylabel(r"mmol C m$^{-3}$ d$^{-1}$")
 
-        axes[0,0].set_ylabel(r"mmol C m$^{-3}$")
-        axes[0,1].set_ylabel(r"mmol C m$^{-3}$ d$^{-1}$")
+        axes[0, 0].set_title("(a)    global biomass mean/se", loc="left")
+        axes[0, 1].set_title("(b)    global POC flux mean/se", loc="left")
+        axes[1, 0].set_title("(c)    total biomass production", loc="left")
+        axes[1, 1].set_title("(d)    total POC production rate", loc="left")
 
-        axes[0,0].set_title("(a)    global biomass mean/se",loc="left")
-        axes[0,1].set_title("(b)    global POC flux mean/se", loc="left")
-        axes[1,0].set_title("(c)    total biomass production",loc="left")
-        axes[1,1].set_title("(d)    total POC production rate", loc="left")
-
-        axes[1,0].set_ylabel("Tg C")
-        axes[1,1].set_ylabel(r"Tg C yr$^{-1}$")
+        axes[1, 0].set_ylabel("Tg C")
+        axes[1, 1].set_ylabel(r"Tg C yr$^{-1}$")
 
         fig.tight_layout()
 
         return axes
 
     def diff(self, model2compare, var):
-        B =  GenieModel(model2compare)
+        B = GenieModel(model2compare)
         diff = self.select_var(var) - B.select_var(var)
         return diff
 
     def div(self, model2compare, var):
-        B =  GenieModel(model2compare)
+        B = GenieModel(model2compare)
         diff = self.select_var(var) / B.select_var(var)
         return diff
 
@@ -722,7 +846,7 @@ class GenieModel(object):
     def pft_count(self):
         "the number of plankton functional type"
         full_lst = list(self.get_vars())
-        name_lst = [x for x in full_lst if 'eco2D_Export_C' in x]
+        name_lst = [x for x in full_lst if "eco2D_Export_C" in x]
         n = len(name_lst)
         return n
 
@@ -736,19 +860,19 @@ class GenieModel(object):
         n = self.pft_count()
 
         for i in range(n):
-            name  = f'eco2D_Plankton_C_0{i+1:02d}'
-            #select
+            name = f"eco2D_Plankton_C_0{i+1:02d}"
+            # select
             arr = self.select_var(name).pure_array()
-            #conditional mask
+            # conditional mask
             sp = vfunc(arr)
-            #sum
+            # sum
             total_sp += sp
 
         x = GenieArray()
         x.array = total_sp
         return x
 
-    def select_pft(self, start=None, end=None, var="biomass"):
+    def select_pft(self, start=None, end=None, var="biomass", element="C"):
 
         # if not specify the groups, select all
         if not start and not end:
@@ -767,7 +891,7 @@ class GenieModel(object):
         total = np.zeros((36, 36))
         end += 1
         for i in range(start, end):
-            name  = f'eco2D_{v}_C_0{i:02d}'
+            name = f"eco2D_{v}_{element}_0{i:02d}"
             arr = self.select_var(name).array
             total += arr
 
@@ -776,9 +900,64 @@ class GenieModel(object):
         x.array = total
         return x
 
+    def cwm(self, trait: str, abundance="relative"):
+        """community weighted mean, also representing position of community centroid (i,j),
+        usually weighted in relative abundance
+        """
+
+        fg_dict = {"symbiont": ["sn", "ss"], "spine": ["bs", "ss"]}
+        trait_dict = {"symbiont": [0.5, 1], "spine": [1, 1]}
+        fg = fg_dict[trait]
+        tr = trait_dict[trait]
+
+        if abundance == "absolute":
+            weighted_trait = (
+                self.select_foram(fg[0]).biomass_c() * tr[0]
+                + self.select_foram(fg[1]).biomass_c() * tr[1]
+            )
+            sum_abundance = (
+                self.select_foram(fg[0]).biomass_c()
+                + self.select_foram(fg[1]).biomass_c()
+            )
+            cwm = weighted_trait / sum_abundance
+        elif abundance == "relative":
+            cwm = (
+                self.select_foram(fg[0]).export_c().proportion() * tr[0]
+                + self.select_foram(fg[1]).export_c().proportion() * tr[1]
+            )
+
+        return cwm
+
+    def fspec(self, *args, **kwargs):
+        "Functional specialisation, distance from the origin (non-symbiont non-spinose)"
+        fspec = distance(
+            self.cwm(trait="spine", *args, **kwargs),
+            self.cwm(trait="symbiont", *args, **kwargs),
+        )
+
+        x = GenieArray()
+        x.array = fspec
+        return x
+
+    def fored(self):
+        "functional over redundancy (only used for modern), unit: redundant species"
+        fred = (
+            self.select_foram("bn").export_c().proportion() * 5.25 / 47
+            + self.select_foram("ss").export_c().proportion() * 11.25 / 47
+        )
+
+        return fred
+
+    # def fdis(self, *args, **kwargs):
+    # "functional dispersion"
+    # weight (relative abundance/biomass)
+    # weight = self.select_foram("bn").biomass_c()
+    # each group's distance to centroid
+    # dist =
+    # weighted sum
+
 
 class GenieVariable(GenieModel, GenieArray):
-
     def __init__(self, var, model_path):
         # initialise super class to inherite attributes
         self._var = var
@@ -792,29 +971,27 @@ class GenieVariable(GenieModel, GenieArray):
 
 
 class ForamVariable(GenieModel):
-
     def __init__(self, foram_name, model_path):
         self.foram_name = foram_name
-        GenieModel.__init__(self, model_path = model_path)
+        GenieModel.__init__(self, model_path=model_path)
 
     def biomass_c(self):
-        return ForamBiomass(model_path = self.model_path, foram_name = self.foram_name)
+        return ForamBiomass(model_path=self.model_path, foram_name=self.foram_name)
 
     def export_c(self):
-        return ForamCarbonFlux(model_path = self.model_path, foram_name = self.foram_name)
+        return ForamCarbonFlux(model_path=self.model_path, foram_name=self.foram_name)
 
     def sum_mscore(self):
         "compared to modern observations"
         return (
-            self.export_c().m_score() +
-            self.biomass_c().m_score() +
-            self.export_c().proportion().m_score()
+            self.export_c().m_score()
+            + self.biomass_c().m_score()
+            + self.export_c().proportion().m_score()
         )
 
 
 class ForamBiogeochem(GenieModel, GenieArray):
-
-    def __init__(self, model_path:str, foram_name:str, biogeo_var:str):
+    def __init__(self, model_path: str, foram_name: str, biogeo_var: str):
         self.biogeo_var = biogeo_var
         self.foram_name = foram_name
         GenieModel.__init__(self, model_path)
@@ -832,20 +1009,27 @@ class ForamBiogeochem(GenieModel, GenieArray):
         return ForamProportion(self.model_path, self.foram_name, self.biogeo_var)
 
     def m_score(self, *args, **kwargs):
-        return quick_mscore(self.pure_array(), self.biogeo_var, self.foram_name, *args, **kwargs)
+        return quick_mscore(
+            self.pure_array(), self.biogeo_var, self.foram_name, *args, **kwargs
+        )
 
     def rmse(self, *args, **kwargs):
-        return quick_rmse(self.pure_array(), self.biogeo_var, self.foram_name, *args, **kwargs)
+        return quick_rmse(
+            self.pure_array(), self.biogeo_var, self.foram_name, *args, **kwargs
+        )
 
     def cos_sim(self, *args, **kwargs):
-        return quick_cos_sim(self.pure_array(), self.biogeo_var, self.foram_name, *args, **kwargs)
+        return quick_cos_sim(
+            self.pure_array(), self.biogeo_var, self.foram_name, *args, **kwargs
+        )
 
     def corr(self, *args, **kwargs):
-        return quick_corr(self.pure_array(), self.biogeo_var, self.foram_name, *args, **kwargs)
+        return quick_corr(
+            self.pure_array(), self.biogeo_var, self.foram_name, *args, **kwargs
+        )
 
 
 class ForamBiomass(ForamBiogeochem):
-
     def __init__(self, model_path, foram_name):
         self.biogeo_var = "tow"
         super(ForamBiomass, self).__init__(model_path, foram_name, self.biogeo_var)
@@ -856,13 +1040,12 @@ class ForamBiomass(ForamBiogeochem):
         c = self.uarray().to_base_units()
         v = self.marine_volume().to_base_units()
         s = c * v
-        s = s.to("mol").to('g', 'chemistry', mw = C_ * ureg('g/mole')).to('Tg')
+        s = s.to("mol").to("g", "chemistry", mw=C_ * ureg("g/mole")).to("Tg")
 
         return np.nansum(s)
 
 
 class ForamCarbonFlux(ForamBiogeochem):
-
     def __init__(self, model_path, foram_name):
         self.biogeo_var = "trap"
         super(ForamCarbonFlux, self).__init__(model_path, foram_name, self.biogeo_var)
@@ -873,23 +1056,23 @@ class ForamCarbonFlux(ForamBiogeochem):
         convert POC to Calcite given POC:PIC:CaCO3 mol ratio = 100:36:36 (mass ratio = 100:36:300)
         """
 
-        calcite = ForamCalcite(model_path = self.model_path)
+        calcite = ForamCalcite(model_path=self.model_path)
         calcite.array = self.array * 0.36
 
         return calcite
 
-    @ureg.with_context('bgc')
+    @ureg.with_context("bgc")
     def sum(self):
         C_ = molecular_weight("C")
         c = self.uarray().to_base_units()
         v = self.marine_volume().to_base_units()
         s = c * v
-        s = s.to("mol d^-1").to('g d^-1','bgc', mw = C_ * ureg('g/mol')).to("Tg yr^-1")
+        s = s.to("mol d^-1").to("g d^-1", "bgc", mw=C_ * ureg("g/mol")).to("Tg yr^-1")
 
         return np.nansum(s)
 
-class ForamProportion(ForamBiogeochem):
 
+class ForamProportion(ForamBiogeochem):
     def __init__(self, model_path, foram_name, biogeo_var):
         self.biogeo_var = biogeo_var
         ForamBiogeochem.__init__(self, model_path, foram_name, biogeo_var)
@@ -907,38 +1090,54 @@ class ForamProportion(ForamBiogeochem):
 
         # ignore divided by 0
         # and set grid with total_foram == 0 to 0 instead of NA
-        with np.errstate(divide='ignore', invalid='ignore'):
+        with np.errstate(divide="ignore", invalid="ignore"):
             one_foram = super()._set_array()
-            proportion =np.divide(one_foram, total_foram, out=np.zeros_like(one_foram), where= total_foram!=0)
+            proportion = np.divide(
+                one_foram,
+                total_foram,
+                out=np.zeros_like(one_foram),
+                where=total_foram != 0,
+            )
 
         return proportion
 
     def m_score(self, observation="core", *args, **kwargs):
-        return quick_mscore(self.pure_array(), observation, self.foram_name, *args, **kwargs)
+        return quick_mscore(
+            self.pure_array(), observation, self.foram_name, *args, **kwargs
+        )
 
     def rmse(self, observation="core", *args, **kwargs):
-        return quick_rmse(self.pure_array(), observation, self.foram_name, *args, **kwargs)
+        return quick_rmse(
+            self.pure_array(), observation, self.foram_name, *args, **kwargs
+        )
 
     def cos_sim(self, observation="core", *args, **kwargs):
-        return quick_cos_sim(self.pure_array(), observation, self.foram_name, *args, **kwargs)
+        return quick_cos_sim(
+            self.pure_array(), observation, self.foram_name, *args, **kwargs
+        )
 
     def corr(self, observation="core", *args, **kwargs):
-        return quick_corr(self.pure_array(), observation, self.foram_name, *args, **kwargs)
+        return quick_corr(
+            self.pure_array(), observation, self.foram_name, *args, **kwargs
+        )
 
 
 class ForamCalcite(GenieArray, GenieModel):
-
     def __init__(self, model_path):
         "default empty array, need to assign the array manually, such as ForamCarbonFlux.to_PIC()"
         GenieModel.__init__(self, model_path=model_path)
         self.unit = "mmol m$^-3$ d$^-1$"
 
-    @ureg.with_context('bgc')
+    @ureg.with_context("bgc")
     def sum(self):
         CaCO3 = molecular_weight("CaCO3")
         c = self.uarray().to_base_units()
         v = self.marine_volume().to_base_units()
         s = c * v
-        s = s.to("mol d^-1").to('g d^-1','bgc', mw = CaCO3 * ureg('g/mol')).to("Pg yr^-1")
+        s = (
+            s.to("mol d^-1")
+            .to("g d^-1", "bgc", mw=CaCO3 * ureg("g/mol"))
+            .to("Pg yr^-1")
+        )
 
         return np.nansum(s)

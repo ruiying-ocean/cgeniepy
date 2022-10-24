@@ -14,6 +14,7 @@ def efficient_log(data: Union[int, float]) -> float:
     "keep NA, remove zeros"
     return np.where(data == 0, -10, np.log10(data))
 
+
 def obs_data(source, var, stat=None, outlier_level=None):
     """
     Quickly fetch observational data from ForamData/data directory.
@@ -25,11 +26,16 @@ def obs_data(source, var, stat=None, outlier_level=None):
     if source == "core":
         file_path = pathlib.Path(__file__).parent.parent / "data/ForCenS_regridded.nc"
     elif source == "tow":
-        file_path = pathlib.Path(__file__).parent.parent / "data/plankton_tow_regridded_abs.nc"
+        file_path = (
+            pathlib.Path(__file__).parent.parent / "data/plankton_tow_regridded_abs.nc"
+        )
     elif source == "trap":
-        file_path = pathlib.Path(__file__).parent.parent /  "data/sediment_trap_regridded_organic.nc"
+        file_path = (
+            pathlib.Path(__file__).parent.parent
+            / "data/sediment_trap_regridded_organic.nc"
+        )
     elif source == "MARGO":
-        file_path = pathlib.Path(__file__).parent.parent /  "data/MARGO_regridded.nc"
+        file_path = pathlib.Path(__file__).parent.parent / "data/MARGO_regridded.nc"
     else:
         raise ValueError("type must be core, obs or trap!")
 
@@ -48,8 +54,9 @@ def obs_data(source, var, stat=None, outlier_level=None):
     else:
         mean = np.nanmean(modified_obs)
         sd = np.nanstd(modified_obs)
-        se = sem(modified_obs, nan_policy="omit", axis = None)
+        se = sem(modified_obs, nan_policy="omit", axis=None)
         return mean, sd, se
+
 
 def obs_stat_bysource(source, *args, **kwargs) -> pd.DataFrame:
     obs = []
@@ -68,9 +75,13 @@ def obs_stat_bytype(type, *args, **kwargs) -> pd.DataFrame:
     tow = obs_stat_bysource("tow", *args, **kwargs).loc[:, type]
     trap = obs_stat_bysource("trap", *args, **kwargs).loc[:, type]
     core = obs_stat_bysource("core", *args, **kwargs).loc[:, type]
-    #combination
+    # combination
     data = pd.concat([tow, trap, core], axis=1)
-    data.columns = ["Biomass(mmol C/m3)", "Carbon Export (mmol C/m3/d)", "Relative Abundance"]
+    data.columns = [
+        "Biomass(mmol C/m3)",
+        "Carbon Export (mmol C/m3/d)",
+        "Relative Abundance",
+    ]
 
     return data
 
@@ -80,6 +91,7 @@ def obs_stat_bytype(type, *args, **kwargs) -> pd.DataFrame:
 #     diff_xarray = sorted_model_data - target_obs
 #
 #     return diff_xarray
+
 
 def foram_names():
     """
@@ -111,7 +123,8 @@ def foram_dict():
         "eco2D_Export_C_016": ["trap", "bn"],
         "eco2D_Export_C_017": ["trap", "bs"],
         "eco2D_Export_C_018": ["trap", "sn"],
-        "eco2D_Export_C_019": ["trap", "ss"]}
+        "eco2D_Export_C_019": ["trap", "ss"],
+    }
 
     return foram_dict
 
