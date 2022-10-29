@@ -24,7 +24,6 @@ def plot_genie(
     grid_line=False,
     continent_outline=True,
     contour_layer=False,
-    cmap=cm.Spectral_r,
     *args,
     **kwargs,
 ):
@@ -54,15 +53,15 @@ def plot_genie(
     # -------------------Plot-----------------------
     if log:
         data = efficient_log(data)
-        lon_edge = GENIE_lon(edge=True)
-        lat_edge = GENIE_lat(edge=True)
+
+    lon_edge = GENIE_lon(edge=True)
+    lat_edge = GENIE_lat(edge=True)
 
     # cartopy transform seems to help reassign the GENIE longitude to normal
     p = ax.pcolormesh(
         lon_edge,
         lat_edge,
         data,
-        cmap=cmap,
         transform=data_crs,
         shading="flat",
         *args,
@@ -143,36 +142,22 @@ def plot_genie(
     return p
 
 
-def scatter_map(ax, df, cmap=cm.Spectral_r, *args, **kwargs):
-    ax.set_global()
-    ax.coastlines()
-    ax.add_feature(
-        LAND, zorder=0, facecolor="#B1B2B4", edgecolor="white"
-    )  # zorder is drawing sequence
-
-    p = ax.scatter(
-        y=df.Latitude,
-        x=df.Longitude,
-        transform=ccrs.PlateCarree(),
-        cmap=cmap,
-        *args,
-        **kwargs,
-    )
-
-    return p
-
-
-def scatter_on_genie(
+def scatter_map(
     ax,
     df,
     var,
     x="Longitude",
     y="Latitude",
-    cmap=cm.Spectral_r,
     log=False,
     *args,
     **kwargs,
 ):
+
+    ax.set_global()
+    ax.coastlines()
+    ax.add_feature(
+        LAND, zorder=0, facecolor="#B1B2B4", edgecolor="white"
+    )  # zorder is drawing sequence
 
     if "Latitude" not in df.columns or "Longitude" not in df.columns:
         raise ValueError("Input data lack Latitude/Longitude column")
@@ -185,7 +170,6 @@ def scatter_on_genie(
         y=df[y],
         c=df[var],
         linewidths=0.5,
-        cmap=cmap,
         edgecolors="black",
         transform=ccrs.PlateCarree(),
         *args,
