@@ -822,7 +822,12 @@ class GenieModel(object):
         return axes
 
     def diff(self, model2compare, var):
-        B = GenieModel(model2compare)
+
+        if isinstance(model2compare, GenieModel):
+            B = model2compare
+        else:
+            B = GenieModel(model2compare)
+
         diff = self.select_var(var) - B.select_var(var)
         return diff
 

@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import cartopy.crs as ccrs
 from cartopy.feature import LAND
-from matplotlib import cm
 from matplotlib.colors import ListedColormap
 import matplotlib.pyplot as plt
 from matplotlib.projections import PolarAxes
@@ -18,14 +17,14 @@ from .grid import GENIE_lat, GENIE_lon, GENIE_depth
 
 
 def plot_genie(
-    ax,
-    data,
-    log=False,
-    grid_line=False,
-    continent_outline=True,
-    contour_layer=False,
-    *args,
-    **kwargs,
+        ax,
+        data,
+        log=False,
+        grid_line=False,
+        continent_outline=True,
+        contour_layer=False,
+        *args,
+        **kwargs,
 ):
     """
     plot map for 2D GENIE time-slice data
@@ -36,7 +35,6 @@ def plot_genie(
     :param log: logic, whether take log for data
     :param grid_line: logic, whthere plot grid line
     :param continent_outline: logic whethere plot continent
-    :param cmap: color map object
 
     :returns: a mappable plot object
     """
@@ -71,7 +69,7 @@ def plot_genie(
     if contour_layer:
         lat = GENIE_lat(edge=False)
         lon = GENIE_lon(edge=False)
-        cs = ax.contour(lon, lat, data, transform=ccrs.PlateCarree(), cmap=cmap)
+        cs = ax.contour(lon, lat, data, transform=ccrs.PlateCarree(), **kwargs)
         # label every three levels
         ax.clabel(cs, cs.levels[::3], colors=["black"], fontsize=8, inline=False)
 
@@ -143,21 +141,27 @@ def plot_genie(
 
 
 def scatter_map(
-    ax,
-    df,
-    var,
-    x="Longitude",
-    y="Latitude",
-    log=False,
-    *args,
-    **kwargs,
+        df:pd.DataFrame,
+        var,
+        ax,
+        x="Longitude",
+        y="Latitude",
+        add_layer=True,
+        log=False,
+        *args,
+        **kwargs,
 ):
+    """ quickly plot map
+    :params df: pandas dataframe
 
-    ax.set_global()
-    ax.coastlines()
-    ax.add_feature(
-        LAND, zorder=0, facecolor="#B1B2B4", edgecolor="white"
-    )  # zorder is drawing sequence
+    """
+
+    if add_layer:
+        ax.set_global()
+        ax.coastlines()
+        ax.add_feature(
+            LAND, zorder=0, facecolor="#B1B2B4", edgecolor="white"
+        )  # zorder is drawing sequence
 
     if "Latitude" not in df.columns or "Longitude" not in df.columns:
         raise ValueError("Input data lack Latitude/Longitude column")
@@ -311,14 +315,14 @@ class TaylorDiagram(object):
     """
 
     def __init__(
-        self,
-        fig=None,
-        figscale=1,
-        subplot=111,
-        xmax=None,
-        tmax=np.pi / 2,
-        ylabel="Standard Deviation",
-        rotation=None,
+            self,
+            fig=None,
+            figscale=1,
+            subplot=111,
+            xmax=None,
+            tmax=np.pi / 2,
+            ylabel="Standard Deviation",
+            rotation=None,
     ):
 
         """
