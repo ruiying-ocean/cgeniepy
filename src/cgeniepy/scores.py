@@ -33,12 +33,20 @@ def intersect_index(array1, array2, verbose=False):
     return indx_array
 
 
-def cal_mscore(data1: np.array, data2: np.array):
+def cal_mscore(data1, data2):
     """
     Calculate skill metric M-score. See more in the paper Watterson, I. G. (1996)
 
     Use 2D array as input, order causes no difference.
     NA will be removed.
+
+    :param data1: data to compare, order does not count
+    :param data2: data to compare, order does not count
+
+    :type data1: numpy array
+    :type data2: numpy array
+
+    :returns: A float number
     """
     # get common set
     indx = intersect_index(data1, data2)
@@ -156,10 +164,11 @@ def quick_rmse(model, obs_source, var, *args, **kwargs):
 
     if hasattr(model, "values"):
         model = model.values
-        masked_model = mask_Arctic_Med(model, policy="na")
-        masked_data = mask_Arctic_Med(
-            obs_data(obs_source, var, *args, **kwargs), policy="na"
-        )
+
+    masked_model = mask_Arctic_Med(model, policy="na")
+    masked_data = mask_Arctic_Med(
+        obs_data(obs_source, var, *args, **kwargs), policy="na"
+    )
 
     return cal_rmse(masked_model, masked_data)
 
@@ -179,14 +188,14 @@ def quick_mscore(model, obs_source, var, *args, **kwargs):
 
 
 def quick_cos_sim(model, obs_source, var, *args, **kwargs):
-
     "A wrapper function to calculate cosine cimilarity"
     if hasattr(model, "values"):
         model = model.values
-        masked_model = mask_Arctic_Med(model, policy="na")
-        masked_data = mask_Arctic_Med(
-            obs_data(obs_source, var, *args, **kwargs), policy="na"
-        )
+
+    masked_model = mask_Arctic_Med(model, policy="na")
+    masked_data = mask_Arctic_Med(
+        obs_data(obs_source, var, *args, **kwargs), policy="na"
+    )
 
     return cal_cosine_similarity(masked_model, masked_data)
 
@@ -207,8 +216,8 @@ def pearson_r(data1, data2):
     """
     compute pearson correlation coefficient, which reflect linear similarity between two 1D arrays
 
-    data1: 1D array
-    data2: 1D array
+    :param data1: 1D array
+    :param data2: 1D array
     """
 
     # Compute corr matrix

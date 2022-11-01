@@ -24,8 +24,15 @@ input latitude/longitude to get where the site is in.
 python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.4.1
 ```
 
-## TODO 🚩
+## Code style
+
+ReST as docstring style, black as code style.
+
+## Project TODO 🚩
 
 - [] Documentation
 - [] Examples
 - [] Unit Tests
+- [X] add decorator for plot object
+
+

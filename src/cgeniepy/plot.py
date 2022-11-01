@@ -17,23 +17,25 @@ from .grid import GENIE_lat, GENIE_lon, GENIE_depth
 
 
 def plot_genie(
-        ax,
-        data,
-        log=False,
-        grid_line=False,
-        continent_outline=True,
-        contour_layer=False,
-        *args,
-        **kwargs,
+    ax,
+    data,
+    log=False,
+    grid_line=False,
+    continent_outline=True,
+    contour_layer=False,
+    *args,
+    **kwargs,
 ):
     """
     plot map for 2D GENIE time-slice data
 
     :param data: 2D numpy array
     :param ax: matplotlib axes object with cartopy projection. e.g., projection=ccrs.EckertIV()
-    :param vmin/vmax: float, colorbar limit
-    :param log: logic, whether take log for data
-    :param grid_line: logic, whthere plot grid line
+    :param vmin: colorbar limit
+    :param log: whether take log for data
+    :type log: boolean
+    :param grid_line: whthere plot grid line
+    :type grid_line: boolean
     :param continent_outline: logic whethere plot continent
 
     :returns: a mappable plot object
@@ -141,19 +143,26 @@ def plot_genie(
 
 
 def scatter_map(
-        df:pd.DataFrame,
-        var,
-        ax,
-        x="Longitude",
-        y="Latitude",
-        add_layer=True,
-        log=False,
-        *args,
-        **kwargs,
+    df: pd.DataFrame,
+    var,
+    ax,
+    x="Longitude",
+    y="Latitude",
+    add_layer=True,
+    log=False,
+    *args,
+    **kwargs,
 ):
-    """ quickly plot map
-    :params df: pandas dataframe
+    """plot map based on dataframe with latitude/longitude
+    using cartopy as engine
 
+    :param df: pandas dataframe
+    :param var: variable (column) in dataframe to plot
+    :param x: coordinate attribute, default "Longitude"
+    :param y: coordinate attribute, default "Latitude"
+    :param add_layer: whether to add basic costal lines, and land feature
+
+    :returns: a map
     """
 
     if add_layer:
@@ -185,8 +194,12 @@ def scatter_map(
 
 def genie_cmap(cmap_name, N=256, reverse=False):
     """
+    Get a self-defined colormap
+
     :param cmap_name: Zissou1, FantasticFox, Rushmore, Darjeeling, ODV
-    :return: colormap
+    :type cmap_name: str
+
+    :returns: colormap
     """
     file_name = f"data/{cmap_name}.txt"
     file_path = pathlib.Path(__file__).parent.parent / file_name
@@ -201,11 +214,18 @@ def genie_cmap(cmap_name, N=256, reverse=False):
     return c
 
 
-def cbar_wrapper(func, *args, **kwarags):
-    def wrappered_func():
-        p = func(*args, **kwarags)
+def cbar_wrapper(plotting_func):
+    """a decorator to add color bar
+
+    :param plotting_func: function returning a mappable object
+    :returns: plotting function with colorbar
+    """
+
+    def wrappered_func(*args, **kwargs):
+        p = plotting_func(*args, **kwargs)
         cbar = plt.colorbar(p, fraction=0.05, pad=0.04, orientation="vertical")
         cbar.ax.tick_params(color="k", direction="in")
+        cbar.minorticks_on()
 
     return wrappered_func
 
@@ -315,14 +335,14 @@ class TaylorDiagram(object):
     """
 
     def __init__(
-            self,
-            fig=None,
-            figscale=1,
-            subplot=111,
-            xmax=None,
-            tmax=np.pi / 2,
-            ylabel="Standard Deviation",
-            rotation=None,
+        self,
+        fig=None,
+        figscale=1,
+        subplot=111,
+        xmax=None,
+        tmax=np.pi / 2,
+        ylabel="Standard Deviation",
+        rotation=None,
     ):
 
         """
@@ -471,3 +491,22 @@ class TaylorDiagram(object):
 
     def savefig(self, *args, **kwargs):
         self.fig.savefig(*args, **kwargs)
+
+
+# import cartopy.crs as ccrs
+#                 import matplotlib.pyplot as plt
+#                 import numpy as np
+#                 from cgeniepy.grid import GENIE_lon, GENIE_lat
+#                 from cgeniepy.core import GenieModel
+#                 lon_edge = GENIE_lon(edge=True)
+#                 lat_edge = GENIE_lat(edge=True)
+
+# model = GenieModel("../../model/TEST")
+#                 d = model.select_foram("bn").export_c()
+
+# # North
+# fig = plt.figure(figsize=[10, 5])
+#                 ax_north = plt.subplot(121, projection=ccrs.Orthographic(0, 90))
+#                 ax_south = plt.subplot(122, projection=ccrs.Orthographic(180, -90))
+#                 ax_north.pcolormesh(lon_edge, lat_edge, d.array, transform=ccrs.PlateCarree())
+#                 ax_south.pcolormesh(lon_edge, lat_edge, d.array, transform=ccrs.PlateCarree())
