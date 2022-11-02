@@ -249,12 +249,22 @@ class GeniePlottable(object):
 
         return p
 
-    def plot_map(self, ax=None, cbar=True, *args, **kwargs):
+    def plot_map(self, ax=None, polar=False, cbar=True, *args, **kwargs):
 
         """plot lat-lon 2D array"""
 
         plt.rcParams["font.family"] = "sans-serif"
-        plt.rcParams["font.sans-serif"] = ["Arial"]
+
+        if polar:
+            fig = plt.figure(figsize=[10, 5])
+            ax_arctic = plt.subplot(121, projection=ccrs.Orthographic(0, 90))
+            ax_antarctic = plt.subplot(122, projection=ccrs.Orthographic(180, -90))
+            ax_arctic.gridlines(draw_labels=True)
+            ax_antarctic.gridlines(draw_labels=True)
+            plot_genie(ax=ax_arctic, data=self.array, *args, **kwargs)
+            plot_genie(ax=ax_antarctic, data=self.array, *args, **kwargs)
+
+            return fig
 
         if not ax:
             fig = plt.figure(dpi=75)
@@ -491,22 +501,3 @@ class TaylorDiagram(object):
 
     def savefig(self, *args, **kwargs):
         self.fig.savefig(*args, **kwargs)
-
-
-# import cartopy.crs as ccrs
-#                 import matplotlib.pyplot as plt
-#                 import numpy as np
-#                 from cgeniepy.grid import GENIE_lon, GENIE_lat
-#                 from cgeniepy.core import GenieModel
-#                 lon_edge = GENIE_lon(edge=True)
-#                 lat_edge = GENIE_lat(edge=True)
-
-# model = GenieModel("../../model/TEST")
-#                 d = model.select_foram("bn").export_c()
-
-# # North
-# fig = plt.figure(figsize=[10, 5])
-#                 ax_north = plt.subplot(121, projection=ccrs.Orthographic(0, 90))
-#                 ax_south = plt.subplot(122, projection=ccrs.Orthographic(180, -90))
-#                 ax_north.pcolormesh(lon_edge, lat_edge, d.array, transform=ccrs.PlateCarree())
-#                 ax_south.pcolormesh(lon_edge, lat_edge, d.array, transform=ccrs.PlateCarree())
