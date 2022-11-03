@@ -21,7 +21,7 @@ input latitude/longitude to get where the site is in.
 ## Installation 🙂
 
 ```bash
-python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.4.1
+python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.4.2
 ```
 
 ## Code style
