@@ -279,6 +279,9 @@ class GenieModel(object):
             raise ValueError(f"Please select [time index] (integer) from {time_array}")
         self._time = value
 
+    def _run_method(self, method: str, *args, **kwargs):
+        return getattr(self, method)(*args, **kwargs)
+
     def nc_path(self, gem="ecogem", dim="2d"):
         "find netcdf file model_path, default is ecosystem model output"
         model_path = self.model_path
@@ -422,11 +425,11 @@ class GenieModel(object):
         foram_fullname = tuple(foram_names().values())
 
         dic = {
-            "Biomass(mmol C/m3)": [
+            "Biomass": [
                 ForamVariable(i, self.model_path).biomass_c()._run_method(method=stat)
                 for i in foram_abbrev
             ],
-            "Carbon Export (mmol C/m2/d)": [
+            "Carbon Export": [
                 ForamVariable(i, self.model_path).export_c()._run_method(method=stat)
                 for i in foram_abbrev
             ],
@@ -436,6 +439,9 @@ class GenieModel(object):
             ],
         }
         df = DataFrame(dic, index=foram_fullname)
+
+        df["Column Total"] = df.sum(axis=1)
+        df.loc["Row Total", :] = df.sum(axis=0)
 
         if diff:
             obs = obs_stat_bytype(type=stat, *args, **kwargs)
