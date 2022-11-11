@@ -13,9 +13,6 @@ import mpl_toolkits.axisartist.grid_finder as gf
 from .data import efficient_log
 from .grid import GENIE_lat, GENIE_lon, GENIE_depth
 
-# [] decorator for boundary line in pcolormesh object
-
-
 def plot_genie(
     ax,
     data,

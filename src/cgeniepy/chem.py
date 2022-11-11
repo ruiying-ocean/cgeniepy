@@ -154,7 +154,7 @@ def molecular_weight(formula: str):
 
 def rm_element(unit: str):
     """
-    remove an element in string
+    remove elements in string (e.g., mmol C d-1) to get a pure unit
     """
     # an element l
     l = ["C", "N", "P", "O", "Fe", "Si", "Ca", "S"]

@@ -1,4 +1,4 @@
-This is an open-source Python package used in my Ph.D project to analyse and visualise cGENIE model output (mostly in netCDF format).
+This is an open-source Python package used in my Ph.D project to analyse and visualise [cGENIE model](https://www.seao2.info/mymuffin.html) output (mostly in netCDF format).
 
 
 ## Main features 🐛
