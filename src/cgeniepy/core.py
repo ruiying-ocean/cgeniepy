@@ -6,7 +6,6 @@ from scipy.stats import sem
 import regionmask
 from netCDF4 import Dataset
 from .plot import GeniePlottable
-from pandas import read_fwf
 
 from . import Q_
 from .grid import (
@@ -18,22 +17,7 @@ from .grid import (
 from .utils import file_exists
 from .chem import rm_element
 
-
 class GenieArray(GeniePlottable):
-
-    # self._time = -1
-
-    # @property
-    # def time(self):
-    #     return self._time
-
-    # @time.setter
-    # def time(self, value):
-    #     "set your time iloc index)"
-    #     if not isinstance(value, int):
-    #         time_array = self.vars(var_name="time")
-    #         raise ValueError(f"Please select [time index] (integer) from {time_array}")
-    #     self._time = value
 
     def __init__(self, M=36, N=36):
         """
@@ -67,11 +51,21 @@ class GenieArray(GeniePlottable):
         uarray = Q_(self.pure_array(), unit)
         return uarray
 
+    def sel(self, *args, **kwargs):
+        "a wrapper to xarray sel method"
+        self.array = self.array.sel(*args, **kwargs)
+        return self
+
+    def isel(self, *args, **kwargs):
+        "a wrapper to xarray sel method"
+        self.array = self.array.isel(*args, **kwargs)
+        return self
+
     def dim(self):
         return self.pure_array().ndim
 
-    def flip(self, axis=0):
-        return np.flip(self.array, axis=axis)
+    def flip(self, *args, **kwargs):
+        return np.flip(self.array,  *args, **kwargs)
 
     def flatten(self):
         "flatten in row-major (C-style)"
@@ -88,14 +82,6 @@ class GenieArray(GeniePlottable):
         x = GenieArray()
         x.array = reassign_GENIE(self.array).to_numpy()
         return x
-
-    def _to_genie_array(self):
-        """
-        remove all attributes
-        """
-        empty = GenieArray()
-        empty.array = self.array
-        return empty
 
     def _run_method(self, method: str, *args, **kwargs):
         "an alias to run stat for GenieArray class"
@@ -356,95 +342,15 @@ class GenieModel(object):
         return diff
 
 
-class EcoModel(GenieModel):
-
-    def eco_pars(self):
-        """
-        return ecophysiological parameter table
-        """
-        path = f"{self.model_path}/ecogem/Plankton_params.txt"
-        df = read_fwf(path)
-        return df
-
-    def ptf_presence(self, x, tol=1e-8):
-        """
-        to determine whethere a functional group present or not
-        :param tol: threshold of biomass (mmol C/m3)
-        """
-        if np.isnan(x):
-            return x
-        elif x >= tol:
-            return 1
-        else:
-            return 0
-
-    def pft_count(self):
-        "the number of plankton functional type"
-        full_lst = list(self.get_vars())
-        name_lst = [x for x in full_lst if "eco2D_Export_C" in x]
-        n = len(name_lst)
-        return n
-
-    def pft_richness(self):
-        """
-        plankton functional group richness, note it is different from species richness,
-        because there are more species in low size classes (i.e., body size-species richness relationship)
-        """
-        vfunc = np.vectorize(self._ptf_presence)
-        total_sp = np.zeros((36, 36))
-        n = self.pft_count()
-
-        for i in range(n):
-            name = f"eco2D_Plankton_C_0{i+1:02d}"
-            # select
-            arr = self.select_var(name).pure_array()
-            # conditional mask
-            sp = vfunc(arr)
-            # sum
-            total_sp += sp
-
-        x = GenieArray()
-        x.array = total_sp
-        return x
-
-    def select_pft(self, start=None, end=None, var="biomass", element="C"):
-
-        # if not specify the groups, select all
-        if not start and not end:
-            start = 1
-            end = self.pft_count()
-
-        # biomass or export production
-        if var == "biomass":
-            v = "Plankton"
-        elif var == "export":
-            v = "Export"
-        else:
-            raise ValueError("Not correct variable")
-
-        # loop and sum
-        total = np.zeros((36, 36))
-        end += 1
-        for i in range(start, end):
-            name = f"eco2D_{v}_{element}_0{i:02d}"
-            arr = self.select_var(name).array
-            total += arr
-
-        # return
-        x = GenieArray()
-        x.array = total
-        return x
-
-
 class GenieVariable(GenieArray):
-    def __init__(self, var, model_path):
-        # initialise super class to inherite attributes
-        self.var = var
+    def __init__(self, model_path, var):
         self.model_path = model_path
+        self.var = var
         GenieArray.__init__(self)
 
     def _set_array(self):
         gm = GenieModel(model_path = self.model_path)
         path2nc =gm._auto_find_path(var=self.var)
         array = gm._open_nc(path2nc)[self.var]
+
         return array
