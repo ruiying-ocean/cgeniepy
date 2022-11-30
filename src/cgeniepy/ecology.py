@@ -39,33 +39,22 @@ class PlanktonType():
         self.model_path = model_path
 
     def biomass(self, element="C"):
-        self.bgc = "Plankton"
-        self.element = element
-        # if len(pft_n)
-        # copy a full list of strings
-        # pass it to the receptor
-        self.full_varstr = f"eco2D_{self.bgc}_{self.element}_{self.pft_n:03}"
-
-        return PlanktonBiomass(var=self.full_varstr, element = self.element, model_path=self.model_path)
+        return PlanktonBiomass(pft_n=self.pft_n, element = element, model_path=self.model_path)
 
     def export(self, element="C"):
-        self.bgc = "Export"
-        self.element = element
-        self.full_varstr = f"eco2D_{self.bgc}_{self.element}_{self.pft_n:03}"
+        return PlanktonExport(pft_n=self.pft_n, element = element, model_path=self.model_path)
 
-        return PlanktonExport(var=self.full_varstr, element = self.element, model_path=self.model_path)
-
-    def presence(self, x, tol=1e-8):
-        """
-        to determine whethere a functional group present or not
-        :param tol: threshold of biomass (mmol C/m3)
-        """
-        if np.isnan(x):
-            return x
-        elif x >= tol:
-            return 1
-        else:
-            return 0
+    # def presence(self, x, tol=1e-8):
+    #     """
+    #     to determine whethere a functional group present or not
+    #     :param tol: threshold of biomass (mmol C/m3)
+    #     """
+    #     if np.isnan(x):
+    #         return x
+    #     elif x >= tol:
+    #         return 1
+    #     else:
+    #         return 0
 
     # def pft_richness(self):
     #     """
@@ -91,10 +80,14 @@ class PlanktonType():
 
 class PlanktonBiomass(GenieVariable):
 
-    def __init__(self, model_path, var, element):
-        GenieVariable.__init__(self, model_path=model_path, var=var)
-        self.unit = "mmol m$^-3$"
+    bgc_prefix = "Plankton"
+    unit = "mmol m$^-3$"
+
+    def __init__(self, model_path, pft_n, element):
+        self.pft_n = pft_n
         self.element = element
+        self.full_varstr = f"eco2D_{self.bgc_prefix}_{self.element}_{self.pft_n:03}"
+        GenieVariable.__init__(self, model_path=model_path, var=self.full_varstr)
 
     def sum(self):
         "print in Tg, depending on the element"
@@ -103,15 +96,20 @@ class PlanktonBiomass(GenieVariable):
         v = GENIE_grid_vol().to_base_units()
         s = c * v
         s = s.to("mol").to("g", "chemistry", mw=X_ * ureg("g/mole")).to("Gt")
-        return s
+        return np.nansum(s)
 
 
 class PlanktonExport(GenieVariable):
-    def __init__(self, model_path, var, element):
-        GenieVariable.__init__(self, model_path=model_path, var=var)
-        self.unit = "mmol m^-2 d^-1"
+
+    unit = "mmol m$^-2$ d$^-1$"
+    bgc_prefix = "Export"
+
+
+    def __init__(self, model_path, pft_n,  element):
+        self.pft_n = pft_n
         self.element = element
-        self.unit = "mmol m$^-2$ d$^-1$"
+        self.full_varstr = f"eco2D_{self.bgc_prefix}_{self.element}_{self.pft_n:03}"
+        GenieVariable.__init__(self, model_path=model_path, var=self.full_varstr)
 
     def _set_array(self):
         #tested

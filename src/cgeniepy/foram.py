@@ -8,27 +8,26 @@ from functools import reduce
 from pandas import DataFrame
 import seaborn as sns
 
-from .core import GenieModel, GenieArray
+from .core import GenieArray, GenieVariable
+from .ecology import GenieModel, PlanktonType, PlanktonBiomass, PlanktonExport
 from . import ureg
 from .plot import plot_genie
-from .data import foram_dict, foram_names, obs_stat_bytype, obs_stat_bysource
+from .data import foram_names, obs_stat_bytype, obs_stat_bysource
 from .scores import quick_mscore, quick_rmse, quick_cos_sim, quick_corr
 from .utils import set_sns_barwidth, distance
 from .chem import molecular_weight
-from .grid import GENIE_lat
+from .grid import GENIE_lat, GENIE_grid_area
 
 
 class ForamModel(GenieModel):
-    """A highly customized GenieModel subclass
+    """A further customized GenieModel subclass
     """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    def __init__(self, args):
-        super(ForamModel, self).__init__()
-        self.args = args
-
-    def select_foram(self, foram_name: str):
+    def select_foram(self, foram_type):
         "a optimised version of select_var()"
-        return ForamVariable(foram_name=foram_name, model_path=self.model_path)
+        return ForamType(foram_type = foram_type, model_path=self.model_path)
 
     def skill_score(self, cost_function="m_score", table_styler=True, *args, **kwargs):
         "summarised model skill score compared to modern observations"
@@ -37,19 +36,19 @@ class ForamModel(GenieModel):
         foram_fullname = tuple(foram_names().values())
         df = {
             "Biomass": [
-                ForamVariable(i, self.model_path)
+                ForamType(i, self.model_path)
                 .biomass_c()
                 ._run_method(method=cost_function, *args, **kwargs)
                 for i in foram_abbrev
             ],
             "Carbon Export": [
-                ForamVariable(i, self.model_path)
+                ForamType(i, self.model_path)
                 .export_c()
                 ._run_method(method=cost_function, *args, **kwargs)
                 for i in foram_abbrev
             ],
             "Relative Abundance": [
-                ForamVariable(i, self.model_path)
+                ForamType(i, self.model_path)
                 .export_c()
                 .proportion()
                 ._run_method(method=cost_function, *args, **kwargs)
@@ -87,15 +86,15 @@ class ForamModel(GenieModel):
 
         dic = {
             "Biomass": [
-                ForamVariable(i, self.model_path).biomass_c()._run_method(method=stat)
+                ForamType(i, self.model_path).biomass_c()._run_method(method=stat)
                 for i in foram_abbrev
             ],
             "Carbon Export": [
-                ForamVariable(i, self.model_path).export_c()._run_method(method=stat)
+                ForamType(i, self.model_path).export_c()._run_method(method=stat)
                 for i in foram_abbrev
             ],
             "Relative Abundance": [
-                ForamVariable(i, self.model_path)
+                ForamType(i, self.model_path)
                 .export_c()
                 .proportion()
                 ._run_method(method=stat)
@@ -124,15 +123,15 @@ class ForamModel(GenieModel):
 
         return df
 
-    def foram_POC(self):
-        "Estimate total foraminiferal organic carbon flux rate"
+    def foram_poc(self):
+        "Estimate integraded foraminiferal organic carbon flux rate"
 
         foram_poc = GenieArray()
 
         for foram in ["bn", "bs", "sn", "ss"]:
             foram_poc += self.select_foram(foram).export_c()
 
-        poc_total = ForamCarbonFlux(self.model_path, "ALL_FORAM")
+        poc_total = ForamPOC(self.model_path, "ALL_FORAM")
         poc_total.array = foram_poc.array
 
         return poc_total
@@ -470,181 +469,58 @@ class ForamModel(GenieModel):
     # weighted sum
 
 
-class ForamVariable(GenieModel):
-    def __init__(self, foram_name, model_path):
-        self.foram_name = foram_name
-        GenieModel.__init__(self, model_path=model_path)
+class ForamType(PlanktonType):
 
-    def biomass_c(self):
-        return ForamBiomass(model_path=self.model_path, foram_name=self.foram_name)
+    def __init__(self, foram_type, model_path):
+        self.model_path = model_path
+        self.foram_type = foram_type
+        self.pft_n = foram_names()[self.foram_type][0]
 
-    def export_c(self):
-        return ForamCarbonFlux(model_path=self.model_path, foram_name=self.foram_name)
+    def biomass(self, element="C"):
+        return ForamBiomass(pft_n=self.pft_n, element = element, model_path=self.model_path)
 
-    def sum_mscore(self):
-        "compared to modern observations"
-        return (
-            self.export_c().m_score()
-            + self.biomass_c().m_score()
-            + self.export_c().proportion().m_score()
-        )
+    def export(self, element="C"):
+        return ForamExport(pft_n=self.pft_n, element = element, model_path=self.model_path)
 
+    def calcite(self):
+        export_C_var = self.export(element="C").full_varstr
+        return ForamCalcite(var=export_C_var, model_path=self.model_path)
 
-class ForamBGC(GenieModel, GenieArray):
-    def __init__(self, model_path: str, foram_name: str, biogeo_var: str):
-        self.biogeo_var = biogeo_var
-        self.foram_name = foram_name
-        GenieModel.__init__(self, model_path)
-        self.ecogem_path = self.nc_path("ecogem", "2d")
-        GenieArray.__init__(self)
-
-    def _set_array(self):
-        source_data = self.open_nc(self.ecogem_path)
-        foramdict = foram_dict()
-        for key, value in foramdict.items():
-            if value[1] == self.foram_name and value[0] == self.biogeo_var:
-                return source_data[key]
-
-    def proportion(self):
-        return ForamProportion(self.model_path, self.foram_name, self.biogeo_var)
-
-    def m_score(self, *args, **kwargs):
-        return quick_mscore(
-            self.pure_array(), self.biogeo_var, self.foram_name, *args, **kwargs
-        )
-
-    def rmse(self, *args, **kwargs):
-        return quick_rmse(
-            self.pure_array(), self.biogeo_var, self.foram_name, *args, **kwargs
-        )
-
-    def cos_sim(self, *args, **kwargs):
-        return quick_cos_sim(
-            self.pure_array(), self.biogeo_var, self.foram_name, *args, **kwargs
-        )
-
-    def corr(self, *args, **kwargs):
-        return quick_corr(
-            self.pure_array(), self.biogeo_var, self.foram_name, *args, **kwargs
-        )
+    def relative_abundance(self, element="C"):
+        export_var = self.export(element=element).full_varstr
+        return ForamAbundance(var=export_var, model_path=self.model_path)
 
 
-class ForamBiomass(ForamBGC):
-    def __init__(self, model_path, foram_name):
-        self.biogeo_var = "tow"
-        super(ForamBiomass, self).__init__(model_path, foram_name, self.biogeo_var)
-        self.unit = "mmol m$^-3$"
-
-    def sum(self):
-        C_ = molecular_weight("C")
-        c = self.uarray().to_base_units()
-        v = self.marine_volume().to_base_units()
-        s = c * v
-        s = s.to("mol").to("g", "chemistry", mw=C_ * ureg("g/mole")).to("Gt")
-
-        return np.nansum(s)
+class ForamBiomass(PlanktonBiomass):
+    obs = "net"
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
-class ForamCarbonFlux(ForamBGC):
-    def __init__(self, model_path, foram_name):
-        self.biogeo_var = "trap"
-        super(ForamCarbonFlux, self).__init__(model_path, foram_name, self.biogeo_var)
-        self.unit = "mmol m$^-2$ d$^-1$"
+class ForamExport(PlanktonExport):
+    obs = "trap"
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class ForamCalcite(GenieVariable):
+
+    unit = "mmol m$^-2$ d$^-1$"    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def _set_array(self):
-        source_data = self.open_nc(self.ecogem_path)
-        foramdict = foram_dict()
-        for key, value in foramdict.items():
-            if value[1] == self.foram_name and value[0] == self.biogeo_var:
-                return source_data[key] * 80.8
-
-    def to_calcite(self):
         """
         convert POC to Calcite (in mmol m-2 d-1) given POC:PIC:CaCO3 mol ratio = 100:36:36 (mass ratio = 100:36:300)
         """
-
-        calcite = ForamCalcite(model_path=self.model_path)
-        calcite.array = self.array * 0.36
-
-        return calcite
-
-    @ureg.with_context("bgc")
-    def sum(self):
-        # concentration data
-        c = self.uarray().to_base_units()
-        # make volume in pint type
-        v = self.marine_area().to_base_units()
-        # globall integrated value
-        s = c * v
-
-        # unit conversion
-        C_ = molecular_weight("C")
-        s = s.to("mol d^-1").to("g d^-1", "bgc", mw=C_ * ureg("g/mol")).to("Gt yr^-1")
-
-        return np.nansum(s)
-
-
-class ForamProportion(ForamBGC):
-    def __init__(self, model_path, foram_name, biogeo_var):
-        self.biogeo_var = biogeo_var
-        ForamBGC.__init__(self, model_path, foram_name, biogeo_var)
-
-    def _set_array(self):
-        source_data = self.open_nc(self.ecogem_path)
-        foramdict = foram_dict()
-        all_foram_vars = []
-
-        for key, value in foramdict.items():
-            if value[0] == self.biogeo_var:
-                all_foram_vars.append(source_data[key])
-
-        total_foram = reduce(np.add, all_foram_vars)
-
-        # ignore divided by 0
-        # and set grid with total_foram == 0 to 0 instead of NA
-        with np.errstate(divide="ignore", invalid="ignore"):
-            one_foram = super()._set_array()
-            proportion = np.divide(
-                one_foram,
-                total_foram,
-                out=np.zeros_like(one_foram),
-                where=total_foram != 0,
-            )
-
-        return proportion
-
-    def m_score(self, observation="core", *args, **kwargs):
-        return quick_mscore(
-            self.pure_array(), observation, self.foram_name, *args, **kwargs
-        )
-
-    def rmse(self, observation="core", *args, **kwargs):
-        return quick_rmse(
-            self.pure_array(), observation, self.foram_name, *args, **kwargs
-        )
-
-    def cos_sim(self, observation="core", *args, **kwargs):
-        return quick_cos_sim(
-            self.pure_array(), observation, self.foram_name, *args, **kwargs
-        )
-
-    def corr(self, observation="core", *args, **kwargs):
-        return quick_corr(
-            self.pure_array(), observation, self.foram_name, *args, **kwargs
-        )
-
-
-class ForamCalcite(GenieArray, GenieModel):
-    def __init__(self, model_path):
-        "default empty array, need to assign the array manually, such as ForamCarbonFlux.to_PIC()"
-        GenieModel.__init__(self, model_path=model_path)
-        self.unit = "mmol m$^-2$ d$^-1$"
+        array = super()._set_array() * 0.36
+        return array
 
     @ureg.with_context("bgc")
     def sum(self):
         CaCO3 = molecular_weight("CaCO3")
         c = self.uarray().to_base_units()
-        v = self.marine_area().to_base_units()
+        v = GENIE_grid_area().to_base_units()
         s = c * v
         s = (
             s.to("mol d^-1")
@@ -653,3 +529,48 @@ class ForamCalcite(GenieArray, GenieModel):
         )
 
         return np.nansum(s)
+
+class ForamAbundance(GenieVariable):
+    obs = "coretop"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def _total_foram(self):
+        "if total foram is ptf No.16 to 19"
+        # get the source data
+        gm = GenieModel(model_path = self.model_path)
+        path2nc =gm._auto_find_path(var=self.var)
+        src_data = gm._open_nc(path2nc)
+
+        # get all the foram variables
+        variable_template = self.var[:-2]
+        foram_variables = [variable_template + str(i) for i in range(16, 20)]
+
+        # use foram variables to get data
+        target_data = []
+        for i in foram_variables:
+            target_data.append(src_data[i])
+
+        total_foram = reduce(np.add, target_data)
+
+        return total_foram
+
+    def _set_array(self):
+        # one foram
+        one_foram = super()._set_array()
+
+        # total foram
+        total_foram = self._total_foram()
+
+        # ignore divided by 0
+        # and set grid with total_foram == 0 to 0 instead of NA
+        with np.errstate(divide="ignore", invalid="ignore"):
+            proportion = np.divide(
+                one_foram,
+                total_foram,
+                out=np.zeros_like(one_foram),
+                where=total_foram != 0,
+            )
+
+        return proportion
