@@ -85,14 +85,6 @@ def obs_stat_bytype(type, *args, **kwargs) -> pd.DataFrame:
 
     return data
 
-
-# def get_diff_xarray(filename, type, var):
-#     sorted_model_data, target_obs = get_comparable_data(filename, type, var)
-#     diff_xarray = sorted_model_data - target_obs
-#
-#     return diff_xarray
-
-
 def foram_names():
     """
     get a dictionary with foram abbrev (keys) and complete name (values).
@@ -100,56 +92,13 @@ def foram_names():
     :returns: dictionary
     """
     foram_names = {
-        "bn": "symbiont-barren non-spinose",
-        "bs": "symbiont-barren spinose",
-        "sn": "symbiont-facultative non-spinose",
-        "ss": "symbiont-obligate spinose",
+        "bn": [16, "symbiont-barren non-spinose"],
+        "bs": [17, "symbiont-barren spinose"],
+        "sn": [18, "symbiont-facultative non-spinose"],
+        "ss": [19, "symbiont-obligate spinose"],
     }
 
     return foram_names
-
-
-def foram_dict():
-    """
-    get a dictionary with foram variable name (key) and corresponding data source name(value[0]), abbrev (value[1])
-
-    :returns: dictionary
-    """
-    foram_dict = {
-        "eco2D_Plankton_C_016": ["tow", "bn"],
-        "eco2D_Plankton_C_017": ["tow", "bs"],
-        "eco2D_Plankton_C_018": ["tow", "sn"],
-        "eco2D_Plankton_C_019": ["tow", "ss"],
-        "eco2D_Export_C_016": ["trap", "bn"],
-        "eco2D_Export_C_017": ["trap", "bs"],
-        "eco2D_Export_C_018": ["trap", "sn"],
-        "eco2D_Export_C_019": ["trap", "ss"],
-    }
-
-    return foram_dict
-
-
-def get_calcite_rate(file, time=-1):
-    """
-    Estimate total foraminiferal inorganic carbon flux rate (g/year)
-
-    :param file: string, netcdf output file
-    :returns: 2D array
-    """
-    data = open_dataset(file).isel(time=time)
-
-    df_bn = data.eco2D_Export_C_016
-    df_bs = data.eco2D_Export_C_017
-    df_sn = data.eco2D_Export_C_018
-    df_ss = data.eco2D_Export_C_019
-
-    POC_total = df_bn + df_bs + df_sn + df_ss  # mmol C/m3/day
-    ind_rate = POC_total * 12 * 1e3 / 0.845  # ind/m3/day
-    calcite_rate = ind_rate * 0.845 * 3 * 1e-3 * 80.8  # mg/m2/day
-    calcite_g_yr = calcite_rate * 365 * 1e-3
-
-    return calcite_g_yr
-
 
 def filter_foramdf(dataframe, foram_group=None):
     """
