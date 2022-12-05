@@ -16,6 +16,7 @@ from .grid import (
 )
 from .utils import file_exists
 from .chem import rm_element
+from .score import ModelSkill
 
 class GenieArray(GeniePlottable):
 
@@ -232,6 +233,9 @@ class GenieArray(GeniePlottable):
             return data.where(data > threshold, drop=True)
         else:
             return data.where(data < threshold, drop=True)
+
+    def compare_obs(self, obs):
+        return ModelSkill(model=self.pure_array(), obsveration=obs)
 
 
 class GenieModel(object):

@@ -4,7 +4,7 @@ This is an open-source Python package used in my Ph.D project to analyse and vis
 ## Main features 🐛
 
 ### 1. visualisation based on Matplotlib
-- Map
+- Map for 2D cGENIE array
 - Ocean Transection Contour 
 - Taylor diagram
 
@@ -35,4 +35,8 @@ ReST as docstring style, black as code style.
 - [] Unit Tests
 - [X] add decorator for plot object
 
+## Structure
 
+the essential is to pass the model path string until the code finally get data from it.
+
+Class: GenieModel -> EcoModel; GenieVariable -> PlanktonBiomass/PlanktonExport -> ForamBiomass/ForamExport;
