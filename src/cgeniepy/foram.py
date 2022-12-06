@@ -1,22 +1,24 @@
-import matplotlib.pyplot as plt
-from matplotlib.ticker import AutoMinorLocator
+# import matplotlib.pyplot as plt
+# from matplotlib.ticker import AutoMinorLocator
+# import string
+# from pandas import DataFrame
 
-import string
 import numpy as np
 from functools import reduce
-from pandas import DataFrame
-
 from . import ureg
-from .core import GenieArray, GenieVariable
-from .ecology import GenieModel, PlanktonType, PlanktonBiomass, PlanktonExport
-from .plot import plot_genie
-from .data import foram_names, obs_stat_bytype, obs_stat_bysource
-from .scores import quick_mscore, quick_rmse, quick_cos_sim, quick_corr
-from .utils import set_sns_barwidth, distance
 from .chem import molecular_weight
-from .grid import GENIE_lat, GENIE_grid_area
 
-# skill score, functional diversity, more plot options
+from .ecology import GenieModel, PlanktonType, PlanktonBiomass, PlanktonExport
+from .core import GenieVariable
+from .data import foram_names
+
+# from .plot import plot_genie
+
+# from .scores import quick_mscore, quick_rmse, quick_cos_sim, quick_corr
+# from .utils import set_sns_barwidth, distance
+from .grid import GENIE_grid_area
+
+# observation_data, functional diversity, more plot options
 
 class ForamModel(GenieModel):
     """A further customized GenieModel subclass"""

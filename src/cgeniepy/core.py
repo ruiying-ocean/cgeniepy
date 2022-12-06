@@ -13,10 +13,12 @@ from .grid import (
     reassign_GENIE,
     GENIE_grid_mask,
     GENIE_grid_vol,
+    mask_Arctic_Med
 )
 from .utils import file_exists
 from .chem import rm_element
-from .score import ModelSkill
+from .scores import ModelSkill
+from .utils import remove_outliers
 
 class GenieArray(GeniePlottable):
 
@@ -234,8 +236,16 @@ class GenieArray(GeniePlottable):
         else:
             return data.where(data < threshold, drop=True)
 
-    def compare_obs(self, obs):
-        return ModelSkill(model=self.pure_array(), obsveration=obs)
+    def compare_obs(self, obs, *args, **kwargs):
+        return ModelSkill(model=self.pure_array(), observation=obs, *args, **kwargs)
+
+    def remove_outliers(self, outlier_level):
+        self.array = remove_outliers(self.array, m = outlier_level)
+        return self
+
+    def mask_Arctic_Med(self, *args, **kwargs):
+        self.array = mask_Arctic_Med(self.array, *args, **kwargs)
+        return self
 
 
 class GenieModel(object):
