@@ -10,7 +10,8 @@ from .chem import molecular_weight
 
 from .ecology import GenieModel, PlanktonType, PlanktonBiomass, PlanktonExport
 from .core import GenieVariable
-from .data import foram_names
+from .data import foram_names, obs_data
+from .scores import ModelSkill
 
 # from .plot import plot_genie
 
@@ -30,7 +31,9 @@ class ForamModel(GenieModel):
         "a optimised version of select_var()"
         return ForamType(foram_type=foram_type, model_path=self.model_path)
 
+
 class ForamType(PlanktonType):
+
     def __init__(self, foram_type, model_path):
         self.model_path = model_path
         self.foram_type = foram_type
@@ -38,45 +41,77 @@ class ForamType(PlanktonType):
 
     def biomass(self, element="C"):
         return ForamBiomass(
-            pft_n=self.pft_n, element=element, model_path=self.model_path
+            foram_type=self.foram_type,
+            element=element,
+            model_path=self.model_path,
         )
 
     def export(self, element="C"):
         return ForamExport(
-            pft_n=self.pft_n, element=element, model_path=self.model_path
+            foram_type=self.foram_type,
+            element=element,
+            model_path=self.model_path,
         )
 
     def calcite(self):
         export_C_var = self.export(element="C").full_varstr
-        return ForamCalcite(var=export_C_var, model_path=self.model_path)
+        return ForamCalcite(foram_type = self.foram_type, var=export_C_var, model_path=self.model_path)
 
     def relative_abundance(self, element="C"):
         export_var = self.export(element=element).full_varstr
-        return ForamAbundance(var=export_var, model_path=self.model_path)
+        return ForamAbundance(foram_type = self.foram_type, var=export_var, model_path=self.model_path)
 
 
 class ForamBiomass(PlanktonBiomass):
     obs = "net"
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, foram_type, element, model_path):
+        self.foram_type = foram_type
+        self.pft_n = foram_names()[self.foram_type][0]
+        super().__init__(pft_n = self.pft_n,
+                         element=element,
+                         model_path=model_path)
 
-    def Mscore(self):
-        pass
+    def compare_obs(self, **kwargs):
+        if "obs" in kwargs:
+            data = obs_data(source = kwargs["obs"], var=self.foram_type)
+        else:
+            data = obs_data(source = self.obs, var=self.foram_type)
+
+        if "mask_MedArc" in kwargs:
+            return ModelSkill(model=self.pure_array(), observation=data, mask_MedArc=kwargs["mask_MedArc"])
+        else:
+            return ModelSkill(model=self.pure_array(), observation=data)
 
 
 class ForamExport(PlanktonExport):
     obs = "trap"
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, foram_type, element, model_path):
+        self.foram_type = foram_type
+        self.pft_n = foram_names()[self.foram_type][0]
+        super().__init__(pft_n = self.pft_n,
+                         element=element,
+                         model_path=model_path)
+
+    def compare_obs(self, **kwargs):
+        if "obs" in kwargs:
+            data = obs_data(source = kwargs["obs"], var=self.foram_type)
+        else:
+            data = obs_data(source = self.obs, var=self.foram_type)
+
+        if "mask_MedArc" in kwargs:
+            return ModelSkill(model=self.pure_array(), observation=data, mask_MedArc=kwargs["mask_MedArc"])
+        else:
+            return ModelSkill(model=self.pure_array(), observation=data)
 
 
 class ForamCalcite(GenieVariable):
 
     unit = "mmol m$^-2$ d$^-1$"
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, foram_type, *args, **kwargs):
+        self.foram_type = foram_type
         super().__init__(*args, **kwargs)
 
     def _set_array(self):
@@ -104,7 +139,8 @@ class ForamCalcite(GenieVariable):
 class ForamAbundance(GenieVariable):
     obs = "coretop"
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, foram_type, *args, **kwargs):
+        self.foram_type = foram_type
         super().__init__(*args, **kwargs)
 
     def _total_foram(self):
@@ -145,3 +181,14 @@ class ForamAbundance(GenieVariable):
             )
 
         return proportion
+
+    def compare_obs(self, **kwargs):
+        if "obs" in kwargs:
+            data = obs_data(source = kwargs["obs"], var=self.foram_type)
+        else:
+            data = obs_data(source = self.obs, var=self.foram_type)
+
+        if "mask_MedArc" in kwargs:
+            return ModelSkill(model=self.pure_array(), observation=data, mask_MedArc=kwargs["mask_MedArc"])
+        else:
+            return ModelSkill(model=self.pure_array(), observation=data)
