@@ -21,16 +21,16 @@ class EcoModel(GenieModel):
         df = read_fwf(path)
         return df
 
-    def pft_num(self):
+    def num_of_pft(self):
         "the total number of plankton functional type"
         full_lst = list(self.get_vars())
         name_lst = [x for x in full_lst if "eco2D_Export_C" in x]
         n = len(name_lst)
         return n
 
-    def select_pft(self, pft_n):
+    def select_pft(self, pft_array):
         "pft can be an integer or a index list"
-        return PlanktonType(pft_n=pft_n, model_path=self.model_path)
+        return PlanktonType(pft_n=pft_array, model_path=self.model_path)
 
 
 class PlanktonType:
@@ -39,14 +39,10 @@ class PlanktonType:
         self.model_path = model_path
 
     def biomass(self, element="C"):
-        return PlanktonBiomass(
-            pft_n=self.pft_n, element=element, model_path=self.model_path
-        )
+        return PlanktonBiomass(pft_n=self.pft_n, element=element, model_path=self.model_path)
 
     def export(self, element="C"):
-        return PlanktonExport(
-            pft_n=self.pft_n, element=element, model_path=self.model_path
-        )
+        return PlanktonExport(pft_n=self.pft_n, element=element, model_path=self.model_path)
 
     # def presence(self, x, tol=1e-8):
     #     """
@@ -91,7 +87,17 @@ class PlanktonBiomass(GenieVariable):
     def __init__(self, model_path, pft_n, element):
         self.pft_n = pft_n
         self.element = element
-        self.full_varstr = f"eco2D_{self.bgc_prefix}_{self.element}_{self.pft_n:03}"
+
+        # single index
+        if isinstance(self.pft_n, int) or isinstance(self.pft_n, str):
+            self.full_varstr = f"eco2D_{self.bgc_prefix}_{self.element}_{self.pft_n:03}"
+
+        # multiple indices
+        elif isinstance(self.pft_n, list) or isinstance(self.pft_n, tuple):
+            self.full_varstr = []
+            for i in pft_n:
+                self.full_varstr.append(f"eco2D_{self.bgc_prefix}_{self.element}_{i:03}")
+
         GenieVariable.__init__(self, model_path=model_path, var=self.full_varstr)
 
     def sum(self):
@@ -112,7 +118,17 @@ class PlanktonExport(GenieVariable):
     def __init__(self, model_path, pft_n, element):
         self.pft_n = pft_n
         self.element = element
-        self.full_varstr = f"eco2D_{self.bgc_prefix}_{self.element}_{self.pft_n:03}"
+
+        # single index
+        if isinstance(self.pft_n, int) or isinstance(self.pft_n, str):
+            self.full_varstr = f"eco2D_{self.bgc_prefix}_{self.element}_{self.pft_n:03}"
+
+        # multiple indices
+        elif isinstance(self.pft_n, list) or isinstance(self.pft_n, tuple):
+            self.full_varstr = []
+            for i in pft_n:
+                self.full_varstr.append(f"eco2D_{self.bgc_prefix}_{self.element}_{i:03}")
+
         GenieVariable.__init__(self, model_path=model_path, var=self.full_varstr)
 
     def _set_array(self):

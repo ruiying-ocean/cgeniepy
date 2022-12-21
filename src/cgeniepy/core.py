@@ -41,6 +41,10 @@ class GenieArray(GeniePlottable):
         "assign real data"
         return np.zeros((self.M, self.N))
 
+    def __getitem__(self, item):
+        "make iterable"
+        return self.array()[item]
+
     def pure_array(self):
         "get a numpy array"
         if hasattr(self.array, "values"):
@@ -364,7 +368,13 @@ class GenieVariable(GenieArray):
 
     def _set_array(self):
         gm = GenieModel(model_path = self.model_path)
-        path2nc =gm._auto_find_path(var=self.var)
-        array = gm._open_nc(path2nc)[self.var]
+        if isinstance(self.var, str):
+            path2nc =gm._auto_find_path(var=self.var)
+            array = gm._open_nc(path2nc)[self.var]
+        elif isinstance(self.var, list) or isinstance(self.var, tuple):
+            array = []
+            for v in self.var:
+                path2nc =gm._auto_find_path(v)
+                array.append(gm._open_nc(path2nc)[v])
 
         return array
