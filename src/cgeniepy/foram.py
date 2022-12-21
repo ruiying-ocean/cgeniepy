@@ -27,9 +27,9 @@ class ForamModel(GenieModel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def select_foram(self, foram_type):
-        "a optimised version of select_var()"
-        return ForamType(foram_type=foram_type, model_path=self.model_path)
+    def select_foram(self, foram_type, *args, **kwargs):
+        "a optimised version of select_var, can be int or a list/tuple"
+        return ForamType(foram_type=foram_type, model_path=self.model_path,  *args, **kwargs)
 
 
 class ForamType(PlanktonType):
@@ -37,40 +37,46 @@ class ForamType(PlanktonType):
     def __init__(self, foram_type, model_path):
         self.model_path = model_path
         self.foram_type = foram_type
-        self.pft_n = foram_names()[self.foram_type][0]
 
-    def biomass(self, element="C"):
+    def biomass(self, element="C",  *args, **kwargs):
         return ForamBiomass(
             foram_type=self.foram_type,
             element=element,
             model_path=self.model_path,
+            *args, **kwargs
         )
 
-    def export(self, element="C"):
+    def export(self, element="C",  *args, **kwargs):
         return ForamExport(
             foram_type=self.foram_type,
             element=element,
             model_path=self.model_path,
+             *args, **kwargs
         )
 
-    def calcite(self):
+    def calcite(self,  *args, **kwargs):
         export_C_var = self.export(element="C").full_varstr
-        return ForamCalcite(foram_type = self.foram_type, var=export_C_var, model_path=self.model_path)
+        return ForamCalcite(foram_type = self.foram_type, var=export_C_var, model_path=self.model_path,  *args, **kwargs)
 
-    def relative_abundance(self, element="C"):
+    def relative_abundance(self, element="C",  *args, **kwargs):
         export_var = self.export(element=element).full_varstr
-        return ForamAbundance(foram_type = self.foram_type, var=export_var, model_path=self.model_path)
+        return ForamAbundance(foram_type = self.foram_type, var=export_var, model_path=self.model_path,  *args, **kwargs)
 
 
 class ForamBiomass(PlanktonBiomass):
     obs = "net"
 
-    def __init__(self, foram_type, element, model_path):
+    def __init__(self, foram_type, element, model_path,  *args, **kwargs):
         self.foram_type = foram_type
-        self.pft_n = foram_names()[self.foram_type][0]
-        super().__init__(pft_n = self.pft_n,
+        # convert foram type to pft index
+        if isinstance(self.foram_type, list) or isinstance(self.foram_type, tuple):
+            self.pft_index = [foram_names().get(foram)[0] for foram in self.foram_type]
+        else:
+            self.pft_index = foram_names()[self.foram_type][0]
+        # pass pft_index to father class
+        super().__init__(pft_index = self.pft_index,
                          element=element,
-                         model_path=model_path)
+                         model_path=model_path,  *args, **kwargs)
 
     def compare_obs(self, **kwargs):
         if "obs" in kwargs:
@@ -87,12 +93,17 @@ class ForamBiomass(PlanktonBiomass):
 class ForamExport(PlanktonExport):
     obs = "trap"
 
-    def __init__(self, foram_type, element, model_path):
+    def __init__(self, foram_type, element, model_path,  *args, **kwargs):
         self.foram_type = foram_type
-        self.pft_n = foram_names()[self.foram_type][0]
-        super().__init__(pft_n = self.pft_n,
+        # convert foram type to pft index
+        if isinstance(self.foram_type, list) or isinstance(self.foram_type, tuple):
+            self.pft_index = [foram_names().get(foram)[0] for foram in self.foram_type]
+        else:
+            self.pft_index = foram_names()[self.foram_type][0]
+        # pass pft_index to father class
+        super().__init__(pft_index = self.pft_index,
                          element=element,
-                         model_path=model_path)
+                         model_path=model_path,  *args, **kwargs)
 
     def compare_obs(self, **kwargs):
         if "obs" in kwargs:

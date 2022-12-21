@@ -28,21 +28,21 @@ class EcoModel(GenieModel):
         n = len(name_lst)
         return n
 
-    def select_pft(self, pft_array):
+    def select_pft(self, pft_index):
         "pft can be an integer or a index list"
-        return PlanktonType(pft_n=pft_array, model_path=self.model_path)
+        return PlanktonType(pft_index=pft_index, model_path=self.model_path)
 
 
 class PlanktonType:
-    def __init__(self, pft_n, model_path):
-        self.pft_n = pft_n
+    def __init__(self, pft_index, model_path):
+        self.pft_index = pft_index
         self.model_path = model_path
 
-    def biomass(self, element="C"):
-        return PlanktonBiomass(pft_n=self.pft_n, element=element, model_path=self.model_path)
+    def biomass(self, element="C", *args, **kwargs):
+        return PlanktonBiomass(pft_index=self.pft_index, element=element, model_path=self.model_path, *args, **kwargs)
 
-    def export(self, element="C"):
-        return PlanktonExport(pft_n=self.pft_n, element=element, model_path=self.model_path)
+    def export(self, element="C", *args, **kwargs):
+        return PlanktonExport(pft_index=self.pft_index, element=element, model_path=self.model_path, *args, **kwargs)
 
     # def presence(self, x, tol=1e-8):
     #     """
@@ -84,21 +84,21 @@ class PlanktonBiomass(GenieVariable):
     bgc_prefix = "Plankton"
     unit = "mmol m$^-3$"
 
-    def __init__(self, model_path, pft_n, element):
-        self.pft_n = pft_n
+    def __init__(self, model_path, pft_index, element, *args, **kwargs):
+        self.pft_index = pft_index
         self.element = element
 
         # single index
-        if isinstance(self.pft_n, int) or isinstance(self.pft_n, str):
-            self.full_varstr = f"eco2D_{self.bgc_prefix}_{self.element}_{self.pft_n:03}"
+        if isinstance(self.pft_index, int) or isinstance(self.pft_index, str):
+            self.full_varstr = f"eco2D_{self.bgc_prefix}_{self.element}_{self.pft_index:03}"
 
         # multiple indices
-        elif isinstance(self.pft_n, list) or isinstance(self.pft_n, tuple):
+        elif isinstance(self.pft_index, list) or isinstance(self.pft_index, tuple):
             self.full_varstr = []
-            for i in pft_n:
+            for i in pft_index:
                 self.full_varstr.append(f"eco2D_{self.bgc_prefix}_{self.element}_{i:03}")
 
-        GenieVariable.__init__(self, model_path=model_path, var=self.full_varstr)
+        GenieVariable.__init__(self, model_path=model_path, var=self.full_varstr,*args, **kwargs)
 
     def sum(self):
         "print in Tg, depending on the element"
@@ -115,21 +115,21 @@ class PlanktonExport(GenieVariable):
     unit = "mmol m$^-2$ d$^-1$"
     bgc_prefix = "Export"
 
-    def __init__(self, model_path, pft_n, element):
-        self.pft_n = pft_n
+    def __init__(self, model_path, pft_index, element, *args, **kwargs):
+        self.pft_index = pft_index
         self.element = element
 
         # single index
-        if isinstance(self.pft_n, int) or isinstance(self.pft_n, str):
-            self.full_varstr = f"eco2D_{self.bgc_prefix}_{self.element}_{self.pft_n:03}"
+        if isinstance(self.pft_index, int) or isinstance(self.pft_index, str):
+            self.full_varstr = f"eco2D_{self.bgc_prefix}_{self.element}_{self.pft_index:03}"
 
         # multiple indices
-        elif isinstance(self.pft_n, list) or isinstance(self.pft_n, tuple):
+        elif isinstance(self.pft_index, list) or isinstance(self.pft_index, tuple):
             self.full_varstr = []
-            for i in pft_n:
+            for i in pft_index:
                 self.full_varstr.append(f"eco2D_{self.bgc_prefix}_{self.element}_{i:03}")
 
-        GenieVariable.__init__(self, model_path=model_path, var=self.full_varstr)
+        GenieVariable.__init__(self, model_path=model_path, var=self.full_varstr, *args, **kwargs)
 
     def _set_array(self):
         # tested

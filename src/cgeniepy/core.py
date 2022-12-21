@@ -43,7 +43,11 @@ class GenieArray(GeniePlottable):
 
     def __getitem__(self, item):
         "make iterable"
-        return self.array()[item]
+        return self.array[item]
+
+    def take(self, *args, **kwargs):
+        self.array = np.take(self.array, *args, **kwargs)
+        return self
 
     def pure_array(self):
         "get a numpy array"
@@ -123,7 +127,7 @@ class GenieArray(GeniePlottable):
             try:
                 quotient.array = np.divide(self.array, other)
             except ValueError:
-                print("Sorry, either number and GenieArray are accepted")
+                print("Only number and GenieArray are accepted")
 
         return quotient
 
@@ -291,7 +295,7 @@ class GenieModel(object):
         t.close()
         return if_exist
 
-    def get_vars(self, var_name=None, *args, **kwargs):
+    def check_vars(self, var_name=None, *args, **kwargs):
         "return specified or all available variables"
         if not var_name:
             t = Dataset(self._nc_path(*args, **kwargs), "r")
@@ -361,13 +365,15 @@ class GenieModel(object):
 
 
 class GenieVariable(GenieArray):
-    def __init__(self, model_path, var):
+    def __init__(self, model_path, var, combine_vars=False):
         self.model_path = model_path
         self.var = var
+        self.combine_vars = combine_vars
         GenieArray.__init__(self)
 
     def _set_array(self):
         gm = GenieModel(model_path = self.model_path)
+
         if isinstance(self.var, str):
             path2nc =gm._auto_find_path(var=self.var)
             array = gm._open_nc(path2nc)[self.var]
@@ -376,5 +382,7 @@ class GenieVariable(GenieArray):
             for v in self.var:
                 path2nc =gm._auto_find_path(v)
                 array.append(gm._open_nc(path2nc)[v])
+            if self.combine_vars:
+                array = np.sum(array, axis=0)
 
         return array
