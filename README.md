@@ -1,5 +1,6 @@
-This is an open-source Python package used in my Ph.D project to analyse and visualise [cGENIE model](https://www.seao2.info/mymuffin.html) output (mostly in netCDF format).
+This package is an interface to [cGENIE model](https://www.seao2.info/mymuffin.html).
 
+I try to learn and use my Python knowledge in this package, but it is inevitable that many errors may exist.
 
 ## Main features 🐛
 
@@ -21,7 +22,7 @@ input latitude/longitude to get where the site is in.
 ## Installation 🙂
 
 ```bash
-python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.4.2
+python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.5
 ```
 
 ## Code style
@@ -30,7 +31,7 @@ ReST as docstring style, black as code style.
 
 ## Project TODO 🚩
 
-- [] Documentation
+- [] Documentation built by `sphinx` 
 - [] Examples
 - [] Unit Tests
 - [X] add decorator for plot object

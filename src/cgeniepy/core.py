@@ -37,6 +37,17 @@ class GenieArray(GeniePlottable):
         else:
             self.unit = ""
 
+        self.dim = self._dim()
+        # init plottable instance
+        super().__init__(dim=self.dim, array=self.array)
+
+
+    def _dim(self):
+        return self.pure_array().ndim
+
+    def _update_dim(self):
+        self.dim = self.pure_array().ndim
+
     def _set_array(self):
         "assign real data"
         return np.zeros((self.M, self.N))
@@ -46,8 +57,17 @@ class GenieArray(GeniePlottable):
         return self.array[item]
 
     def take(self, *args, **kwargs):
-        self.array = np.take(self.array, *args, **kwargs)
-        return self
+        """
+        example:
+
+        mod.select_foram(["bn", "bs","sn","ss"]).biomass(combine_vars=True).take(0, axis=0).plot_map()
+        """
+        try:
+            self.array = np.take(self.array, *args, **kwargs)
+            self._update_dim()
+            return self
+        except ValueError:
+            print("take only works for numpy array")
 
     def pure_array(self):
         "get a numpy array"
@@ -64,16 +84,21 @@ class GenieArray(GeniePlottable):
 
     def sel(self, *args, **kwargs):
         "a wrapper to xarray sel method"
-        self.array = self.array.sel(*args, **kwargs)
-        return self
+        try:
+            self.array = self.array.sel(*args, **kwargs)
+            self._update_dim()
+            return self
+        except:
+            print("take only works for xarray")
 
     def isel(self, *args, **kwargs):
         "a wrapper to xarray sel method"
-        self.array = self.array.isel(*args, **kwargs)
-        return self
-
-    def dim(self):
-        return self.pure_array().ndim
+        try:
+            self.array = self.array.isel(*args, **kwargs)
+            self._update_dim()
+            return self
+        except:
+            print("isel only suuport for xarray, use take instead")
 
     def flip(self, *args, **kwargs):
         return np.flip(self.array,  *args, **kwargs)
@@ -143,53 +168,148 @@ class GenieArray(GeniePlottable):
 
         return product
 
-    def max(self, *args, **kwargs):
-        return np.max(self.array, *args, **kwargs)
+    def max(self, update_array=False, *args, **kwargs):
+        if update_array:
+            self.array = np.max(self.array, *args, **kwargs)
+            self._update_dim()
+            return self
+        else:
+            return np.max(self.array, *args, **kwargs)
 
-    def nanmax(self, *args, **kwargs):
-        return np.nanmax(self.array, *args, **kwargs)
+    def nanmax(self, update_array= False, *args, **kwargs):
+        if update_array:
+            self.array = np.nanmax(self.array, *args, **kwargs)
+            self._update_dim()
+            return self
+        else:
+            return np.nanmax(self.array, *args, **kwargs)
 
-    def min(self, *args, **kwargs):
-        return np.min(self.array, *args, **kwargs)
+    def min(self, update_array =False, *args, **kwargs):
+        if update_array:
+            self.array = np.min(self.array, *args, **kwargs)
+            self._update_dim()
+            return self
+        else:
+            return np.min(self.array, *args, **kwargs)
 
-    def nanmin(self, *args, **kwargs):
-        return np.nanmin(self.array, *args, **kwargs)
+    def nanmin(self, update_array=False, *args, **kwargs):
+        if update_array:
+            self.array = np.nanmin(self.array, *args, **kwargs)
+            self._update_dim()
+            return self
+        else:
+            return np.nanmin(self.array, *args, **kwargs)
 
-    def sum(self, *args, **kwargs):
-        return np.sum(self.pure_array(), *args, **kwargs)
+    def sum(self, update_array = False, *args, **kwargs):
+        if update_array:
+            self.array = np.sum(self.pure_array(), *args, **kwargs)
+            self._update_dim()
+            return self
+        else:
+            return np.sum(self.pure_array(), *args, **kwargs)
 
-    def square(self, *arg, **kwargs):
-        return np.square(self.pure_array())
+    def nansum(self, update_array=False,  *args, **kwargs):
+        if update_array:
+            self.array = np.nansum(self.pure_array(), *args, **kwargs)
+            self._update_dim()
+            return self
+        else:
+            return np.nansum(self.pure_array(), *args, **kwargs)
 
-    def sqrt(self, *arg, **kwargs):
-        return np.sqrt(self.pure_array())
+    def mean(self, update_array=False, *args, **kwargs):
+        if update_array:
+            self.array = np.mean(self.pure_array(), *args, **kwargs)
+            self._update_dim()
+            return self
+        else:
+            return np.mean(self.pure_array(), *args, **kwargs)
 
-    def nansum(self, *args, **kwargs):
-        return np.nansum(self.pure_array(), *args, **kwargs)
+    def nanmean(self, update_array=False, *args, **kwargs):
+        if update_array:
+            self.array = np.nanmean(self.pure_array(), *args, **kwargs)
+            self._update_dim()
+            return self
+        else:
+            return np.nanmean(self.pure_array(), *args, **kwargs)
 
-    def mean(self, *args, **kwargs):
-        return np.mean(self.pure_array(), *args, **kwargs)
+    def square(self, update_array=False, *arg, **kwargs):
+        if update_array:
+            self.array = np.square(self.pure_array(), *args, **kwargs)
+            self._update_dim()
+            return self
+        else:
+            return np.square(self.pure_array(), *args, **kwargs)
 
-    def nanmean(self, *args, **kwargs):
-        return np.nanmean(self.pure_array(), *args, **kwargs)
+    def sqrt(self, update_array=False, *arg, **kwargs):
+        if update_array:
+            self.array = np.sqrt(self.pure_array(), *args, **kwargs)
+            self._update_dim()
+            return self
+        else:
+            return np.sqrt(self.pure_array(), *args, **kwargs)
 
-    def ptp(self, *args, **kwargs):
+    def ptp(self,  update_array=False, *args, **kwargs):
         "range of values"
-        return np.ptp(self.pure_array(), *args, **kwargs)
+        if update_array:
+            self.array = np.ptp(self.pure_array(), *args, **kwargs)
+            self._update_dim()
+            return self
+        else:
+            return np.ptp(self.pure_array(), *args, **kwargs)
 
-    def sd(self, *args, **kwargs):
-        return np.std(self.pure_array(), *args, **kwargs)
+    def sd(self, update_array=False, *args, **kwargs):
+        if update_array:
+            self.array = np.std(self.pure_array(), *args, **kwargs)
+            self._update_dim()
+            return self
+        else:
+            return np.std(self.pure_array(), *args, **kwargs)
 
-    def nansd(self, *args, **kwargs):
-        return np.nanstd(self.pure_array(), *args, **kwargs)
+    def nansd(self, update_array=False, *args, **kwargs):
+        if update_array:
+            self.array = np.nanstd(self.pure_array(), *args, **kwargs)
+            self._update_dim()
+            return self
+        else:
+            return np.nanstd(self.pure_array(), *args, **kwargs)
 
-    def cv(self):
+    def var(self, update_array=False, *args, **kwargs):
+        if update_array:
+            self.array = np.var(self.pure_array(), *args, **kwargs)
+            self._update_dim()
+            return self
+        else:
+            return np.var(self.pure_array(), *args, **kwargs)
+
+    def nanvar(self, update_array=False, *args, **kwargs):
+        if update_array:
+            self.array = np.nanvar(self.pure_array(), *args, **kwargs)
+            self._update_dim()
+            return self
+        else:
+            return np.nanvar(self.pure_array(), *args, **kwargs)
+
+    def se(self, update_array=False, *args, **kwargs):
+        if update_array:
+            self.array = sem(self.array, nan_policy="omit", axis=None, *args, **kwargs)
+            self._update_dim()
+            return self
+        else:
+            return sem(self.array, nan_policy="omit", axis=None, *args, **kwargs)
+
+    def cv(self, update_array, *args, **kwargs):
         "coefficient of variance, or normalized standard deviation"
-        cv = self.nansd() / self.nanmean()
-        return cv
-
-    def se(self, *args, **kwargs):
-        return sem(self.array, nan_policy="omit", axis=None, *args, **kwargs)
+        if 'axis' in kwargs:
+            cv =  lambda x: np.nanstd(x) / np.nanmean(x)
+            if update_array:
+                self.array = np.apply_along_axis(cv, axis=kwargs.get('axis'), arr=self.array)
+                self._update_dim()
+                return self
+            else:
+                return np.apply_along_axis(cv, axis=kwargs.get('axis'), arr=self.array)
+        else:
+            cv = self.nansd() / self.nanmean()
+            return cv
 
     def select_basin(self, basin):
         ocean = regionmask.defined_regions.ar6.ocean
