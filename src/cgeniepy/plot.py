@@ -4,140 +4,18 @@ import numpy as np
 import pandas as pd
 import cartopy.crs as ccrs
 from cartopy.feature import LAND
-from matplotlib.colors import ListedColormap
+
 import matplotlib.pyplot as plt
 from matplotlib.projections import PolarAxes
+from matplotlib.ticker import AutoMinorLocator
+from matplotlib.colors import ListedColormap
 import mpl_toolkits.axisartist.floating_axes as fa
 import mpl_toolkits.axisartist.grid_finder as gf
 
 from .data import efficient_log
 from .grid import GENIE_lat, GENIE_lon, GENIE_depth
 
-def plot_genie(
-    ax,
-    data,
-    log=False,
-    grid_line=False,
-    continent_outline=True,
-    contour_layer=False,
-    *args,
-    **kwargs,
-):
-    """
-    plot map for 2D GENIE time-slice data
-
-    :param data: 2D numpy array
-    :param ax: matplotlib axes object with cartopy projection. e.g., projection=ccrs.EckertIV()
-    :param vmin: colorbar limit
-    :param log: whether take log for data
-    :type log: boolean
-    :param grid_line: whthere plot grid line
-    :type grid_line: boolean
-    :param continent_outline: logic whethere plot continent
-
-    :returns: a mappable plot object
-    """
-
-    data_crs = ccrs.PlateCarree()  # should not change
-
-    # -------------------Box line------------------------
-    ax.spines["geo"].set_edgecolor("black")
-    ax.spines["geo"].set_linewidth(1)
-
-    # -------------------Facecolor-----------------------
-    ax.patch.set_color("silver")
-
-    # -------------------Plot-----------------------
-    if log:
-        data = efficient_log(data)
-
-    lon_edge = GENIE_lon(edge=True)
-    lat_edge = GENIE_lat(edge=True)
-
-    # cartopy transform seems to help reassign the GENIE longitude to normal
-    p = ax.pcolormesh(
-        lon_edge,
-        lat_edge,
-        data,
-        transform=data_crs,
-        shading="flat",
-        *args,
-        **kwargs,
-    )
-
-    if contour_layer:
-        lat = GENIE_lat(edge=False)
-        lon = GENIE_lon(edge=False)
-        cs = ax.contour(lon, lat, data, transform=ccrs.PlateCarree(), **kwargs)
-        # label every three levels
-        ax.clabel(cs, cs.levels[::3], colors=["black"], fontsize=8, inline=False)
-
-    # -------------------Grid lines-----------------------
-    if grid_line:
-        ax.gridlines(
-            crs=data_crs,
-            draw_labels=False,
-            linewidth=0.5,
-            color="gray",
-            alpha=0.5,
-            linestyle="-",
-        )
-
-    # -------------------Continent lines-----------------------
-    if continent_outline:
-        outline_color = "black"
-        outline_width = 1
-        mask_array = np.where(~np.isnan(data), 1, 0)
-
-        Nlat_edge = len(lat_edge)
-        Nlon_edge = len(lon_edge)
-        # dimension of array
-        Nlat_array = Nlat_edge - 1
-        Nlon_array = Nlon_edge - 1
-        # index of array
-        Nlat_index = Nlat_array - 1
-        Nlon_index = Nlon_array - 1
-
-        # i stands for latitude index, j stands for longitude index
-        # e.g., mask_array[0, ] is Antarctic ice cap
-        # i,j are for mask array and will be converted to lon/lat edge lines
-        for i in range(Nlat_array):
-            for j in range(Nlon_array):
-                # compare with the right grid, and plot vertical line if different
-                if j < Nlon_index and mask_array[i, j] != mask_array[i, j + 1]:
-                    ax.vlines(
-                        lon_edge[j + 1],
-                        lat_edge[i],
-                        lat_edge[i + 1],
-                        color=outline_color,
-                        linewidth=outline_width,
-                        transform=data_crs,
-                    )
-
-                # connect the circular longitude axis
-                if j == Nlon_index and mask_array[i, j] != mask_array[i, 0]:
-                    ax.vlines(
-                        lon_edge[j + 1],
-                        lat_edge[i],
-                        lat_edge[i + 1],
-                        color=outline_color,
-                        linewidth=outline_width,
-                        transform=data_crs,
-                    )
-
-                # compare with the above grid, and plot horizontal line if different
-                if i < Nlat_index and mask_array[i, j] != mask_array[i + 1, j]:
-                    ax.hlines(
-                        lat_edge[i + 1],
-                        lon_edge[j],
-                        lon_edge[j + 1],
-                        colors=outline_color,
-                        linewidth=outline_width,
-                        transform=data_crs,
-                    )
-
-    return p
-
+# separate functions in plot_genie()
 
 def scatter_map(
     df: pd.DataFrame,
@@ -220,116 +98,236 @@ def cbar_wrapper(plotting_func):
 
     def wrappered_func(*args, **kwargs):
         p = plotting_func(*args, **kwargs)
-        cbar = plt.colorbar(p, fraction=0.05, pad=0.04, orientation="vertical")
+        cbar = plt.colorbar(p, fraction=0.05, pad=0.04, orientation="horizontal")
         cbar.ax.tick_params(color="k", direction="in")
+        cbar.outline.set_edgecolor('black')
         cbar.minorticks_on()
 
     return wrappered_func
 
+## TODO: add more layers: quiver,
 
-class GeniePlottable(object):
-    def plot_line(self, dim, *args, **kwargs):
-        """plot 1D data, e.g., zonal_average"""
+## colorbar option
+## mask basin option
 
-        if self.dim() > 1:
-            raise ValueError("Data should be of 1 Dimension")
-        if dim == "lon":
-            x = GENIE_lat()
-        if dim == "lat":
-            x = GENIE_lon()
+class GeniePlottable:
 
-        fig = plt.figure(figsize=(6, 4))
-        ax = fig.add_subplot(111)
-        ax.minorticks_on()
+    transform_crs = ccrs.PlateCarree()  # do not change
 
-        p = ax.plot(x, self.array, "k", *args, **kwargs)
+    grid_dict = {
+    "lon": GENIE_lon(edge=False),
+    "lat": GENIE_lat(edge=False),
+    "zt":GENIE_depth(edge=False)/1000,
 
-        return p
+    "lon_edge": GENIE_lon(edge=True),
+    "lat_edge": GENIE_lat(edge=True),
+    "zt_edge": GENIE_depth(edge=True)/1000,
+    }
 
-    def plot_map(self, ax=None, polar=False, cbar=True, *args, **kwargs):
+    def __init__(self, array, dim):
+        self.array = array
+        self.dim = dim
 
-        """plot lat-lon 2D array"""
+    def plot_1d(self, ax=None, x=None, *args, **kwargs):
+        """plot 1D data, e.g., zonal_average, time series
+        x: time/lon/lat
+        """
 
-        plt.rcParams["font.family"] = "sans-serif"
-
-        if polar:
-            fig = plt.figure(figsize=[10, 5])
-            ax_arctic = plt.subplot(121, projection=ccrs.Orthographic(0, 90))
-            ax_antarctic = plt.subplot(122, projection=ccrs.Orthographic(180, -90))
-            ax_arctic.gridlines(draw_labels=True)
-            ax_antarctic.gridlines(draw_labels=True)
-            plot_genie(ax=ax_arctic, data=self.array, *args, **kwargs)
-            plot_genie(ax=ax_antarctic, data=self.array, *args, **kwargs)
-
-            return fig
-
-        if not ax:
-            fig = plt.figure(dpi=75)
-            ax = fig.add_subplot(111, projection=ccrs.EckertIV())
-
-        if np.any(self.array < 0) and np.any(self.array > 0):
-            # x = max(abs(self.nanmin()), self.nanmax())
-            # vmax = x/2
-            # vmin = vmax * -1
-            p = plot_genie(ax=ax, data=self.array, cmap="RdBu_r", *args, **kwargs)
+        if not x:
+            fig, ax = self._init_fig()
+            self._set_borderline(ax, geo=False, width=0.8)
+            ax.grid(which='major', color='#DDDDDD', linewidth=0.8)
+            ax.grid(which='minor', color='#EEEEEE', linestyle=':', linewidth=0.5)
+            ax.tick_params(axis="both", direction="out", which="both", left=True, top=True, bottom=True, right=True)
+            ax.minorticks_on()
+            p = ax.plot(self.array, *args, **kwargs)
         else:
-            p = plot_genie(ax=ax, data=self.array, *args, **kwargs)
-
-        if cbar:
-            cax = fig.add_axes([0.15, 0.1, 0.73, 0.07])  # xmin, ymin, dx, dy
-            cbar = fig.colorbar(p, cax=cax, orientation="horizontal", pad=0.04)
-            cbar.minorticks_on()
-            if hasattr(self, "unit"):
-                cbar.set_label(self.unit, size=12)
+            p = ax.plot(x, self.array, *args, **kwargs)
 
         return p
 
-    def cross_section(self, ax=None, cmap="YlGnBu_r", *args, **kwargs):
-        """plot 3D array, tracers and stream function"""
+    @cbar_wrapper
+    def plot_map(self, ax=None, x_edge="lon_edge", y_edge="lat_edge", contour=False, *args, **kwargs):
 
-        data = self.array
-
-        # visualise
         if not ax:
-            fig, ax = plt.subplots(figsize=(8, 4))
+            fig, ax = self._init_fig(subplot_kw={'projection': ccrs.EckertIV()})
 
-        lat_edge = GENIE_lat(edge=True)
-        z_edge = GENIE_depth(edge=True) / 1000
-        lat = GENIE_lat(edge=False)
-        z = GENIE_depth(edge=False) / 1000
+        x_edge_arr = self.grid_dict.get(x_edge)
+        y_edge_arr = self.grid_dict.get(y_edge)
 
-        # pcolormesh
-        p = ax.pcolormesh(lat_edge, z_edge, data, cmap=cmap, *args, **kwargs)
+        self._set_facecolor(ax)
+        self._set_borderline(ax)
+        p = self._add_pcolormesh(ax, x_edge=x_edge_arr, y_edge=y_edge_arr, transform=self.transform_crs, *args, **kwargs)
+        self._add_outline(ax, x_edge=x_edge_arr, y_edge=y_edge_arr,  transform=self.transform_crs)
 
-        # contourf
-        # contourf_max = np.max(moc)//10 * 10
-        # controuf_N = int(contourf_max*2/10 + 1)
-        # contourf_level = np.linspace(contourf_max*-1, contourf_max, controuf_N)
-        # cs = ax.contourf(lat, z, data, corner_mask=False, levels=contourf_level, cmap=contourf_cmap)
-
-        # contour
-        cs = ax.contour(
-            lat, z, data, linewidths=0.6, colors="black", linestyles="solid"
-        )
-        ax.clabel(cs, cs.levels[::1], colors=["black"], fontsize=8.5, inline=False)
-
-        # colorbar, ticks & labels
-        # divider = make_axes_locatable(ax)
-        # cax = divider.append_axes('right', size='5%', pad=0.05)
-        cbar = plt.colorbar(p, fraction=0.05, pad=0.04, orientation="vertical")
-        cbar.ax.tick_params(color="k", direction="in")
-        # cbar.set_label("Stream function (Sv)")
-
-        plt.rcParams["font.family"] = "Arial"
-        ax.patch.set_color("#999DA0")
-        ax.set_ylim(ax.get_ylim()[::-1])
-        ax.set_xlabel(r"Latitude ($\degree$N)", fontsize=13)
-        ax.set_ylabel("Depth (km)", fontsize=12)
-        ax.minorticks_on()
-        ax.tick_params("both", length=4, width=1, which="major")
+        if contour:
+            x_arr = self.grid_dict.get(x_edge[:3:1])
+            y_arr = self.grid_dict.get(y_edge[:3:1])
+            p = self._add_contour(ax, x=x_arr, y=y_arr, transform=self.transform_crs)
 
         return p
 
+    @cbar_wrapper
+    def plot_polar(self, ax=None, hemisphere="South", x_edge="lon_edge", y_edge="lat_edge", contour=False, *args, **kwargs):
+
+        if not ax:
+            match hemisphere:
+                case "North":
+                    fig, ax = self._init_fig(subplot_kw={'projection': ccrs.Orthographic(0, 90)})
+                case "South":
+                    fig, ax = self._init_fig(subplot_kw={'projection': ccrs.Orthographic(180, -90)})
+
+        x_edge_arr = self.grid_dict.get(x_edge)
+        y_edge_arr = self.grid_dict.get(y_edge)
+
+        self._set_facecolor(ax)
+        self._set_borderline(ax)
+        p = self._add_pcolormesh(ax, x_edge=x_edge_arr, y_edge=y_edge_arr, transform=self.transform_crs, *args, **kwargs)
+        self._add_outline(ax, x_edge=x_edge_arr, y_edge=y_edge_arr, transform=self.transform_crs)
+        self._add_gridline(ax,
+            transform=self.transform_crs,
+            draw_labels=False,
+            linewidth=0.5,
+            color="gray",
+            alpha=0.5,
+            linestyle="-",
+        )
+
+        if contour:
+            x_arr = self.grid_dict.get(x_edge[:3:1])
+            y_arr = self.grid_dict.get(y_edge[:3:1])
+            p = self._add_contour(ax, x=x_arr, y=y_arr, transform=self.transform_crs)
+
+        return p
+
+    @cbar_wrapper
+    def plot_transection(self, ax=None, x_edge="lat_edge", y_edge="zt_edge", contour=False, *args, **kwargs):
+        if not ax:
+            fig, ax = self._init_fig(figsize=(5, 2.5))
+
+        x_edge_arr = self.grid_dict.get(x_edge)
+        y_edge_arr = self.grid_dict.get(y_edge)
+
+        self._set_facecolor(ax)
+        self._set_borderline(ax, geo=False)
+
+
+        p = self._add_pcolormesh(ax, x_edge=x_edge_arr, y_edge=y_edge_arr, *args, **kwargs)
+        self._add_outline(ax, x_edge=x_edge_arr, y_edge=y_edge_arr)
+        ax.set_ylim(ax.get_ylim()[::-1])
+        ax.set_xlabel(x_edge[:3:1], fontsize=13)
+        ax.set_ylabel("Depth (km)", fontsize=12)
+
+        if contour:
+            x_arr = self.grid_dict.get(x_edge[:3:1])
+            y_arr = self.grid_dict.get(y_edge[:3:1])
+            p = self._add_contour(ax, x=x_arr, y=y_arr, linewidths=0.6, colors="black", linestyles="solid")
+            ax.clabel(p, p.levels[::1], colors=["black"], fontsize=8.5, inline=False)
+
+        return p
+
+
+    ## ------- Below is implementations -------------------------
+
+    def _init_fig(self, *args, **kwargs):
+        self._init_style()
+        return plt.subplots(dpi=120, *args, **kwargs)
+
+    def _init_style(self):
+        plt.rcParams['image.cmap'] = 'viridis'
+        plt.rcParams['grid.linestyle'] = ':'
+        plt.rcParams['figure.figsize'] = [4.0, 3.0]
+        plt.rc('font', family='serif')
+        plt.rc('xtick', labelsize='x-small')
+        plt.rc('ytick', labelsize='x-small')
+
+    def _add_pcolormesh(self, ax, x_edge, y_edge, *args, **kwargs):
+        return ax.pcolormesh(
+            x_edge,
+            y_edge,
+            self.array,
+            shading="flat",
+            *args,
+            **kwargs
+        )
+
+    def _add_contour(self, ax, x, y, *args, **kwargs):
+        cs = ax.contour(x, y, self.array, *args, **kwargs)
+        # label every three levels
+        ax.clabel(cs, cs.levels[::3], colors=["black"], fontsize=8, inline=False)
+        return cs
+
+    def _add_gridline(self, ax, *args, **kwargs):
+        ax.gridlines(*args, **kwargs)
+
+    def _set_borderline(self, ax, geo=True, width=1):
+        if geo:
+            ax.spines["geo"].set_edgecolor("black")
+            ax.spines["geo"].set_linewidth(width)
+        else:
+            for direction in ['top','bottom','left','right']:
+                ax.spines[direction].set_linewidth(width)
+                ax.spines[direction].set_edgecolor("black")
+                # vertical layer order
+                ax.spines[direction].set_zorder(0)
+
+    def _set_facecolor(self, ax):
+        ax.patch.set_color("silver")
+
+    def _add_outline(self, ax, x_edge, y_edge, *args, **kwargs):
+        outline_color = "black"
+        outline_width = 1
+        mask_array = np.where(~np.isnan(self.array), 1, 0)
+
+        Ny_edge = len(y_edge)
+        Nx_edge = len(x_edge)
+        # dimension of array
+        Ny_array = Ny_edge - 1
+        Nx_array = Nx_edge - 1
+        # index of array
+        Ny_index = Ny_array - 1
+        Nx_index = Nx_array - 1
+
+        # i stands for yitude index, j stands for xgitude index
+        # e.g., mask_array[0, ] is Antarctic ice cap
+        # i,j are for mask array and will be converted to x/y edge lines
+        for i in range(Ny_array):
+            for j in range(Nx_array):
+                # compare with the right grid, and plot vertical line if different
+                if j < Nx_index and mask_array[i, j] != mask_array[i, j + 1]:
+                    ax.vlines(
+                        x_edge[j + 1],
+                        y_edge[i],
+                        y_edge[i + 1],
+                        color=outline_color,
+                        linewidth=outline_width,
+                        *args, **kwargs
+                    )
+
+                # connect the circular xgitude axis
+                if j == Nx_index and mask_array[i, j] != mask_array[i, 0]:
+                    ax.vlines(
+                        x_edge[j + 1],
+                        y_edge[i],
+                        y_edge[i + 1],
+                        color=outline_color,
+                        linewidth=outline_width,
+                        *args, **kwargs
+                    )
+
+                # compare with the above grid, and plot horizontal line if different
+                if i < Ny_index and mask_array[i, j] != mask_array[i + 1, j]:
+                    ax.hlines(
+                        y_edge[i + 1],
+                        x_edge[j],
+                        x_edge[j + 1],
+                        colors=outline_color,
+                        linewidth=outline_width,
+                        *args, **kwargs
+                    )
+
+    def plot_quiver(x,y):
+        pass
 
 class TaylorDiagram(object):
     """

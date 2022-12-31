@@ -12,6 +12,7 @@ from .ecology import GenieModel, PlanktonType, PlanktonBiomass, PlanktonExport
 from .core import GenieVariable
 from .data import foram_names, obs_data
 from .scores import ModelSkill
+from .fd import modern_foram_community
 
 # from .plot import plot_genie
 
@@ -19,17 +20,22 @@ from .scores import ModelSkill
 # from .utils import set_sns_barwidth, distance
 from .grid import GENIE_grid_area
 
-# observation_data, functional diversity, more plot options
-
 class ForamModel(GenieModel):
     """A further customized GenieModel subclass"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def select_foram(self, foram_type, *args, **kwargs):
+    def select_foramtype(self, foram_type, *args, **kwargs):
         "a optimised version of select_var, can be int or a list/tuple"
         return ForamType(foram_type=foram_type, model_path=self.model_path,  *args, **kwargs)
+
+    def select_foram_community(self, abundance="relative_abundance", time_index=-1):
+        bn = self.select_foramtype("bn")._run_method(abundance).isel(time=time_index).array.values
+        bs = self.select_foramtype("bs")._run_method(abundance).isel(time=time_index).array.values
+        sn = self.select_foramtype("sn")._run_method(abundance).isel(time=time_index).array.values
+        ss = self.select_foramtype("ss")._run_method(abundance).isel(time=time_index).array.values
+        return modern_foram_community(bn, bs, sn, ss)
 
 
 class ForamType(PlanktonType):
@@ -61,6 +67,9 @@ class ForamType(PlanktonType):
     def relative_abundance(self, element="C",  *args, **kwargs):
         export_var = self.export(element=element).full_varstr
         return ForamAbundance(foram_type = self.foram_type, var=export_var, model_path=self.model_path,  *args, **kwargs)
+
+    def _run_method(self, method: str, *args, **kwargs):
+        return getattr(self, method)(*args, **kwargs)
 
 
 class ForamBiomass(PlanktonBiomass):

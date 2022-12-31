@@ -168,140 +168,140 @@ class GenieArray(GeniePlottable):
 
         return product
 
-    def max(self, update_array=False, *args, **kwargs):
-        if update_array:
+    def max(self, overwrite_array=False, *args, **kwargs):
+        if overwrite_array:
             self.array = np.max(self.array, *args, **kwargs)
             self._update_dim()
             return self
         else:
             return np.max(self.array, *args, **kwargs)
 
-    def nanmax(self, update_array= False, *args, **kwargs):
-        if update_array:
+    def nanmax(self, overwrite_array= False, *args, **kwargs):
+        if overwrite_array:
             self.array = np.nanmax(self.array, *args, **kwargs)
             self._update_dim()
             return self
         else:
             return np.nanmax(self.array, *args, **kwargs)
 
-    def min(self, update_array =False, *args, **kwargs):
-        if update_array:
+    def min(self, overwrite_array =False, *args, **kwargs):
+        if overwrite_array:
             self.array = np.min(self.array, *args, **kwargs)
             self._update_dim()
             return self
         else:
             return np.min(self.array, *args, **kwargs)
 
-    def nanmin(self, update_array=False, *args, **kwargs):
-        if update_array:
+    def nanmin(self, overwrite_array=False, *args, **kwargs):
+        if overwrite_array:
             self.array = np.nanmin(self.array, *args, **kwargs)
             self._update_dim()
             return self
         else:
             return np.nanmin(self.array, *args, **kwargs)
 
-    def sum(self, update_array = False, *args, **kwargs):
-        if update_array:
+    def sum(self, overwrite_array = False, *args, **kwargs):
+        if overwrite_array:
             self.array = np.sum(self.pure_array(), *args, **kwargs)
             self._update_dim()
             return self
         else:
             return np.sum(self.pure_array(), *args, **kwargs)
 
-    def nansum(self, update_array=False,  *args, **kwargs):
-        if update_array:
+    def nansum(self, overwrite_array=False,  *args, **kwargs):
+        if overwrite_array:
             self.array = np.nansum(self.pure_array(), *args, **kwargs)
             self._update_dim()
             return self
         else:
             return np.nansum(self.pure_array(), *args, **kwargs)
 
-    def mean(self, update_array=False, *args, **kwargs):
-        if update_array:
+    def mean(self, overwrite_array=False, *args, **kwargs):
+        if overwrite_array:
             self.array = np.mean(self.pure_array(), *args, **kwargs)
             self._update_dim()
             return self
         else:
             return np.mean(self.pure_array(), *args, **kwargs)
 
-    def nanmean(self, update_array=False, *args, **kwargs):
-        if update_array:
+    def nanmean(self, overwrite_array=False, *args, **kwargs):
+        if overwrite_array:
             self.array = np.nanmean(self.pure_array(), *args, **kwargs)
             self._update_dim()
             return self
         else:
             return np.nanmean(self.pure_array(), *args, **kwargs)
 
-    def square(self, update_array=False, *arg, **kwargs):
-        if update_array:
+    def square(self, overwrite_array=False, *arg, **kwargs):
+        if overwrite_array:
             self.array = np.square(self.pure_array(), *args, **kwargs)
             self._update_dim()
             return self
         else:
             return np.square(self.pure_array(), *args, **kwargs)
 
-    def sqrt(self, update_array=False, *arg, **kwargs):
-        if update_array:
+    def sqrt(self, overwrite_array=False, *arg, **kwargs):
+        if overwrite_array:
             self.array = np.sqrt(self.pure_array(), *args, **kwargs)
             self._update_dim()
             return self
         else:
             return np.sqrt(self.pure_array(), *args, **kwargs)
 
-    def ptp(self,  update_array=False, *args, **kwargs):
+    def ptp(self,  overwrite_array=False, *args, **kwargs):
         "range of values"
-        if update_array:
+        if overwrite_array:
             self.array = np.ptp(self.pure_array(), *args, **kwargs)
             self._update_dim()
             return self
         else:
             return np.ptp(self.pure_array(), *args, **kwargs)
 
-    def sd(self, update_array=False, *args, **kwargs):
-        if update_array:
+    def sd(self, overwrite_array=False, *args, **kwargs):
+        if overwrite_array:
             self.array = np.std(self.pure_array(), *args, **kwargs)
             self._update_dim()
             return self
         else:
             return np.std(self.pure_array(), *args, **kwargs)
 
-    def nansd(self, update_array=False, *args, **kwargs):
-        if update_array:
+    def nansd(self, overwrite_array=False, *args, **kwargs):
+        if overwrite_array:
             self.array = np.nanstd(self.pure_array(), *args, **kwargs)
             self._update_dim()
             return self
         else:
             return np.nanstd(self.pure_array(), *args, **kwargs)
 
-    def var(self, update_array=False, *args, **kwargs):
-        if update_array:
+    def var(self, overwrite_array=False, *args, **kwargs):
+        if overwrite_array:
             self.array = np.var(self.pure_array(), *args, **kwargs)
             self._update_dim()
             return self
         else:
             return np.var(self.pure_array(), *args, **kwargs)
 
-    def nanvar(self, update_array=False, *args, **kwargs):
-        if update_array:
+    def nanvar(self, overwrite_array=False, *args, **kwargs):
+        if overwrite_array:
             self.array = np.nanvar(self.pure_array(), *args, **kwargs)
             self._update_dim()
             return self
         else:
             return np.nanvar(self.pure_array(), *args, **kwargs)
 
-    def se(self, update_array=False, *args, **kwargs):
-        if update_array:
+    def se(self, overwrite_array=False, *args, **kwargs):
+        if overwrite_array:
             self.array = sem(self.array, nan_policy="omit", axis=None, *args, **kwargs)
             self._update_dim()
             return self
         else:
             return sem(self.array, nan_policy="omit", axis=None, *args, **kwargs)
 
-    def cv(self, update_array, *args, **kwargs):
+    def cv(self, overwrite_array, *args, **kwargs):
         "coefficient of variance, or normalized standard deviation"
         if 'axis' in kwargs:
             cv =  lambda x: np.nanstd(x) / np.nanmean(x)
-            if update_array:
+            if overwrite_array:
                 self.array = np.apply_along_axis(cv, axis=kwargs.get('axis'), arr=self.array)
                 self._update_dim()
                 return self
@@ -324,7 +324,7 @@ class GenieArray(GeniePlottable):
         data = self.pure_array()
         mask = GENIE_grid_mask(base=base, basin=basin, basin_lvl=basin_lvl, invert=True)
 
-        if self.dim() > 2:
+        if self.dim > 2:
             mask = np.broadcast_to(mask, (16, 36, 36))
 
         mask_data = np.ma.array(data, mask=mask)
@@ -356,13 +356,21 @@ class GenieArray(GeniePlottable):
             )
         ]
 
-    def filter(self, threshold, greater_sign=True):
-        data = self.array
+    def filter(self, operator=">", threshold=0, overwrite_array=False, drop=False):
+        match operator:
+            case ">":
+                output_array = self.array.where(self.array > threshold, drop=drop)
+            case "<":
+                output_array = self.array.where(self.array < threshold, drop=drop)
+            case _:
+                print("Only support < or >")
 
-        if greater_sign:
-            return data.where(data > threshold, drop=True)
+        if overwrite_array:
+            self.array = output_array
+            self._update_dim()
+            return self
         else:
-            return data.where(data < threshold, drop=True)
+            return output_array
 
     def compare_obs(self, obs, *args, **kwargs):
         return ModelSkill(model=self.pure_array(), observation=obs, *args, **kwargs)

@@ -110,10 +110,28 @@ def esd_ward(N=2, esd_min=0.6, k=1.3, esd_max=1900):
     return esd
 
 
-def distance(x, y):
+def distance(point1: tuple, point2: tuple):
     """
-    euclidean distance for 2D array
+    point: a tuple (with >= 2 numbers) of coordinate values.
+    Coordinate value can be float or numpy array.
+    """
+    if len(point1) != len(point2):
+        raise ValueError("Inconsistent dimension between two points!")
 
-    x/y: delta_value array in 2D
-    """
-    return np.sqrt(np.square(x) + np.square(y))
+    for a in point1:
+        for b in point2:
+            if np.shape(a) != np.shape(b):
+                raise ValueError("Inconsistent coordinate data shape")
+
+    x = np.zeros(np.shape(point1[0]))
+
+    for i in range(len(point1)):
+        x = x + np.square(point1[i] - point2[i])
+
+    return np.sqrt(x)
+
+def my_sum(*args):
+    total = 0
+    for x in args:
+        total += x
+    return total    
