@@ -18,7 +18,7 @@ class Species:
 
         self.abun_ndim = np.array(self.abundance).ndim
         self.abun_shape = np.array(self.abundance).shape
-        self.trait_names = sorted(list(self.trait.keys()))
+        self.trait_names = list(self.trait.keys())
 
     def get_trait(self, trait_name: str):
         return self.trait[trait_name]
@@ -28,7 +28,7 @@ class Community:
     def __init__(self, sp_list: list):
         self.sp_list = sp_list
         ## Functional entity (group) richness
-        self.richnesss = len(sp_list)
+        self.richness = len(sp_list)
 
         # add into species pool, counting from 1
         for i, sp in enumerate(sp_list):
@@ -51,7 +51,7 @@ class Community:
             self.total_sub_sp = None
         else:
             self.total_sub_sp = sum(all_sub_sp)
-            self.redundancy = self.total_sub_sp/self.richnesss
+            self.redundancy = self.total_sub_sp/self.richness
 
             ## Functional over-redundancy and vulnerability
             for i, sp in enumerate(sp_list):
@@ -108,28 +108,49 @@ class Community:
         return g
 
     def specialisation(self):
-        "Functional specialisation, distance bewteen the origin and the centroid"
+        "Functional specialisation rate, distance bewteen the origin and the centroid"
 
-        origin_tuple = []
-        centroid_tuple = []
+        origin_list = []
+        centroid_list = []
 
         for trait in self.trait_names:
-            origin_tuple.append(self._init_array(0.0))
-            centroid_tuple.append(self.cwm(trait).pure_array())
+            origin_list.append(self._init_array(0.0))
+            centroid_list.append(self.cwm(trait).pure_array())
 
-        fspec = distance(tuple(origin_tuple), tuple(centroid_tuple))
+        fspec = distance(tuple(origin_list), tuple(centroid_list))
 
         g = GenieArray()
         g.array = fspec
         return g
 
-    # def fdis(self, *args, **kwargs):
-    # "functional dispersion"
-    # weight (relative abundance/biomass)
-    # weight = self.select_foram("bn").biomass_c()
-    # each group's distance to centroid
-    # dist =
-    # weighted sum
+    def dispersion(self):
+        "aveage of each group's weighted distance to centroid"
+        
+        centroid_list = []
+        sum_distance = self._init_array(0.0)
+        
+        # get centroid coordinate values
+        for trait in self.trait_names:
+            centroid_list.append(self.cwm(trait).pure_array())
+
+        # get each functional group's coordinate values        
+        for sp_i in self.sp_list:
+            # refresh coordinate dimension
+            coord_list = []
+            # assign coordinate value
+            for trait_j in self.trait_names:
+                coord_values = self._init_array(sp_i.get_trait(trait_j))
+                coord_list.append(coord_values)
+                
+            distance_i = distance(tuple(centroid_list), tuple(coord_list))
+            sum_distance = sum_distance + distance_i
+
+        fdis =  sum_distance/self.richness
+        
+        g = GenieArray()
+        g.array = fdis
+        return g
+
 
 def modern_foram_community(bn_abundance, bs_abundance, sn_abundance, ss_abundance):
     bn = Species(bn_abundance, {"symbiosis": 0, "spine":0}, sub_sp = 17)
@@ -138,4 +159,4 @@ def modern_foram_community(bn_abundance, bs_abundance, sn_abundance, ss_abundanc
     ss = Species(ss_abundance, {"symbiosis": 1, "spine":1}, sub_sp = 23)
 
     foram_community = Community([bn, bs, sn, ss])
-    return foram_community    
+    return foram_community
