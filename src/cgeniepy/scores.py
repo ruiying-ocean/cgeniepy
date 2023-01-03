@@ -2,7 +2,6 @@ import numpy as np
 from scipy.spatial import distance
 from .grid import mask_Arctic_Med
 
-
 class ModelSkill:
     "quantitatively compare similarity metrics between two 2D arrays"
 
@@ -131,4 +130,5 @@ class ModelSkill:
         # central rmse
         crmse = sigma1**2 + sigma2**2 - 2 * sigma1 * sigma2 * corr
 
-        return crmse
+        return crmse    
+    

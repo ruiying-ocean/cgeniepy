@@ -4,7 +4,7 @@
 
 import itertools
 import numpy as np
-from .utils import distance
+from .utils import euc_distance
 from .core import GenieArray
 
 class Species:
@@ -117,7 +117,7 @@ class Community:
             origin_list.append(self._init_array(0.0))
             centroid_list.append(self.cwm(trait).pure_array())
 
-        fspec = distance(tuple(origin_list), tuple(centroid_list))
+        fspec = euc_distance(tuple(origin_list), tuple(centroid_list))
 
         g = GenieArray()
         g.array = fspec
@@ -144,7 +144,7 @@ class Community:
                 coord_values = self._init_array(sp_i.get_trait(trait_j))
                 coord_list.append(coord_values)
                 
-            distance_i = distance(tuple(centroid_list), tuple(coord_list))
+            distance_i = euc_distance(tuple(centroid_list), tuple(coord_list))
             sum_distance = sum_distance + distance_i
 
         fdis =  sum_distance/self.richness

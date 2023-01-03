@@ -114,4 +114,4 @@ class PlanktonExport(GenieVariable):
         C_ = molecular_weight(self.element)
         s = s.to("mol d^-1").to("g d^-1", "bgc", mw=C_ * ureg("g/mol")).to("Gt yr^-1")
 
-        return np.nansum(s)
+        return np.nansum(s)    

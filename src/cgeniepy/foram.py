@@ -4,7 +4,7 @@ from . import ureg
 from .chem import molecular_weight
 
 from .ecology import GenieModel, PlanktonType, PlanktonBiomass, PlanktonExport
-from .core import GenieVariable
+from .core import GenieVariable, GenieArray
 from .data import foram_names, obs_data
 from .scores import ModelSkill
 from .fd import modern_foram_community
@@ -202,3 +202,28 @@ class ForamAbundance(GenieVariable):
             return ModelSkill(model=self.pure_array(), observation=data, mask_MedArc=kwargs["mask_MedArc"])
         else:
             return ModelSkill(model=self.pure_array(), observation=data)
+
+
+def scd(x, y):
+    """
+    squared chord distance to represent dissimilarity between
+    the communities in different time. SCD ranges from 0 to 2, with
+    0 meaning identical, and 2 most different.
+    
+    :parameter
+    x: assemblage in numpy array
+    y: assemblage in numpy array
+
+    Example
+    x = np.array([sp1, sp2, ..., sp_n])
+    y = np.arra([sp1, sp2, ..., sp_n])
+    scd(x, y)
+    """
+
+    x_sqrt = np.sqrt(x)
+    y_sqrt = np.sqrt(y)
+    scd = np.sum(np.square(x_sqrt - y_sqrt), axis=0)
+
+    ga = GenieArray()
+    ga.array = scd
+    return ga        

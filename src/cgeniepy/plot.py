@@ -15,6 +15,7 @@ import mpl_toolkits.axisartist.grid_finder as gf
 from .data import efficient_log
 from .grid import GENIE_lat, GENIE_lon, GENIE_depth
 
+
 def scatter_map(
     df: pd.DataFrame,
     var,
@@ -100,8 +101,15 @@ def cbar_wrapper(plotting_func):
         cbar.ax.tick_params(color="k", direction="in")
         cbar.outline.set_edgecolor('black')
         cbar.minorticks_on()
+        
+    wrappered_func.__unwrapped__ =  plotting_func
 
     return wrappered_func
+
+def cond_cbar(func):
+    def funct_w_cond(colorbar):
+        return func if colorbar else func.__unwrappered__
+    return funct_w_cond
 
 ## TODO: add more layers: quiver,
 
@@ -141,8 +149,7 @@ class GeniePlottable:
 
         return p
 
-    @cbar_wrapper
-    def plot_map(self, ax=None, x_edge="lon_edge", y_edge="lat_edge", contour=False, *args, **kwargs):
+    def plot_map(self, ax=None, x_edge="lon_edge", y_edge="lat_edge", contour=False, colorbar=True, *args, **kwargs):
 
         if not ax:
             fig, ax = self._init_fig(subplot_kw={'projection': ccrs.EckertIV()})
@@ -160,10 +167,12 @@ class GeniePlottable:
             y_arr = self.grid_dict.get(y_edge[:3:1])
             p = self._add_contour(ax, x=x_arr, y=y_arr, transform=self.transform_crs)
 
+        if colorbar:
+            self._add_colorbar(p)
+            
         return p
 
-    @cbar_wrapper
-    def plot_polar(self, ax=None, hemisphere="South", x_edge="lon_edge", y_edge="lat_edge", contour=False, *args, **kwargs):
+    def plot_polar(self, ax=None, hemisphere="South", x_edge="lon_edge", y_edge="lat_edge", contour=False, colorbar=True, *args, **kwargs):
 
         if not ax:
             match hemisphere:
@@ -193,10 +202,13 @@ class GeniePlottable:
             y_arr = self.grid_dict.get(y_edge[:3:1])
             p = self._add_contour(ax, x=x_arr, y=y_arr, transform=self.transform_crs)
 
+        if colorbar:
+            self._add_colorbar(p)
+            
         return p
 
-    @cbar_wrapper
-    def plot_transection(self, ax=None, x_edge="lat_edge", y_edge="zt_edge", contour=False, *args, **kwargs):
+    
+    def plot_transection(self, ax=None, x_edge="lat_edge", y_edge="zt_edge", contour=False, colorbar=True, *args, **kwargs):
         if not ax:
             fig, ax = self._init_fig(figsize=(5, 2.5))
 
@@ -205,7 +217,6 @@ class GeniePlottable:
 
         self._set_facecolor(ax)
         self._set_borderline(ax, geo=False)
-
 
         p = self._add_pcolormesh(ax, x_edge=x_edge_arr, y_edge=y_edge_arr, *args, **kwargs)
         self._add_outline(ax, x_edge=x_edge_arr, y_edge=y_edge_arr)
@@ -218,6 +229,9 @@ class GeniePlottable:
             y_arr = self.grid_dict.get(y_edge[:3:1])
             p = self._add_contour(ax, x=x_arr, y=y_arr, linewidths=0.6, colors="black", linestyles="solid")
             ax.clabel(p, p.levels[::1], colors=["black"], fontsize=8.5, inline=False)
+
+        if colorbar:
+            self._add_colorbar(p)
 
         return p
 
@@ -321,6 +335,12 @@ class GeniePlottable:
                         *args, **kwargs
                     )
 
+    def _add_colorbar(self, mappable_object):
+        cbar = plt.colorbar(mappable_object, fraction=0.05, pad=0.04, orientation="horizontal")
+        cbar.ax.tick_params(color="k", direction="in")
+        cbar.outline.set_edgecolor('black')
+        cbar.minorticks_on()
+        
     def plot_quiver(x,y):
         pass
 

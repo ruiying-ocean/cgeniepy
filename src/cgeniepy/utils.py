@@ -110,8 +110,9 @@ def esd_ward(N=2, esd_min=0.6, k=1.3, esd_max=1900):
     return esd
 
 
-def distance(point1: tuple, point2: tuple):
+def euc_distance(point1: tuple, point2: tuple):
     """
+    Euclidean Distance
     point: a tuple (with >= 2 numbers) of coordinate values.
     Coordinate value can be float or numpy array.
     """
@@ -129,27 +130,3 @@ def distance(point1: tuple, point2: tuple):
         x = x + np.square(point1[i] - point2[i])
 
     return np.sqrt(x)
-
-def scd(x, y):
-    """
-    square chord distance to represent dissimilarity between
-    the communities in different time. SCD ranges from 0 to 2, with
-    0 meaning identical, and 2 most different.
-    
-    :parameter
-    x: assemblage in numpy array
-    y: assemblage in numpy array
-
-    Example
-    x = np.array([sp1, sp2, ..., sp_n])
-    y = np.arra([sp1, sp2, ..., sp_n])
-    scd(x, y)
-    """
-
-    x_sqrt = np.sqrt(x)
-    y_sqrt = np.sqrt(y)
-    scd = np.sum(np.square(x_sqrt - y_sqrt), axis=0)
-
-    ga = GenieArray()
-    ga.array = scd
-    return ga
