@@ -124,7 +124,9 @@ class Community:
         return g
 
     def dispersion(self):
-        "aveage of each group's weighted distance to centroid"
+        """aveage of each group's weighted distance to centroid.
+        i.e., the high-dimensional variance in the functional spaces
+        """
         
         centroid_list = []
         sum_distance = self._init_array(0.0)
