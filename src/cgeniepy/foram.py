@@ -1,8 +1,3 @@
-# import matplotlib.pyplot as plt
-# from matplotlib.ticker import AutoMinorLocator
-# import string
-# from pandas import DataFrame
-
 import numpy as np
 from functools import reduce
 from . import ureg
@@ -13,11 +8,6 @@ from .core import GenieVariable
 from .data import foram_names, obs_data
 from .scores import ModelSkill
 from .fd import modern_foram_community
-
-# from .plot import plot_genie
-
-# from .scores import quick_mscore, quick_rmse, quick_cos_sim, quick_corr
-# from .utils import set_sns_barwidth, distance
 from .grid import GENIE_grid_area
 
 class ForamModel(GenieModel):

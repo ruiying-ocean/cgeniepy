@@ -403,7 +403,7 @@ def regrid_dataframe(
     return df_genie_wide
 
 
-def detect_ocean(lon, lat):
+def detect_basin(lon, lat):
     "use point-in-polygon strategy to detect ocean basin according to lon/lat"
 
     file_path = pathlib.Path(__file__).parent.parent / "data/oceans/oceans.shp"

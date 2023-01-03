@@ -1,4 +1,3 @@
-from typing import Union
 import pathlib
 
 from xarray import open_dataset
@@ -6,14 +5,14 @@ import numpy as np
 from .grid import reassign_obs
 
 
-def efficient_log(data: Union[int, float]) -> float:
+def efficient_log(data):
     "keep NA, remove zeros"
     return np.where(data == 0, -10, np.log10(data))
 
 
 def obs_data(source, var):
     """
-    Quickly fetch prescribed observational data from ForamData/data directory.
+    An interface to fetch prescribed observational data.
     The longitude coordinate will be assigned to fit GENIE output
 
     :returns: numpy 2D array

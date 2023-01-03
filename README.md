@@ -1,6 +1,4 @@
-This package is an interface to [cGENIE model](https://www.seao2.info/mymuffin.html).
-
-I try to learn and use my Python knowledge in this package, but it is inevitable that many errors may exist.
+This package is an interface to [cGENIE model](https://www.seao2.info/mymuffin.html). Although there are exisiting [MATLAB codes](https://github.com/derpycode/muffinplot) to do this, I feel more comfortable when I have more freedom and control. So I developed this package. I try to use my limited Python knowledge in this package, but it is inevitable that many errors may exist.
 
 ## Main features 🐛
 
@@ -18,11 +16,14 @@ unit conversion using `pint`
 ### 4. ocean basin detection
 input latitude/longitude to get where the site is in.
 
+### 5. Functional diversity
+Calculate community weight mean, functional dispersion, functional specisation rate, over-redundancy.
+
 
 ## Installation 🙂
 
 ```bash
-python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.5
+python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.6
 ```
 
 ## Code style

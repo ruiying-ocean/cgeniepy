@@ -44,41 +44,7 @@ class PlanktonType:
     def export(self, element="C", *args, **kwargs):
         return PlanktonExport(pft_index=self.pft_index, element=element, model_path=self.model_path, *args, **kwargs)
 
-    # def presence(self, x, tol=1e-8):
-    #     """
-    #     to determine whethere a functional group present or not
-    #     :param tol: threshold of biomass (mmol C/m3)
-    #     """
-    #     if np.isnan(x):
-    #         return x
-    #     elif x >= tol:
-    #         return 1
-    #     else:
-    #         return 0
-
-    # def pft_richness(self):
-    #     """
-    #     plankton functional group richness, note it is different from species richness,
-    #     because there are more species in low size classes (i.e., body size-species richness relationship)
-    #     """
-    #     vfunc = np.vectorize(self.presence)
-    #     total_sp = np.zeros((36, 36))
-    #     n = self.pft_num()
-
-    #     for i in range(n):
-    #         name = f"eco2D_Plankton_C_0{i+1:02d}"
-    #         # select
-    #         arr = self.select_var(name).pure_array()
-    #         # conditional mask
-    #         sp = vfunc(arr)
-    #         # sum
-    #         total_sp += sp
-
-    #     x = GenieArray()
-    #     x.array = total_sp
-    #     return x
-
-
+    
 class PlanktonBiomass(GenieVariable):
 
     bgc_prefix = "Plankton"

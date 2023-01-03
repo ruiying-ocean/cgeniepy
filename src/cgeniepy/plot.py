@@ -15,8 +15,6 @@ import mpl_toolkits.axisartist.grid_finder as gf
 from .data import efficient_log
 from .grid import GENIE_lat, GENIE_lon, GENIE_depth
 
-# separate functions in plot_genie()
-
 def scatter_map(
     df: pd.DataFrame,
     var,
@@ -106,9 +104,6 @@ def cbar_wrapper(plotting_func):
     return wrappered_func
 
 ## TODO: add more layers: quiver,
-
-## colorbar option
-## mask basin option
 
 class GeniePlottable:
 
@@ -329,6 +324,7 @@ class GeniePlottable:
     def plot_quiver(x,y):
         pass
 
+    
 class TaylorDiagram(object):
     """
     Taylor diagram.
