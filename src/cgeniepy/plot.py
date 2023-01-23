@@ -8,7 +8,7 @@ from cartopy.feature import LAND
 import matplotlib.pyplot as plt
 from matplotlib.projections import PolarAxes
 from matplotlib.ticker import AutoMinorLocator
-from matplotlib.colors import ListedColormap
+from matplotlib.colors import ListedColormap, to_rgb as hex_to_rgb
 import mpl_toolkits.axisartist.floating_axes as fa
 import mpl_toolkits.axisartist.grid_finder as gf
 
@@ -66,7 +66,7 @@ def scatter_map(
     return p
 
 
-def genie_cmap(cmap_name, N=256, reverse=False):
+def genie_cmap(cmap_name, N=256, reverse=False, alpha=None):
     """
     Get a self-defined colormap
 
@@ -75,13 +75,21 @@ def genie_cmap(cmap_name, N=256, reverse=False):
 
     :returns: colormap
     """
+    # get file path
     file_name = f"data/{cmap_name}.txt"
     file_path = pathlib.Path(__file__).parent.parent / file_name
 
+    # read in and format the prescribed data
     colors = pd.read_csv(file_path, header=None).values.tolist()
     colors = [colors[i][0] for i in range(len(colors))]
 
-    c = ListedColormap(colors, N=N)
+    # optionally add transparency
+    if not alpha:
+        c = ListedColormap(colors, N=N)
+    else:
+        rgb_array = np.array([hex_to_rgb(i) for i in colors])
+        rgb_array[:,-1] = alpha
+        c = ListedColormap(rgb_array, N=N)
 
     if reverse:
         return c.reversed()
@@ -135,17 +143,13 @@ class GeniePlottable:
         """plot 1D data, e.g., zonal_average, time series
         x: time/lon/lat
         """
-
-        if not x:
+        if not ax:
             fig, ax = self._init_fig()
-            self._set_borderline(ax, geo=False, width=0.8)
-            ax.grid(which='major', color='#DDDDDD', linewidth=0.8)
-            ax.grid(which='minor', color='#EEEEEE', linestyle=':', linewidth=0.5)
-            ax.tick_params(axis="both", direction="out", which="both", left=True, top=True, bottom=True, right=True)
-            ax.minorticks_on()
+        
+        if not x:
             p = ax.plot(self.array, *args, **kwargs)
         else:
-            p = ax.plot(x, self.array, *args, **kwargs)
+            p = ax.plot(self.array, self.grid_dict[x], *args, **kwargs)
 
         return p
 
@@ -239,14 +243,14 @@ class GeniePlottable:
     ## ------- Below is implementations -------------------------
 
     def _init_fig(self, *args, **kwargs):
-        self._init_style()
+        # self._init_style()
         return plt.subplots(dpi=120, *args, **kwargs)
 
     def _init_style(self):
+        plt.rcParams["font.family"] = "Fira Sans"
         plt.rcParams['image.cmap'] = 'viridis'
-        plt.rcParams['grid.linestyle'] = ':'
-        plt.rcParams['figure.figsize'] = [4.0, 3.0]
-        plt.rc('font', family='serif')
+        plt.rcParams['grid.linestyle'] = '--'
+        plt.rcParams['grid.width'] = 0.3
         plt.rc('xtick', labelsize='x-small')
         plt.rc('ytick', labelsize='x-small')
 
