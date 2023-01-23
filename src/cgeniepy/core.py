@@ -20,6 +20,9 @@ from .chem import rm_element
 from .scores import ModelSkill
 from .utils import remove_outliers
 
+
+# Add method to read in time series and parameter table
+
 class GenieArray(GeniePlottable):
 
     def __init__(self, M=36, N=36):
@@ -232,6 +235,22 @@ class GenieArray(GeniePlottable):
         else:
             return np.nanmean(self.pure_array(), *args, **kwargs)
 
+    def median(self, overwrite_array=False, *args, **kwargs):
+        if overwrite_array:
+            self.array = np.median(self.pure_array(), *args, **kwargs)
+            self._update_dim()
+            return self
+        else:
+            return np.mean(self.pure_array(), *args, **kwargs)
+
+    def nanmedian(self, overwrite_array=False, *args, **kwargs):
+        if overwrite_array:
+            self.array = np.nanmedian(self.pure_array(), *args, **kwargs)
+            self._update_dim()
+            return self
+        else:
+            return np.nanmean(self.pure_array(), *args, **kwargs)        
+        
     def square(self, overwrite_array=False, *arg, **kwargs):
         if overwrite_array:
             self.array = np.square(self.pure_array(), *args, **kwargs)
@@ -356,12 +375,12 @@ class GenieArray(GeniePlottable):
             )
         ]
 
-    def filter(self, operator=">", threshold=0, overwrite_array=False, drop=False):
+    def filter(self, operator=">", threshold=0, other=np.nan, overwrite_array=False, *arg, **kwargs):
         match operator:
             case ">":
-                output_array = self.array.where(self.array > threshold, drop=drop)
+                output_array = self.array.where(self.array > threshold, other, drop=drop, *arg, **kwargs)
             case "<":
-                output_array = self.array.where(self.array < threshold, drop=drop)
+                output_array = self.array.where(self.array < threshold, other, drop=drop, *arg, **kwargs)
             case _:
                 print("Only support < or >")
 

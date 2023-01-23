@@ -10,6 +10,7 @@ from .scores import ModelSkill
 from .fd import modern_foram_community
 from .grid import GENIE_grid_area
 
+
 class ForamModel(GenieModel):
     """A further customized GenieModel subclass"""
 
@@ -47,7 +48,7 @@ class ForamType(PlanktonType):
             foram_type=self.foram_type,
             element=element,
             model_path=self.model_path,
-             *args, **kwargs
+            *args, **kwargs
         )
 
     def calcite(self,  *args, **kwargs):
