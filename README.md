@@ -3,9 +3,11 @@ This package is an interface to [cGENIE model](https://www.seao2.info/mymuffin.h
 ## Main features 🐛
 
 ### 1. visualisation based on Matplotlib
-- Map for 2D cGENIE array
-- Ocean Transection Contour 
-- Taylor diagram
+- Global map
+- Polar map (despite low resolution)
+- Basin transection
+- Taylor diagram (from community)
+- Copy some colormaps that was not in matplotlib, e.g., the ODV and MATLAB default color palette (thanks to the `rpal` package in R) 
 
 ### 2. chemistry system
 Parse a molecular formula and get its molecular mass
