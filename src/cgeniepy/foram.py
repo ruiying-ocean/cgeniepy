@@ -179,7 +179,7 @@ class ForamAbundance(GenieVariable):
         one_foram = super()._set_array()
 
         # add foram threshold
-        one_foram = one_foram.where(one_foram > 1E-8, other=0)
+        one_foram = one_foram.where(one_foram > 1E-9, other=0)
 
         # total foram
         total_foram = self._total_foram()
