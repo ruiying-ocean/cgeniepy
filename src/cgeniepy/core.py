@@ -375,22 +375,24 @@ class GenieArray(GeniePlottable):
             )
         ]
 
-    def filter(self, operator=">", threshold=0, other=np.nan, overwrite_array=False, *arg, **kwargs):
-        match operator:
-            case ">":
-                output_array = self.array.where(self.array > threshold, other, drop=drop, *arg, **kwargs)
-            case "<":
-                output_array = self.array.where(self.array < threshold, other, drop=drop, *arg, **kwargs)
-            case _:
-                print("Only support < or >")
-
+    def where(self, condition, ifso=0, otherwise=np.nan, ignore_na=True, overwrite_array=False, *arg, **kwargs):
+        if ignore_na:
+            condition = np.logical_and(condition, ~np.isnan(self.array))
+            counter_condition = np.logical_and(~condition, ~np.isnan(self.array))
+        else:
+            counter_condition = ~condition
+            
+        self.pure_array()[condition] = ifso
+        self.pure_array()[counter_condition] = otherwise
+        output_array = self.pure_array()
+        
         if overwrite_array:
             self.array = output_array
             self._update_dim()
             return self
         else:
             return output_array
-
+        
     def compare_obs(self, obs, *args, **kwargs):
         return ModelSkill(model=self.pure_array(), observation=obs, *args, **kwargs)
 
