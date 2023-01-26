@@ -2,7 +2,7 @@ from os.path import join
 
 import xarray as xr
 import numpy as np
-from scipy.stats import sem
+from scipy.stats import sem, t
 import regionmask
 from netCDF4 import Dataset
 from .plot import GeniePlottable
@@ -171,6 +171,9 @@ class GenieArray(GeniePlottable):
 
         return product
 
+    def nanlen(self):
+        return np.count_nonzero(~np.isnan(self.pure_array()))
+
     def max(self, overwrite_array=False, *args, **kwargs):
         if overwrite_array:
             self.array = np.max(self.array, *args, **kwargs)
@@ -251,7 +254,7 @@ class GenieArray(GeniePlottable):
         else:
             return np.nanmean(self.pure_array(), *args, **kwargs)        
         
-    def square(self, overwrite_array=False, *arg, **kwargs):
+    def square(self, overwrite_array=False, *args, **kwargs):
         if overwrite_array:
             self.array = np.square(self.pure_array(), *args, **kwargs)
             self._update_dim()
@@ -259,7 +262,7 @@ class GenieArray(GeniePlottable):
         else:
             return np.square(self.pure_array(), *args, **kwargs)
 
-    def sqrt(self, overwrite_array=False, *arg, **kwargs):
+    def sqrt(self, overwrite_array=False, *args, **kwargs):
         if overwrite_array:
             self.array = np.sqrt(self.pure_array(), *args, **kwargs)
             self._update_dim()
@@ -315,6 +318,25 @@ class GenieArray(GeniePlottable):
             return self
         else:
             return sem(self.array, nan_policy="omit", axis=None, *args, **kwargs)
+
+    def confidence_interval(self, confidence_lvl=0.95):
+        """based on student's t-distribution, therefore works for small size as well
+
+        https://stackoverflow.com/a/15034143/1601580
+        """
+        
+        mean = self.nanmean()
+        se = self.se()
+        n = self.nanlen()
+        # inverse cumulative distribution function
+        tp = t.ppf((1 + confidence_lvl) / 2., n - 1)
+        h = se * tp
+
+        lower_bound = mean - h
+        upper_bound = mean + h
+        
+        return lower_bound, upper_bound
+        
 
     def cv(self, overwrite_array, *args, **kwargs):
         "coefficient of variance, or normalized standard deviation"

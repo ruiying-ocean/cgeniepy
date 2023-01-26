@@ -70,7 +70,7 @@ def genie_cmap(cmap_name, N=256, reverse=False, alpha=None):
     """
     Get a self-defined colormap
 
-    :param cmap_name: Zissou1, FantasticFox, Rushmore, Darjeeling, ODV
+    :param cmap_name: parula, Zissou1, FantasticFox, Rushmore, Darjeeling, ODV 
     :type cmap_name: str
 
     :returns: colormap
