@@ -528,11 +528,22 @@ class GenieModel(object):
 
 
 class GenieVariable(GenieArray):
-    def __init__(self, model_path, var, combine_vars=False):
+    def __init__(self, model_path, var, combine_vars=False, *args, **kwargs):
         self.model_path = model_path
         self.var = var
         self.combine_vars = combine_vars
+
+        # set threshold before getting data,
+        # important for relative abundance calculation
+        if 'threshold' in kwargs:
+            self.threshold = kwargs['threshold']
+
+        # getting data
         GenieArray.__init__(self)
+
+        # filter data if needed
+        if 'threshold' in kwargs:
+            self.putmask(self.pure_array() < self.threshold, 0, True)
 
     def _set_array(self):
         gm = GenieModel(model_path = self.model_path)

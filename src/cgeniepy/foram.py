@@ -56,8 +56,8 @@ class ForamType(PlanktonType):
         return ForamCalcite(foram_type = self.foram_type, var=export_C_var, model_path=self.model_path,  *args, **kwargs)
 
     def relative_abundance(self, element="C",  *args, **kwargs):
-        export_var = self.export(element=element).full_varstr
-        return ForamAbundance(foram_type = self.foram_type, var=export_var, model_path=self.model_path,  *args, **kwargs)
+        biomass_var = self.biomass(element=element).full_varstr
+        return ForamAbundance(foram_type = self.foram_type, var=biomass_var, model_path=self.model_path,  *args, **kwargs)
 
     def _run_method(self, method: str, *args, **kwargs):
         return getattr(self, method)(*args, **kwargs)
@@ -76,7 +76,8 @@ class ForamBiomass(PlanktonBiomass):
         # pass pft_index to father class
         super().__init__(pft_index = self.pft_index,
                          element=element,
-                         model_path=model_path,  *args, **kwargs)
+                         model_path=model_path,
+                         *args, **kwargs)
 
     def compare_obs(self, **kwargs):
         if "obs" in kwargs:
@@ -152,7 +153,8 @@ class ForamAbundance(GenieVariable):
 
     def __init__(self, foram_type, *args, **kwargs):
         self.foram_type = foram_type
-        super().__init__(*args, **kwargs)
+        # setting data with passed arguments
+        super().__init__(*args, **kwargs)        
 
     def _total_foram(self):
         "if total foram is ptf No.16 to 19"
@@ -162,6 +164,7 @@ class ForamAbundance(GenieVariable):
         src_data = gm._open_nc(path2nc)
 
         # get all the foram variables
+        # variable_template is the "eco2D_XXXX" format
         variable_template = self.var[:-2]
         foram_variables = [variable_template + str(i) for i in range(16, 20)]
 
@@ -170,6 +173,13 @@ class ForamAbundance(GenieVariable):
         for i in foram_variables:
             target_data.append(src_data[i])
 
+        # filter for each foram
+        if hasattr(self, 'threshold'):
+            for i, idata in enumerate(target_data):
+                x = idata.values.copy()
+                np.putmask(x, x < self.threshold, 0)
+                target_data[i] = x
+        
         total_foram = reduce(np.add, target_data)
 
         return total_foram
@@ -177,9 +187,6 @@ class ForamAbundance(GenieVariable):
     def _set_array(self):
         # one foram
         one_foram = super()._set_array()
-
-        # add foram threshold
-        one_foram = one_foram.where(one_foram > 1E-9, other=0)
 
         # total foram
         total_foram = self._total_foram()
