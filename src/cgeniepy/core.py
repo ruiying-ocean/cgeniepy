@@ -397,23 +397,15 @@ class GenieArray(GeniePlottable):
             )
         ]
 
-    def where(self, condition, ifso=0, otherwise=np.nan, ignore_na=True, overwrite_array=False, *arg, **kwargs):
-        if ignore_na:
-            condition = np.logical_and(condition, ~np.isnan(self.array))
-            counter_condition = np.logical_and(~condition, ~np.isnan(self.array))
-        else:
-            counter_condition = ~condition
-            
-        self.pure_array()[condition] = ifso
-        self.pure_array()[counter_condition] = otherwise
-        output_array = self.pure_array()
-        
-        if overwrite_array:
-            self.array = output_array
-            self._update_dim()
-            return self
-        else:
-            return output_array
+    def putmask(self, mask, values, overwrite_array=False):
+        "np.putmask will ignore the nan values"
+
+        # putmask method changes at place
+        x = np.copy(self.pure_array())
+        np.putmask(x, mask, values)
+        self.array = x
+        self._update_dim()
+        return self
         
     def compare_obs(self, obs, *args, **kwargs):
         return ModelSkill(model=self.pure_array(), observation=obs, *args, **kwargs)

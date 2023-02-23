@@ -128,7 +128,7 @@ class GeniePlottable:
     grid_dict = {
     "lon": GENIE_lon(edge=False),
     "lat": GENIE_lat(edge=False),
-    "zt":GENIE_depth(edge=False)/1000,
+    "zt":  GENIE_depth(edge=False)/1000,
 
     "lon_edge": GENIE_lon(edge=True),
     "lat_edge": GENIE_lat(edge=True),
@@ -223,7 +223,7 @@ class GeniePlottable:
         self._set_borderline(ax, geo=False)
 
         p = self._add_pcolormesh(ax, x_edge=x_edge_arr, y_edge=y_edge_arr, *args, **kwargs)
-        self._add_outline(ax, x_edge=x_edge_arr, y_edge=y_edge_arr)
+        #self._add_outline(ax, x_edge=x_edge_arr, y_edge=y_edge_arr)
         ax.set_ylim(ax.get_ylim()[::-1])
         ax.set_xlabel(x_edge[:3:1], fontsize=13)
         ax.set_ylabel("Depth (km)", fontsize=12)
@@ -235,7 +235,7 @@ class GeniePlottable:
             ax.clabel(p, p.levels[::1], colors=["black"], fontsize=8.5, inline=False)
 
         if colorbar:
-            self._add_colorbar(p)
+            self._add_colorbar(p, location="vertical")
 
         return p
 
@@ -259,7 +259,6 @@ class GeniePlottable:
             x_edge,
             y_edge,
             self.array,
-            shading="flat",
             *args,
             **kwargs
         )
@@ -339,8 +338,8 @@ class GeniePlottable:
                         *args, **kwargs
                     )
 
-    def _add_colorbar(self, mappable_object):
-        cbar = plt.colorbar(mappable_object, fraction=0.05, pad=0.04, orientation="horizontal")
+    def _add_colorbar(self, mappable_object, location="horizontal"):
+        cbar = plt.colorbar(mappable_object, fraction=0.05, pad=0.04, orientation=location)
         cbar.ax.tick_params(color="k", direction="in")
         cbar.outline.set_edgecolor('black')
         cbar.minorticks_on()
