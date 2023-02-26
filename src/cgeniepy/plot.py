@@ -3,7 +3,10 @@ import pathlib
 import numpy as np
 import pandas as pd
 import cartopy.crs as ccrs
-from cartopy.feature import LAND
+import cartopy.feature as cfeature
+from metpy.interpolate import natural_neighbor_to_grid, inverse_distance_to_grid
+from scipy.interpolate import griddata
+
 
 import matplotlib.pyplot as plt
 from matplotlib.projections import PolarAxes
@@ -22,7 +25,7 @@ def scatter_map(
     ax,
     x="Longitude",
     y="Latitude",
-    add_layer=True,
+    interpolate=None,
     log=False,
     *args,
     **kwargs,
@@ -34,17 +37,14 @@ def scatter_map(
     :param var: variable (column) in dataframe to plot
     :param x: coordinate attribute, default "Longitude"
     :param y: coordinate attribute, default "Latitude"
-    :param add_layer: whether to add basic costal lines, and land feature
+    :param interplate: whether interpolate scatter data
 
     :returns: a map
     """
 
-    if add_layer:
-        ax.set_global()
-        ax.coastlines()
-        ax.add_feature(
-            LAND, zorder=0, facecolor="#B1B2B4", edgecolor="white"
-        )  # zorder is drawing sequence
+    # plot land and coastline, zorder is the drawing order, smaller -> backer layer
+    ax.add_feature(cfeature.LAND.with_scale('110m'), zorder=1, facecolor="#B1B2B4")
+    ax.add_feature(cfeature.COASTLINE.with_scale('110m'), zorder=2)
 
     if "Latitude" not in df.columns or "Longitude" not in df.columns:
         raise ValueError("Input data lack Latitude/Longitude column")
@@ -52,16 +52,58 @@ def scatter_map(
     if log:
         df[var] = efficient_log(df[var])
 
-    p = ax.scatter(
-        x=df[x],
-        y=df[y],
-        c=df[var],
-        linewidths=0.5,
-        edgecolors="black",
-        transform=ccrs.PlateCarree(),
-        *args,
-        **kwargs,
-    )
+    if interpolate:        
+        subdf = df[[x, y, var]]
+        subdf = subdf.dropna().astype('float64').to_numpy()
+        lat = subdf[:,0]
+        lon = subdf[:,1]
+        values = subdf[:,2]
+        
+        # construct meshgrid
+        min_lat=round(min(lat))
+        max_lat=round(max(lat))
+        min_lon=round(min(lon))
+        max_lon=round(max(lon))
+
+        # every 1x1 pixel
+        # equivalent to
+        # grid_lat, grid_lon = np.mgrid[min_lat:max_lat:nlat*1j, min_lon:max_lon:nlon*1j]
+        grid_lat, grid_lon = np.meshgrid(np.linspace(min_lat, max_lat, max_lat-min_lat),
+                                         np.linspace(min_lon, max_lon, max_lon-min_lon))
+        
+        # interpolate and return data in 2D array
+        match interpolate:
+            case 'natural_neighbor':
+                grid_values = natural_neighbor_to_grid(lat, lon, values, grid_lat, grid_lon)
+            case 'inverse_distance':
+                grid_values = inverse_distance_to_grid(lat, lon, values, grid_lat,grid_lon,r=3, min_neighbors=0.5)
+            case 'linear':
+                grid_values = griddata((lat, lon), values, (grid_lat, grid_lon), method='linear')
+            case 'nearest':
+                points = subdf[:,1:3]
+                grid_values = griddata((lat, lon), values, (grid_lat, grid_lon), method='nearest')
+            case 'cubic':
+                points = subdf[:,1:3]
+                grid_values = griddata((lat, lon), values, (grid_lat, grid_lon), method='cubic')
+
+        # plot
+        p = ax.pcolormesh(grid_lat, grid_lon,
+                          grid_values,
+                          transform=ccrs.PlateCarree(),
+                          zorder=0,
+                          *args,
+                          **kwargs)
+    else:
+        p = ax.scatter(
+            x=df[x],
+            y=df[y],
+            c=df[var],
+            linewidths=0.5,
+            edgecolors="black",
+            transform=ccrs.PlateCarree(),
+            *args,
+            **kwargs,
+        )
 
     return p
 
