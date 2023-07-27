@@ -1,6 +1,6 @@
 ![logo](logo.png)
 
-This package is an interface to [cGENIE model](https://www.seao2.info/mymuffin.html). Although there are exisiting [MATLAB codes](https://github.com/derpycode/muffinplot) to do this, I feel more comfortable when I have more freedom and control. So I developed this package. I try to use my limited Python knowledge in this package, but it is inevitable that many errors may exist.
+This package is an interface to [cGENIE model](https://www.seao2.info/mymuffin.html), an Earth system model developed by Prof. Andy Ridgwell, UC Riverside. Although there are exisiting [MATLAB codes](https://github.com/derpycode/muffinplot) to do this, I feel more comfortable when I have more freedom and control. So I developed this package. I try to use my limited Python knowledge in this package, but it is inevitable that many errors may exist.
 
 ## Main features 🐛
 
