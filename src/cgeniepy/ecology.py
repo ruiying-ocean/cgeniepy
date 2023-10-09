@@ -57,14 +57,14 @@ class PlanktonBiomass(GenieVariable):
         # single index
         if isinstance(self.pft_index, int) or isinstance(self.pft_index, str):
             self.full_varstr = f"eco2D_{self.bgc_prefix}_{self.element}_{self.pft_index:03}"
-
         # multiple indices
         elif isinstance(self.pft_index, list) or isinstance(self.pft_index, tuple):
+            ## create a list of variable names
             self.full_varstr = []
             for i in pft_index:
                 self.full_varstr.append(f"eco2D_{self.bgc_prefix}_{self.element}_{i:03}")
 
-        GenieVariable.__init__(self, model_path=model_path, var=self.full_varstr,*args, **kwargs)
+        GenieVariable.__init__(self, model_path=model_path, var=self.full_varstr, *args, **kwargs)
 
     def sum(self):
         "print in Tg, depending on the element"
