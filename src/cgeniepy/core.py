@@ -27,7 +27,7 @@ class GenieArray(GeniePlottable):
 
     def __init__(self, M=36, N=36):
         """
-        Create an empty 2D array, default as 36x36
+        Initialise an empty 2D array, default as 36x36
         """
         # set dimension
         self.M = M
@@ -44,33 +44,23 @@ class GenieArray(GeniePlottable):
         # init plottable instance
         super().__init__(dim=self.dim, array=self.array)
 
-
     def _dim(self):
         return self.pure_array().ndim
 
     def _update_dim(self):
         self.dim = self.pure_array().ndim
 
-    def _set_array(self):
-        "assign real data"
-        return np.zeros((self.M, self.N))
+    def _set_array(self) -> xr.DataArray:
+        """
+        a function to be overwritten by subclass
+        always return a xarray.DataArray
+        """
+        arr = np.zeros((self.M, self.N))
+        return xr.DataArray(arr)
 
     def __getitem__(self, item):
         "make iterable"
         return self.array[item]
-
-    def take(self, *args, **kwargs):
-        """
-        example:
-
-        mod.select_foram(["bn", "bs","sn","ss"]).biomass(combine_vars=True).take(0, axis=0).plot_map()
-        """
-        try:
-            self.array = np.take(self.array, *args, **kwargs)
-            self._update_dim()
-            return self
-        except ValueError:
-            print("take only works for numpy array")
 
     def pure_array(self):
         "get a numpy array"
@@ -387,15 +377,20 @@ class GenieArray(GeniePlottable):
         if lon_min > lon_max or lat_min > lat_max:
             raise ValueError("longitude/latitude min must be less than max!")
 
-        lon = self.array.coords["lon"]
-        lat = self.array.coords["lat"]
+        ## test if the array is a DataArray
+        if isinstance(self.array, xr.DataArray):
+            lon = self.array.coords["lon"]
+            lat = self.array.coords["lat"]
 
-        return self.array.loc[
-            dict(
-                lat=lat[(lat >= lat_min) & (lat <= lat_max)],
-                lon=lon[(lon >= lon_min) & (lon <= lon_max)],
-            )
-        ]
+            return self.array.loc[
+                dict(
+                    lat=lat[(lat >= lat_min) & (lat <= lat_max)],
+                    lon=lon[(lon >= lon_min) & (lon <= lon_max)],
+                )
+            ]
+        else:
+            raise TypeError("array must be a DataArray!")
+        
 
     def putmask(self, mask, values, overwrite_array=False):
         "np.putmask will ignore the nan values"
@@ -444,7 +439,11 @@ class GenieModel(object):
 
     def _open_nc(self, path):
         "Use xarray to open netcdf file"
-        return xr.open_dataset(path)
+        ## if path is a list of paths
+        if isinstance(path, list):
+            return xr.open_mfdataset(path)
+        else:
+            return xr.open_dataset(path)    
 
     def _run_method(self, method: str, *args, **kwargs):
         return getattr(self, method)(*args, **kwargs)
@@ -528,10 +527,10 @@ class GenieModel(object):
 
 
 class GenieVariable(GenieArray):
-    def __init__(self, model_path, var, combine_vars=False, *args, **kwargs):
+        
+    def __init__(self, model_path, var, sum_vars=False, *args, **kwargs):
         self.model_path = model_path
         self.var = var
-        self.combine_vars = combine_vars
 
         # set threshold before getting data,
         # important for relative abundance calculation
@@ -547,16 +546,21 @@ class GenieVariable(GenieArray):
 
     def _set_array(self):
         gm = GenieModel(model_path = self.model_path)
-
+        
+        ## if varstr is a string
         if isinstance(self.var, str):
             path2nc =gm._auto_find_path(var=self.var)
             array = gm._open_nc(path2nc)[self.var]
-        elif isinstance(self.var, list) or isinstance(self.var, tuple):
-            array = []
+            ## if varstr is a list/tuple of strings
+        elif isinstance(self.var, (list, tuple)):        
+            
+            array_container = []
             for v in self.var:
-                path2nc =gm._auto_find_path(v)
-                array.append(gm._open_nc(path2nc)[v])
-            if self.combine_vars:
-                array = np.sum(array, axis=0)
-
+                path2nc = gm._auto_find_path(v)
+                v_array = gm._open_nc(path2nc)[v]
+                array_container.append(v_array)            
+            
+            array = xr.concat(array_container, "pft")
+            
         return array
+        
