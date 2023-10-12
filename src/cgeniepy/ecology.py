@@ -1,17 +1,38 @@
 from pandas import read_fwf
 import numpy as np
-from .core import GenieModel, GenieVariable
+import re
+
+from .model import GenieModel
 from .chem import molecular_weight
 from .grid import GENIE_grid_vol, GENIE_grid_area
 from . import ureg
 
 
 class EcoModel(GenieModel):
+    """
+    EcoModel is an subclass of GenieModel, as EcoGENIE to cGENIE
 
-    "EcoModel is an subclass of GenieModel, as EcoGENIE to cGENIE"
+    It facilitates the access of ecophysiological parameters and plankton variables
+    """
 
     def __init__(self, *args, **kwargs):
+        
         super().__init__(*args, **kwargs)
+        
+        ## get the list of plankton variables
+        self.eco_varlist = self.ncvar_list()[self._get_ncpath('ecogem', '2d')]
+
+        plankton_pattern = r'eco2D_Plankton_C_(\d{3})'
+        self.plank_indices = [var.split("_")[3] for var in self.eco_varlist if re.search(plankton_pattern, var)]
+        self.plank_n = len(self.plank_indices)
+
+        phyto_pattern = r'eco2D_Plankton_Chl_(\d{3})'
+        self.phyto_indices = [var.split("_")[3] for var in self.eco_varlist if re.search(phyto_pattern, var)]
+        
+        ## exclude phytoplankton to get zooplankton indices
+        self.zoo_indices = list(set(self.plank_indices) - set(self.phyto_indices))
+
+        ## not support mixotrophy yet
 
     def eco_pars(self):
         """
@@ -21,97 +42,73 @@ class EcoModel(GenieModel):
         df = read_fwf(path)
         return df
 
-    def num_of_pft(self):
-        "the total number of plankton functional type"
-        full_lst = list(self.get_vars())
-        name_lst = [x for x in full_lst if "eco2D_Export_C" in x]
-        n = len(name_lst)
-        return n
+    def select_pft(self, pft_index, bgc_prefix="Plankton", element="C"):
+        """
+        a variant of get_var, to select plankton functional type
 
-    def select_pft(self, pft_index):
-        "pft can be an integer or a index list"
-        return PlanktonType(pft_index=pft_index, model_path=self.model_path)
+        :param pft_index: the index of plankton functional type
+        :param bgc_prefix: 'Plankton' or 'Export'
+        :param element: 'C', 'Fe', 'P', 'Si', 'N'
 
+        :return: a GenieArray object
 
-class PlanktonType:
-    def __init__(self, pft_index, model_path):
-        self.pft_index = pft_index
-        self.model_path = model_path
+        ----------------------------------------
+        Example:
 
-    def biomass(self, element="C", *args, **kwargs):
-        return PlanktonBiomass(pft_index=self.pft_index, element=element, model_path=self.model_path, *args, **kwargs)
+        from cgeniepy.ecology import EcoModel
 
-    def export(self, element="C", *args, **kwargs):
-        return PlanktonExport(pft_index=self.pft_index, element=element, model_path=self.model_path, *args, **kwargs)
+        ### initialise a model object
+        model = EcoModel("path_to_GENIE_output")
+        
+        ### get PFT-1 biomass data
+        model.select_pft(1, "Plankton", "C")
 
-    
-class PlanktonBiomass(GenieVariable):
+        ### get a list of PFT biomass data
+        model.select_pft([1, 2, 3], "Plankton", "C")
 
-    bgc_prefix = "Plankton"
-    unit = "mmol m$^-3$"
+        ### get all phytoplankton biomass data
+        model.select_pft('phyto', "Plankton", "C")
 
-    def __init__(self, model_path, pft_index, element, *args, **kwargs):
-        self.pft_index = pft_index
-        self.element = element
+        ### get all zooplankton biomass data
+        model.select_pft('zoo', "Plankton", "C")
 
-        # single index
-        if isinstance(self.pft_index, int) or isinstance(self.pft_index, str):
-            self.full_varstr = f"eco2D_{self.bgc_prefix}_{self.element}_{self.pft_index:03}"
-        # multiple indices
-        elif isinstance(self.pft_index, list) or isinstance(self.pft_index, tuple):
-            ## create a list of variable names
-            self.full_varstr = []
+        ### get all plankton biomass data
+        model.select_pft('all', "Plankton", "C")
+        """
+
+        ### >>> preprocess the bgc_prefix
+        ## if bgc_prefix is "Biomass", replace it with "Plankton"
+        if bgc_prefix == "Biomass": bgc_prefix = "Plankton"        
+        ## always capitalize the bgc_prefix
+        bgc_prefix = bgc_prefix.capitalize()
+
+        ### >>> process the pft_index
+        ## if pft_index is "phyto", replace it with phyto_indices
+        if pft_index == "phyto": pft_index = self.phyto_indices
+        if pft_index == "zoo": pft_index = self.zoo_indices
+
+        ## >>> construct variable name using pft_index, bgc_prefix and element
+        if isinstance(pft_index, (int, str)):
+            fullstring = f"eco2D_{bgc_prefix}_{element}_{pft_index:03}"
+        elif isinstance(pft_index, (list, tuple)):
+            fullstring = []
             for i in pft_index:
-                self.full_varstr.append(f"eco2D_{self.bgc_prefix}_{self.element}_{i:03}")
+                fullstring.append(f"eco2D_{bgc_prefix}_{element}_{i:03}")
+        else:
+            raise ValueError("pft_index must be an integer or a list/tuple of integers")
 
-        GenieVariable.__init__(self, model_path=model_path, var=self.full_varstr, *args, **kwargs)
+        ## modify the fullstring if pft_index is "all"
+        ## eco2D_Plankton_C_Total/eco2D_Plankton_Chl_Total
+        if pft_index == "all":
+            fullstring = f"eco2D_{bgc_prefix}_{element}_Total"
+        
+        return self.get_var(fullstring)
 
-    def sum(self):
-        "print in Tg, depending on the element"
-        X_ = molecular_weight(self.element)
-        c = self.uarray().to_base_units()
-        v = GENIE_grid_vol().to_base_units()
-        s = c * v
-        s = s.to("mol").to("g", "chemistry", mw=X_ * ureg("g/mole")).to("Gt")
-        return np.nansum(s)
+    # def select_foram(self, foram_type):
+    #     "a more specific version of select_pft, to select foram"
 
-
-class PlanktonExport(GenieVariable):
-
-    unit = "mmol m$^-2$ d$^-1$"
-    bgc_prefix = "Export"
-
-    def __init__(self, model_path, pft_index, element, *args, **kwargs):
-        self.pft_index = pft_index
-        self.element = element
-
-        # single index
-        if isinstance(self.pft_index, int) or isinstance(self.pft_index, str):
-            self.full_varstr = f"eco2D_{self.bgc_prefix}_{self.element}_{self.pft_index:03}"
-
-        # multiple indices
-        elif isinstance(self.pft_index, list) or isinstance(self.pft_index, tuple):
-            self.full_varstr = []
-            for i in pft_index:
-                self.full_varstr.append(f"eco2D_{self.bgc_prefix}_{self.element}_{i:03}")
-
-        GenieVariable.__init__(self, model_path=model_path, var=self.full_varstr, *args, **kwargs)
-
-    def _set_array(self):
-        # tested
-        return super()._set_array() * 80.8
-
-    @ureg.with_context("bgc")
-    def sum(self):
-        # concentration data
-        c = self.uarray().to_base_units()
-        # make volume in pint type
-        v = GENIE_grid_area().to_base_units()
-        # globall integrated value
-        s = c * v
-
-        # unit conversion
-        C_ = molecular_weight(self.element)
-        s = s.to("mol d^-1").to("g d^-1", "bgc", mw=C_ * ureg("g/mol")).to("Gt yr^-1")
-
-        return np.nansum(s)    
+    #     ## convert foram type to pft index
+    #     if isinstance(foram_type, (list, tuple)):
+    #         self.pft_index = [foram_names().get(foram)[0] for foram in self.foram_type]
+    #     else:
+    #         self.pft_index = foram_names()[self.foram_type][0]
