@@ -146,17 +146,38 @@ def formula_parser(formula: str):
 
 
 def molecular_weight(formula: str):
+    """
+    Calculate molecular weight using a chemical formula
+
+    :param formula: chemical formula
+    :returns: molecular weight
+
+    ------
+    Example
+    ------
+    >>> molecular_weight("C6H12O6")
+    >>> 180.15588
+    """
     "calculate molecular weight"
     d = formula_parser(formula)
     mw = sum([molar_mass(k) * v for k, v in d.items()])
     return mw
 
 
-def rm_element(unit: str):
+def pure_unit(unit: str):
     """
-    remove elements in string (e.g., mmol C d-1) to get a pure unit
+    Get a pure unit string by removing elements in string (e.g., mmol C d-1)
+
+    :param unit: unit string with elements
+    :returns: pure unit string
+
+    ------
+    Example
+    ------
+    >>> pure_unit("mmol C d-1")
+    >>> "mmol d-1"
     """
-    # an element l
+    # an element pool
     l = ["C", "N", "P", "O", "Fe", "Si", "Ca", "S"]
     # add leading whitespace
     l = [" " + i for i in l]
