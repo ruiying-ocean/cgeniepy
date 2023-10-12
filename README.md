@@ -1,10 +1,12 @@
 This package is an interface to the output of [cGENIE Earth System Model](https://www.seao2.info/mymuffin.html). It is an alternative to the exisiting [MATLAB libraries](https://github.com/derpycode/muffinplot). It aims to do three things:
 
-+ Read data
++ Read model output
 + Data analysis
-+ Data Visualisation
++ Data visualisation
+  
+## Installation
 
-## Installation 🙂
+`cgeniepy` is still under active development. But welcome to try the feature and download cgeniep from [testpypi](https://test.pypi.org/project/cgeniepy/).
 
 ```bash
 python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.7.0
@@ -39,7 +41,7 @@ npac_sst = model.get_var("ocn_sur_temp").select_basin(47).isel(time=-1)
 + 2D map (including various projections like polar map)
 + 2D cross section
 + 3D (facet)
-+ Observational data overlay
++ Add a layer of observational data
 
 ```python
 ## simply call `plot` after accessing the data
@@ -54,9 +56,8 @@ npac_sst.plot()
 from cgeniepy.ecology import EcoModel
 model = EcoModel(path_to_model_path)
 ## get all phytoplankton carbon biomass and plot as map
-model.select_pft("Phyto", "Biomass", "C").isel(time=-1).plot()
+model.get_pft("Phyto", "Biomass", "C").isel(time=-1).plot()
 ```
-
 
 
 ## Gallery
@@ -79,7 +80,8 @@ model.select_pft("Phyto", "Biomass", "C").isel(time=-1).plot()
 - [ ] plot.py more dependency of data.dimension
 - [ ] plot.py scatter data overlay
 - [ ] create a simple logo
-
+- [ ] ignore NAs when searching grid 
+- [ ] Read an ensemble of models
 
 ## Citation
 @software{cgeniepy,
