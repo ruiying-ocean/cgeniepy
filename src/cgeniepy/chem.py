@@ -190,7 +190,7 @@ def pure_unit(unit: str):
     return unit
 
 
-def format_base_unit(input_str):
+def format_base_unit(input_str, latex_format=True):
     """
     Convert the base unit to the desired format
     
@@ -235,7 +235,10 @@ def format_base_unit(input_str):
             exponent = int(exponent)
             if exponent != 0:
                 # Convert to the desired format using string formatting
-                output_str = f"{parts[0]}$^-{exponent}$"
+                # 3 layers of curly braces are needed to print a single curly brace
+                output_str = f"{parts[0]}$^{{-{exponent}}}$"
+                ## if not use LaTeX format, then remove dollar sign
+                if not latex_format: output_str = output_str.replace('$', '')                
                 return output_str
             
     ## when exponent is positive (e.g., m2, m3)
@@ -248,12 +251,15 @@ def format_base_unit(input_str):
             exponent = int(exponent)
             if exponent != 0:
                 # Convert to the desired format using string formatting
-                output_str = f"{base}$^{exponent}$"
+                # 3 layers of curly braces are needed to print a single curly brace
+                output_str = f"{base}$^{{{exponent}}}$"
+                ## if not use LaTeX format, then remove dollar sign
+                if not latex_format: output_str = output_str.replace('$', '')
                 return output_str
     
     return input_str
 
-def format_unit(input):
+def format_unit(input, *args, **kwargs):
     """
     convert a unit in a string to the desired format, which can be used in plot labels and 
     facilitate the unit calculation
@@ -272,7 +278,7 @@ def format_unit(input):
     if input == 'n/a':
         return None
     unit_list = input.split(" ")
-    unit_list = [format_base_unit(i) for i in unit_list]
+    unit_list = [format_base_unit(i, *args, **kwargs) for i in unit_list]
 
     clean_string = ' '.join(unit_list)
     return clean_string

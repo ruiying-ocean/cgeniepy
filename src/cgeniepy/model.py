@@ -19,7 +19,7 @@ from .grid import (
     mask_Arctic_Med
 )
 from .utils import file_exists
-from .chem import pure_unit
+from .chem import pure_unit, format_unit
 from .scores import ModelSkill
 from .utils import remove_outliers
 from .array import GenieArray
@@ -94,10 +94,6 @@ class GenieModel(object):
         else:
             return xr.open_dataset(path)
 
-    def _open_ts(self, path):
-        "Use xarray to open time series file"    
-        pass
-
     def get_ts(self, filename, col_name=None):
 
         ## check if file exists
@@ -147,32 +143,27 @@ class GenieModel(object):
         ## initialise GenieArray
         target_data = GenieArray()
         target_data.array = array
+        target_data.array.attrs['units'] = format_unit(target_data.array.attrs['units'] )
+        
         
         return target_data
 
-    def _grid_mask(self, source="ecogem", Arctic=True, Med=True):
+    def _grid_mask(self, Arctic=True, Med=True):
         """
         cGENIE continent mask array (by setting zero values),
         either calculated from existing data or using biogem.grid_mask
         """
-        if source == "ecogem":
-            data = self.get_var("eco2D_xGamma_T").array
-            grid_mask = xr.where(~np.isnan(data), 1, 0).values
-        elif source == "biogem":
+        try:
             grid_mask = self.get_var("grid_mask").array
-        else:
-            raise ValueError("source only accept ecogem or biogem")
-
-        if Arctic:
-            grid_mask[34:36, :] = 0
-        if Med:
-            grid_mask[27:30, 25:30] = 0
-
-        return grid_mask
+            if Arctic: grid_mask[34:36, :] = 0
+            if Med: grid_mask[27:30, 25:30] = 0
+            return grid_mask
+        except ValueError:
+            print("grid_mask not found!")
 
     def _marine_area(self):
         "grid area array in km2"
-        grid_mask = self.grid_mask()
+        grid_mask = self._grid_mask()
         grid_area = GENIE_grid_area()
         mask_area = grid_area * grid_mask
 
@@ -180,7 +171,7 @@ class GenieModel(object):
 
     def _marine_volume(self):
         "grid volume array in km3"
-        grid_mask = self.grid_mask()
+        grid_mask = self._grid_mask()
         grid_volume = GENIE_grid_vol()
         mask_volume = grid_volume * grid_mask
 
