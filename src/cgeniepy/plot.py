@@ -41,10 +41,12 @@ def scatter_map(
 
     :returns: a map
     """
-
+    
+    ax.set_global()
     # plot land and coastline, zorder is the drawing order, smaller -> backer layer
-    ax.add_feature(cfeature.LAND.with_scale('110m'), zorder=1, facecolor="#B1B2B4")
-    ax.add_feature(cfeature.COASTLINE.with_scale('110m'), zorder=2)
+    ax.add_feature(cfeature.LAND.with_scale('110m'), zorder=2, facecolor="#B1B2B4")
+    ax.add_feature(cfeature.COASTLINE.with_scale('110m'), zorder=3)
+    
 
     if "Latitude" not in df.columns or "Longitude" not in df.columns:
         raise ValueError("Input data lack Latitude/Longitude column")
@@ -85,12 +87,14 @@ def scatter_map(
             case 'cubic':
                 points = subdf[:,1:3]
                 grid_values = griddata((lat, lon), values, (grid_lat, grid_lon), method='cubic')
+            case _:
+                raise ValueError(f"Interpolation method {interpolate} not supported")
 
         # plot
         p = ax.pcolormesh(grid_lat, grid_lon,
                           grid_values,
                           transform=ccrs.PlateCarree(),
-                          zorder=0,
+                          zorder=1,
                           *args,
                           **kwargs)
     else:
@@ -177,25 +181,52 @@ class GeniePlottable:
     "zt_edge": GENIE_depth(edge=True)/1000,
     }
 
-    def __init__(self, array, dim):
+    
+    def __init__(self, array):
         self.array = array
-        self.dim = dim
 
-    def plot_1d(self, ax=None, x=None, *args, **kwargs):
-        """plot 1D data, e.g., zonal_average, time series
-        x: time/lon/lat
-        """
-        if not ax:
-            fig, ax = self._init_fig()
-        
-        if not x:
-            p = ax.plot(self.array, *args, **kwargs)
+    def plot(self, *args, **kwargs):
+        if self.array.ndim == 1:
+            return self._plot_1d(*args, **kwargs)
+        elif self.array.ndim == 2:
+            return self._plot_2d(*args, **kwargs)
+        elif self.array.ndim == 3:
+            return self._plot_3d(*args, **kwargs)
         else:
-            p = ax.plot(self.array, self.grid_dict[x], *args, **kwargs)
+            raise ValueError(f"{self.ndim} dimensions not supported")
+
+    def _plot_1d(self, *args, **kwargs):
+        """
+        plot 1D data, e.g., zonal_average, time series
+        dim: time/lon/lat
+        """
+        if 'ax' not in kwargs:
+            fig, ax = self._init_fig()
+
+        ## get the only dimension as x
+        dim = self.array[self.array.dims[0]]
+                
+        ax.set_xlabel(dim.name)
+        ax.set_ylabel(f"{self.array.name} (${{{self.array.units}}}$)")
+        p = ax.plot(dim, self.array, *args, **kwargs)
 
         return p
 
-    def plot_map(self, ax=None, x_edge="lon_edge", y_edge="lat_edge", contour=False, colorbar=True, *args, **kwargs):
+    def _plot_2d(self, *args, **kwargs):
+        ## if lon, lat then plot map
+        ## if lon, zt then plot cross section
+        ## if lat, zt then plot cross section
+        dims = self.array.dims
+        if 'lon' in dims and 'lat' in dims:
+            return self._plot_map(*args, **kwargs)
+        elif 'zt' in dims and 'lon' in dims:
+            return self._plot_cross_section(*args, **kwargs)
+        elif 'zt' in dims and 'lat' in dims:
+            return self._plot_cross_section(*args, **kwargs)
+        else:
+            raise ValueError(f"{dims} not supported")
+
+    def _plot_map(self, ax=None, x_edge="lon_edge", y_edge="lat_edge", contour=False, colorbar=True, *args, **kwargs):
 
         if not ax:
             fig, ax = self._init_fig(subplot_kw={'projection': ccrs.EckertIV()})
@@ -208,14 +239,19 @@ class GeniePlottable:
         p = self._add_pcolormesh(ax, x_edge=x_edge_arr, y_edge=y_edge_arr, transform=self.transform_crs, *args, **kwargs)
         self._add_outline(ax, x_edge=x_edge_arr, y_edge=y_edge_arr,  transform=self.transform_crs)
 
+        if colorbar:
+            self._add_colorbar(p)
+        
         if contour:
             x_arr = self.grid_dict.get(x_edge[:3:1])
             y_arr = self.grid_dict.get(y_edge[:3:1])
-            p = self._add_contour(ax, x=x_arr, y=y_arr, transform=self.transform_crs)
+            ## if cmap is specified, also do it in contour
+            # if "cmap" in kwargs:
+            #     p = self._add_contour(ax, x=x_arr, y=y_arr, transform=self.transform_crs, *args, **kwargs)
+            # else:
+            #     p = self._add_contour(ax, x=x_arr, y=y_arr, transform=self.transform_crs)
+            p = self._add_contour(ax, x=x_arr, y=y_arr, transform=self.transform_crs, colors="k", linewidths=0.5, zorder=1)      
 
-        if colorbar:
-            self._add_colorbar(p)
-            
         return p
 
     def plot_polar(self, ax=None, hemisphere="South", x_edge="lon_edge", y_edge="lat_edge", contour=False, colorbar=True, *args, **kwargs):
@@ -243,41 +279,62 @@ class GeniePlottable:
             linestyle="-",
         )
 
+        if colorbar:
+            self._add_colorbar(p)
+
+        
         if contour:
             x_arr = self.grid_dict.get(x_edge[:3:1])
             y_arr = self.grid_dict.get(y_edge[:3:1])
             p = self._add_contour(ax, x=x_arr, y=y_arr, transform=self.transform_crs)
 
-        if colorbar:
-            self._add_colorbar(p)
             
         return p
 
     
-    def plot_transection(self, ax=None, x_edge="lat_edge", y_edge="zt_edge", contour=False, colorbar=True, *args, **kwargs):
+    def _plot_cross_section(self, ax=None, x_edge="lat_edge", y_edge="zt_edge", contour=False, colorbar=True, *args, **kwargs):
+        """
+        Examples
+
+        import matplotlib.pyplot as plt
+
+        model = EcoModel("path_to_model")
+        
+        fig, axs=plt.subplots(nrows=1, ncols=3, figsize=(15, 3))
+        
+        basins = ['Atlantic', 'Pacific', 'Indian']
+        
+        for i in range(3):
+            model.get_var('ocn_PO4').isel(time=-1).mask_basin(base='worjh2',basin=basins[i], subbasin='').mean(dim='lon').plot(ax=axs[i])
+            axs[i].title.set_text(basins[i])
+        """
         if not ax:
             fig, ax = self._init_fig(figsize=(5, 2.5))
 
         x_edge_arr = self.grid_dict.get(x_edge)
         y_edge_arr = self.grid_dict.get(y_edge)
 
+        
         self._set_facecolor(ax)
         self._set_borderline(ax, geo=False)
 
         p = self._add_pcolormesh(ax, x_edge=x_edge_arr, y_edge=y_edge_arr, *args, **kwargs)
-        #self._add_outline(ax, x_edge=x_edge_arr, y_edge=y_edge_arr)
+        self._add_outline(ax, x_edge=x_edge_arr, y_edge=y_edge_arr)
         ax.set_ylim(ax.get_ylim()[::-1])
         ax.set_xlabel(x_edge[:3:1], fontsize=13)
         ax.set_ylabel("Depth (km)", fontsize=12)
 
-        if contour:
-            x_arr = self.grid_dict.get(x_edge[:3:1])
-            y_arr = self.grid_dict.get(y_edge[:3:1])
-            p = self._add_contour(ax, x=x_arr, y=y_arr, linewidths=0.6, colors="black", linestyles="solid")
-            ax.clabel(p, p.levels[::1], colors=["black"], fontsize=8.5, inline=False)
-
         if colorbar:
             self._add_colorbar(p, location="vertical")
+        
+        if contour:
+            ## e.g., lat_edge[:3:1] -> "lat"
+            ##       zt_edge[:2:1] -> "zt"
+            x_arr = self.grid_dict.get(x_edge[:3:1])
+            y_arr = self.grid_dict.get(y_edge[:2:1])
+            
+            p = self._add_contour(ax, x=x_arr, y=y_arr, linewidths=0.6, colors="black", linestyles="solid")
+            ax.clabel(p, p.levels[::1], colors=["black"], fontsize=8.5, inline=False)
 
         return p
 
