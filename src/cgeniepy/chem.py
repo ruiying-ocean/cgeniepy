@@ -188,3 +188,91 @@ def pure_unit(unit: str):
             unit = unit.replace(element, "")
 
     return unit
+
+
+def format_base_unit(input_str):
+    """
+    Convert the base unit to the desired format
+    
+    base unit means it is not a compound unit (e.g., m2, m-2, m/s, m s-1),
+    which should be handled by the function `format_unit`
+            
+    :param input_str: a base unit string 
+    :return: a formatted string
+    
+    ----------
+    Example:
+    
+    >>> convert_a_unit('m2')
+    '$m^2$'
+    >>> convert_a_unit('m-2')
+    '$m^{-2}$'
+    """
+    if input_str == 'n/a':
+        return None
+
+    ## if the input string contains a '^' character, then remove it
+    if '^' in input_str:
+        input_str = input_str.replace('^', '')
+
+    if '**' in input_str:
+        input_str = input_str.replace('**', '^')
+        
+    if 'o/oo' in input_str:
+        input_str = input_str.replace('o/oo', '‰')
+        
+    if 'degree' in input_str:
+        input_str = input_str.replace('degree', '°')
+
+    ## when exponent is negative  (e.g., m-2, m-3)
+    if '-' in input_str:
+        parts = input_str.split('-')
+        ## two parts: base and exponent
+        base = parts[0]
+        exponent = parts[1]
+        
+        if len(parts) == 2 and exponent.isdigit():
+            exponent = int(exponent)
+            if exponent != 0:
+                # Convert to the desired format using string formatting
+                output_str = f"{parts[0]}$^-{exponent}$"
+                return output_str
+            
+    ## when exponent is positive (e.g., m2, m3)
+    ## also slice into two parts: base and exponent
+    if len(input_str) > 1:
+        base = input_str[:-1]
+        exponent = input_str[-1]
+        
+        if exponent.isdigit():
+            exponent = int(exponent)
+            if exponent != 0:
+                # Convert to the desired format using string formatting
+                output_str = f"{base}$^{exponent}$"
+                return output_str
+    
+    return input_str
+
+def format_unit(input):
+    """
+    convert a unit in a string to the desired format, which can be used in plot labels and 
+    facilitate the unit calculation
+    
+    :param input: a unit string 
+    :return: a  formatted string
+    
+    ----------
+    Example
+    
+    >>> format_unit('mol kg-1')
+    'mol kg$^{-1}$'
+    >>> format_unit('mmol m-2 d-1')
+    'mmol m$^{-2}$ d$^{-1}$'
+    """
+    if input == 'n/a':
+        return None
+    unit_list = input.split(" ")
+    unit_list = [format_base_unit(i) for i in unit_list]
+
+    clean_string = ' '.join(unit_list)
+    return clean_string
