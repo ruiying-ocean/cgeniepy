@@ -1,48 +1,57 @@
-![logo](logo.png)
+This package is an interface to the output of [cGENIE Earth System Model](https://www.seao2.info/mymuffin.html). It is an alternative to the exisiting [MATLAB libraries](https://github.com/derpycode/muffinplot). It aims to do three things:
 
-This package is an interface to [cGENIE model](https://www.seao2.info/mymuffin.html), an Earth system model developed by Prof. Andy Ridgwell, UC Riverside. Although there are exisiting [MATLAB codes](https://github.com/derpycode/muffinplot) to do this, I feel more comfortable when I have more freedom and control. So I developed this package. I try to use my limited Python knowledge in this package, but it is inevitable that many errors may exist.
-
-## Main features 🐛
-
-### 1. visualisation based on Matplotlib
-- Global map
-- Polar map (despite low resolution)
-- Basin transection
-- Taylor diagram (from community)
-- Copy some colormaps that was not in matplotlib, e.g., the ODV and MATLAB default color palette (thanks to the `rpal` package in R) 
-
-### 2. chemistry system
-Parse a molecular formula and get its molecular mass
-
-### 3. unit system
-unit conversion using `pint`
-
-### 4. ocean basin detection
-input latitude/longitude to get where the site is in.
-
-### 5. Functional diversity
-Calculate community weight mean, functional dispersion, functional specisation rate, over-redundancy.
-
++ Read data
++ Data analysis
++ Visualisation
 
 ## Installation 🙂
 
 ```bash
-python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.6
+python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.7.0
 ```
 
-## Code style
+## Read data
++ netCDF (*.nc)
++ time series (*.res)
 
-ReST as docstring style, black as code style.
+## Data analysis
++ subset basin
++ mean/max/min/median/sum over lat/lon/depth
++ unit conversion (e.g., mmol C/m3 -> Tg C)
+
+## Visualisation
++ plot map/transection/zonal average/polar according to dimension
++ optionally use contour lines
++ add layer of observational data points [TODO]
+
+## Others
+
+
+## Gallery
+
+### A global biomass map of modelled picophytoplankton (0.6 μm) 
+
+![map](example_map.png)
+
+### A global distribution of basin-level nutrient (PO4) 
+
+![modern_po4](example_transection.png)
+
+
+
+### ECOGEM shortcuts
 
 ## Project TODO 🚩
 
-- [] Documentation built by `sphinx` 
-- [] Examples
-- [] Unit Tests
-- [X] add decorator for plot object
+- [] Build Documentation
+- [] Write Examples
 
-## Structure
 
-the essential is to pass the model path string until the code finally get data from it.
-
-Class: GenieModel -> EcoModel; GenieVariable -> PlanktonBiomass/PlanktonExport -> ForamBiomass/ForamExport;
+## Citation
+@software{cgeniepy,
+  author = {Rui Ying},
+  title = {A Python interface to analyse and visualise cGENIE model output},
+  url = {https://github.com/ruiying-ocean/cgeniepy/},
+  version = {0.7.0},
+  date = {2023-10-09},
+}
