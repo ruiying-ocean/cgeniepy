@@ -207,7 +207,7 @@ class GeniePlottable:
         dim = self.array[self.array.dims[0]]
                 
         ax.set_xlabel(dim.name)
-        ax.set_ylabel(f"{self.array.name} (${{{self.array.units}}}$)")
+        ax.set_ylabel(f"{self.array.long_name} ({self.array.units})")
         p = ax.plot(dim, self.array, *args, **kwargs)
 
         return p
@@ -442,6 +442,8 @@ class GeniePlottable:
         cbar.ax.tick_params(color="k", direction="in")
         cbar.outline.set_edgecolor('black')
         cbar.minorticks_on()
+        ## set colorbar label
+        cbar.set_label(f"{self.array.long_name} ({self.array.units})", size=10, labelpad=10)
         
     def plot_quiver(x,y):
         pass

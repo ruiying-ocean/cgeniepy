@@ -1,4 +1,4 @@
-This package is an interface to the output of [cGENIE Earth System Model](https://www.seao2.info/mymuffin.html). It is an alternative to the exisiting [MATLAB libraries](https://github.com/derpycode/muffinplot). It aims to do three things:
+`cgeniepy` is an Python interface to the output of [cGENIE Earth System Model](https://www.seao2.info/mymuffin.html). It is an alternative to the exisiting [MATLAB libraries](https://github.com/derpycode/muffinplot). It aims to do three things:
 
 + Read model output
 + Data analysis
@@ -12,7 +12,8 @@ This package is an interface to the output of [cGENIE Earth System Model](https:
 python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.7.0
 ```
 
-## Read data
+## Usage
+### 1. Read data
 + netCDF (*.nc)
 + time series (*.res)
 
@@ -23,7 +24,7 @@ model = GenieModel(path_to_model_output)
 model.get_var("XXXXX").array
 ```
 
-## Data analysis
+### 2. Data analysis
 + Data subsetting and statistics
 + Model performance
 + Unit-changing operation (e.g., rate to magnitude)
@@ -36,7 +37,7 @@ zonal_sst = model.get_var("ocn_sur_temp").isel(time=-1).mean(dim='lat')
 npac_sst = model.get_var("ocn_sur_temp").select_basin(47).isel(time=-1)
 ```
 
-## Visualisation
+### 3. Visualisation
 + 1D line (time series, zonal average)
 + 2D map (including various projections like polar map)
 + 2D cross section
@@ -49,7 +50,7 @@ zonal_sst.plot()
 npac_sst.plot()
 ```
 
-## Others
+### 4. Others
 + ECOGEM shortcuts
 
 ```python
@@ -58,7 +59,6 @@ model = EcoModel(path_to_model_path)
 ## get all phytoplankton carbon biomass and plot as map
 model.get_pft("Phyto", "Biomass", "C").isel(time=-1).plot()
 ```
-
 
 ## Gallery
 
@@ -69,7 +69,6 @@ model.get_pft("Phyto", "Biomass", "C").isel(time=-1).plot()
 ### A global distribution of basin-level nutrient (PO4) 
 
 ![modern_po4](example_transection.png)
-
 
 ## Project Roadmap 🚩
 
