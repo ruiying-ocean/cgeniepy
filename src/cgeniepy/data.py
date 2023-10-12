@@ -2,7 +2,7 @@ import pathlib
 
 from xarray import open_dataset
 import numpy as np
-from .grid import reassign_obs
+from .grid import normalise_obs_lon
 
 
 def efficient_log(data):
@@ -37,7 +37,7 @@ def obs_data(source, var):
     ds = open_dataset(file_path)
     long_name = foram_names()[var][1]
     obs = ds[long_name]
-    modified_obs = reassign_obs(obs).to_numpy()
+    modified_obs = normalise_obs_lon(obs).to_numpy()
 
     return modified_obs
 
