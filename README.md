@@ -2,7 +2,7 @@ This package is an interface to the output of [cGENIE Earth System Model](https:
 
 + Read data
 + Data analysis
-+ Visualisation
++ Data Visualisation
 
 ## Installation 🙂
 
@@ -14,17 +14,49 @@ python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.7.0
 + netCDF (*.nc)
 + time series (*.res)
 
+```python
+## Example
+from cgeniepy.model import GenieModel
+model = GenieModel(path_to_model_output)
+model.get_var("XXXXX").array
+```
+
 ## Data analysis
-+ subset basin
-+ mean/max/min/median/sum over lat/lon/depth
-+ unit conversion (e.g., mmol C/m3 -> Tg C)
++ Data subsetting and statistics
++ Model performance
++ Unit-changing operation (e.g., rate to magnitude)
+
+```python
+## get zonal average SST of the last model year
+zonal_sst = model.get_var("ocn_sur_temp").isel(time=-1).mean(dim='lat')
+
+## North Pacific SST
+npac_sst = model.get_var("ocn_sur_temp").select_basin(47).isel(time=-1)
+```
 
 ## Visualisation
-+ plot map/transection/zonal average/polar according to dimension
-+ optionally use contour lines
-+ add layer of observational data points [TODO]
++ 1D line (time series, zonal average)
++ 2D map (including various projections like polar map)
++ 2D cross section
++ 3D (facet)
++ Observational data overlay
+
+```python
+## simply call `plot` after accessing the data
+zonal_sst.plot()
+npac_sst.plot()
+```
 
 ## Others
++ ECOGEM shortcuts
+
+```python
+from cgeniepy.ecology import EcoModel
+model = EcoModel(path_to_model_path)
+## get all phytoplankton carbon biomass and plot as map
+model.select_pft("Phyto", "Biomass", "C").isel(time=-1).plot()
+```
+
 
 
 ## Gallery
@@ -38,13 +70,15 @@ python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.7.0
 ![modern_po4](example_transection.png)
 
 
+## Project Roadmap 🚩
 
-### ECOGEM shortcuts
-
-## Project TODO 🚩
-
-- [] Build Documentation
-- [] Write Examples
+- [ ] Publish the first stable version to `pypi`
+- [ ] Examples and Documentation
+- [ ] Merge ecology.py and foram.py without losing main functions
+- [ ] plot.py 3D facet subplots
+- [ ] plot.py more dependency of data.dimension
+- [ ] plot.py scatter data overlay
+- [ ] create a simple logo
 
 
 ## Citation
