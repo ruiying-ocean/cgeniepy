@@ -9,7 +9,7 @@
 `cgeniepy` is still under active development. But welcome to try the feature and download cgeniep from [testpypi](https://test.pypi.org/project/cgeniepy/).
 
 ```bash
-python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.7.0
+python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.7.1
 ```
 
 ## Usage
@@ -74,15 +74,19 @@ model.get_pft("Phyto", "Biomass", "C").isel(time=-1).plot()
 
 - [ ] Publish the first stable version to `pypi`
 - [ ] Examples and Documentation
-- [ ] Merge ecology.py and foram.py without losing main functions
 - [ ] plot.py 3D facet subplots
 - [ ] plot.py more dependency of data.dimension
 - [ ] plot.py scatter data overlay
 - [ ] create a simple logo
 - [ ] ignore NAs when searching grid 
-- [ ] Read an ensemble of models
+- [ ] use lat/lon/zt from GENIE output
+- [ ] Move the computation functions in ecology.py and foram.py to array.py
+- [X] allow reading an ensemble of models (netcdf & timeseries)
+- [X] formatting the ugly unit string
 
 ## Citation
+
+```latex
 @software{cgeniepy,
   author = {Rui Ying},
   title = {A Python interface to analyse and visualise cGENIE model output},
@@ -90,3 +94,4 @@ model.get_pft("Phyto", "Biomass", "C").isel(time=-1).plot()
   version = {0.7.0},
   date = {2023-10-09},
 }
+```
