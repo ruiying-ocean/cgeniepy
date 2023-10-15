@@ -1,12 +1,9 @@
-from pandas import read_fwf
+import pandas as pd
 import numpy as np
 import re
 
 from .model import GenieModel
-from .chem import molecular_weight
-from .grid import GENIE_grid_vol, GENIE_grid_area
-from . import ureg
-
+from .data import foram_groups
 
 class EcoModel(GenieModel):
     """
@@ -17,32 +14,53 @@ class EcoModel(GenieModel):
 
     def __init__(self, *args, **kwargs):
         
-        super().__init__(*args, **kwargs)
-        
+        super().__init__(*args, **kwargs)        
+
         ## get the list of plankton variables
-        self.eco_varlist = self.ncvar_list()[self._get_ncpath('ecogem', '2d')]
+        ecogem2d_path = self._model_ncpath('ecogem', '2d')            
+        self.eco_varlist = self.ncvar_dict()[ecogem2d_path]
 
-        plankton_pattern = r'eco2D_Plankton_C_(\d{3})'
-        self.plank_indices = [var.split("_")[3] for var in self.eco_varlist if re.search(plankton_pattern, var)]
-        self.plank_n = len(self.plank_indices)
+        photo_par = self.eco_pars()['vmax_C'].to_numpy()
+        graz_par = self.eco_pars()['max_graz_C'].to_numpy()
 
-        phyto_pattern = r'eco2D_Plankton_Chl_(\d{3})'
-        self.phyto_indices = [var.split("_")[3] for var in self.eco_varlist if re.search(phyto_pattern, var)]
+        autotrophy = (photo_par != 0)
+        heterotrophy = (graz_par != 0)
+        mixotrophy = np.logical_and(autotrophy, heterotrophy)
+
+        phyto_idx = np.where(np.logical_and(autotrophy, ~mixotrophy))[0]
+        zoo_idx = np.where(np.logical_and(heterotrophy, ~mixotrophy))[0]
+        mixo_idx = np.where(mixotrophy)[0]
+
+        ## convert to ECOGENIE format
+        self.phyto_indices = [f'{i+1:03d}' for i in phyto_idx]
+        self.zoo_indices = [f'{i+1:03d}' for i in zoo_idx]
+        self.mixo_indices = [f'{i+1:03d}' for i in mixo_idx]
         
-        ## exclude phytoplankton to get zooplankton indices
-        self.zoo_indices = list(set(self.plank_indices) - set(self.phyto_indices))
-
-        ## not support mixotrophy yet
+        ## some basic information (number of PFTs)
+        self.phyto_n = len(self.phyto_indices)
+        self.zoo_n = len(self.zoo_indices)
+        self.mixo_n = len(self.mixo_indices)
+        self.plank_n = np.sum([self.phyto_n, self.zoo_n, self.mixo_n])
 
     def eco_pars(self):
         """
         return ecophysiological parameter table
         """
-        path = f"{self.model_path}/ecogem/Plankton_params.txt"
-        df = read_fwf(path)
-        return df
+        if self.is_ensemble:
+            df_list = []
+            for path in self.model_path:
+                path = f"{path}/ecogem/Plankton_params.txt"
+                df = pd.read_fwf(path)
+                df_list.append(df)
+            df_all = pd.concat(df_list)
+            return df_all
+        else:
+            path = f"{self.model_path}/ecogem/Plankton_params.txt"
+            df = pd.read_fwf(path)
+            return df
+            
 
-    def select_pft(self, pft_index, bgc_prefix="Plankton", element="C"):
+    def get_pft(self, pft_index, bgc_prefix="Plankton", element="C"):
         """
         a variant of get_var, to select plankton functional type
 
@@ -61,19 +79,19 @@ class EcoModel(GenieModel):
         model = EcoModel("path_to_GENIE_output")
         
         ### get PFT-1 biomass data
-        model.select_pft(1, "Plankton", "C")
+        model.get_pft(1, "Plankton", "C")
 
         ### get a list of PFT biomass data
-        model.select_pft([1, 2, 3], "Plankton", "C")
+        model.get_pft([1, 2, 3], "Plankton", "C")
 
         ### get all phytoplankton biomass data
-        model.select_pft('phyto', "Plankton", "C")
+        model.get_pft('phyto', "Plankton", "C")
 
         ### get all zooplankton biomass data
-        model.select_pft('zoo', "Plankton", "C")
+        model.get_pft('zoo', "Plankton", "C")
 
         ### get all plankton biomass data
-        model.select_pft('all', "Plankton", "C")
+        model.get_pft('all', "Plankton", "C")
         """
 
         ### >>> preprocess the bgc_prefix
@@ -104,11 +122,14 @@ class EcoModel(GenieModel):
         
         return self.get_var(fullstring)
 
-    # def select_foram(self, foram_type):
-    #     "a more specific version of select_pft, to select foram"
+    def get_foram(self, foram_type, *args, **kwargs):
 
-    #     ## convert foram type to pft index
-    #     if isinstance(foram_type, (list, tuple)):
-    #         self.pft_index = [foram_names().get(foram)[0] for foram in self.foram_type]
-    #     else:
-    #         self.pft_index = foram_names()[self.foram_type][0]
+        "a more specific version of get_pft, to select foram"
+        
+        ## convert foram type to pft index
+        if isinstance(foram_type, (list, tuple)):
+            self.pft_index = [foram_groups().get(foram)[0] for foram in foram_type]
+        else:
+            self.pft_index = foram_groups()[foram_type][0]
+
+        return self.get_pft(self.pft_index, *args, **kwargs)
