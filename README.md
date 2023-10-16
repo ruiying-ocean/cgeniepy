@@ -2,7 +2,6 @@
   <img src="logo.png"/>
 </p>
 
-
 `cgeniepy` is an Python interface to the output of [cGENIE Earth System Model](https://www.seao2.info/mymuffin.html). It is an alternative to the exisiting [MATLAB libraries](https://github.com/derpycode/muffinplot). It aims to do three things:
 
 + Read model output
@@ -82,10 +81,10 @@ model.get_pft("Phyto", "Biomass", "C").isel(time=-1).plot()
 - [ ] plot.py 3D facet subplots
 - [ ] plot.py more dependency of data.dimension
 - [ ] plot.py scatter data overlay
-- [x] create a simple logo
 - [ ] ignore NAs when searching grid 
 - [ ] use lat/lon/zt from GENIE output
 - [ ] Move the computation functions in ecology.py and foram.py to array.py
+- [x] create a simple logo
 - [X] allow reading an ensemble of models (netcdf & timeseries)
 - [X] formatting the ugly unit string
 

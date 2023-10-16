@@ -18,9 +18,18 @@ from .array import GenieArray
 # Add method to read in time series and parameter table
 
 class GenieModel(object):
+    """
+    GenieModel is the fundamental class for users to access cGENIE output
+
+    Initialise a GenieModel object with a path to cGENIE output directory
+    -------
+    Example
+    >>> from cgeniepy.model import GenieModel
+    >>> model = GenieModel("path_to_GENIE_output")
+    """
     
     def __init__(self, model_path: Union[str, List, Tuple]):
-
+        
         ## check if model_path is a valid directory
         if isinstance(model_path, (list, tuple)):
             self.is_ensemble = True
@@ -31,6 +40,7 @@ class GenieModel(object):
             self.is_ensemble = False
             if not Path(model_path).is_dir():
                 raise ValueError(f"{model_path} is not a valid directory")
+
         
         self.model_path = model_path
 
@@ -183,8 +193,8 @@ class GenieModel(object):
             with open(f, 'r') as file:
                 lines = file.readlines()
 
-            # Remove "%" from the header and split it using "/"
-            header = [col.strip().lstrip('%') for col in lines[0].split('/')]
+            # Remove " %" from the header and split it using "/"
+            header = [col.strip().lstrip('% ') for col in lines[0].split(' / ')]
             data = [line.split() for line in lines[1:]]
             df= pd.DataFrame(data, columns=header)
 
