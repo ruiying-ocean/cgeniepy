@@ -10,7 +10,7 @@
   
 ## Installation
 
-`cgeniepy` is still under active development. But welcome to try the feature and download cgeniep from [testpypi](https://test.pypi.org/project/cgeniepy/).
+`cgeniepy` is still under active development. But welcome to try the features after downloading cgeniep from [testpypi](https://test.pypi.org/project/cgeniepy/).
 
 ```bash
 python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.7.1
