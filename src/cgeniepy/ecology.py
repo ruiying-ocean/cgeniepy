@@ -10,6 +10,13 @@ class EcoModel(GenieModel):
     EcoModel is an subclass of GenieModel, as EcoGENIE to cGENIE
 
     It facilitates the access of ecophysiological parameters and plankton variables
+
+    Initialise a EcoModel object with a path to cGENIE output directory
+
+    -------
+    Example
+    >>> from cgeniepy.ecology import EcoModel
+    >>> model = EcoModel("path_to_GENIE_output")
     """
 
     def __init__(self, *args, **kwargs):
@@ -19,9 +26,18 @@ class EcoModel(GenieModel):
         ## get the list of plankton variables
         ecogem2d_path = self._model_ncpath('ecogem', '2d')            
         self.eco_varlist = self.ncvar_dict()[ecogem2d_path]
+        
+        pattern = r'eco2D_Plankton_C_\d+'
+        plank_vars = [var for var in self.eco_varlist if re.match(pattern, var)]
+        self.plank_n = len(plank_vars)
 
-        photo_par = self.eco_pars()['vmax_C'].to_numpy()
-        graz_par = self.eco_pars()['max_graz_C'].to_numpy()
+        if self.is_ensemble:
+            sub_ecopars = self.eco_pars().iloc[range(self.plank_n),]
+        else:
+            sub_ecopars = self.eco_pars()
+
+        photo_par = sub_ecopars['vmax_C'].to_numpy()
+        graz_par = sub_ecopars['max_graz_C'].to_numpy()
 
         autotrophy = (photo_par != 0)
         heterotrophy = (graz_par != 0)
@@ -40,11 +56,17 @@ class EcoModel(GenieModel):
         self.phyto_n = len(self.phyto_indices)
         self.zoo_n = len(self.zoo_indices)
         self.mixo_n = len(self.mixo_indices)
-        self.plank_n = np.sum([self.phyto_n, self.zoo_n, self.mixo_n])
+
+        ## check everything is correct
+        if (self.phyto_n + self.zoo_n + self.mixo_n != self.plank_n):
+            raise ValueError("The number of PFTs does not match the number of plankton variables")
+
 
     def eco_pars(self):
         """
-        return ecophysiological parameter table
+        Get all the ecophysiological parameters used in the model
+
+        :return: a pandas DataFrame object
         """
         if self.is_ensemble:
             df_list = []
@@ -62,7 +84,7 @@ class EcoModel(GenieModel):
 
     def get_pft(self, pft_index, bgc_prefix="Plankton", element="C"):
         """
-        a variant of get_var, to select plankton functional type
+        a variant of GenieModel's `get_var`, to select plankton functional type
 
         :param pft_index: the index of plankton functional type
         :param bgc_prefix: 'Plankton' or 'Export'
@@ -73,25 +95,25 @@ class EcoModel(GenieModel):
         ----------------------------------------
         Example:
 
-        from cgeniepy.ecology import EcoModel
+        >>> from cgeniepy.ecology import EcoModel
 
-        ### initialise a model object
-        model = EcoModel("path_to_GENIE_output")
+        >>> ### initialise a model object
+        >>> model = EcoModel("path_to_GENIE_output")
         
-        ### get PFT-1 biomass data
-        model.get_pft(1, "Plankton", "C")
+        >>> ### get PFT-1 carbon biomass data
+        >>> model.get_pft(1, "Plankton", "C")
 
-        ### get a list of PFT biomass data
-        model.get_pft([1, 2, 3], "Plankton", "C")
+        >>> ### get a list of PFT carbon biomass data
+        >>> model.get_pft([1, 2, 3], "Plankton", "C")
 
-        ### get all phytoplankton biomass data
-        model.get_pft('phyto', "Plankton", "C")
+        >>> ### get all phytoplankton carbon biomass data
+        >>> model.get_pft('phyto', "Plankton", "C")
 
-        ### get all zooplankton biomass data
-        model.get_pft('zoo', "Plankton", "C")
+        >>> ### get all zooplankton carbon biomass data
+        >>> model.get_pft('zoo', "Plankton", "C")
 
-        ### get all plankton biomass data
-        model.get_pft('all', "Plankton", "C")
+        >>> ### get all plankton carbon biomass data
+        >>> model.get_pft('all', "Plankton", "C")
         """
 
         ### >>> preprocess the bgc_prefix
@@ -104,6 +126,7 @@ class EcoModel(GenieModel):
         ## if pft_index is "phyto", replace it with phyto_indices
         if pft_index == "phyto": pft_index = self.phyto_indices
         if pft_index == "zoo": pft_index = self.zoo_indices
+        if pft_index == "mixo": pft_index = self.mixo_indices
 
         ## >>> construct variable name using pft_index, bgc_prefix and element
         if isinstance(pft_index, (int, str)):
