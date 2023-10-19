@@ -35,16 +35,16 @@ def obs_data(source, var):
         raise ValueError("type must be coretop, net or trap!")
 
     ds = open_dataset(file_path)
-    long_name = foram_names()[var][1]
+    long_name = foram_groups()[var][1]
     obs = ds[long_name]
     modified_obs = normalise_obs_lon(obs).to_numpy()
 
     return modified_obs
 
 
-def foram_names():
+def foram_groups():
     """
-    get a dictionary with foram abbrev (keys) and complete name (values).
+    get a dictionary with foram abbrev (keys), pft_index and complete name (values).
 
     :returns: dictionary
     """
