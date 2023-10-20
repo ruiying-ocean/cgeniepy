@@ -34,13 +34,16 @@ def lon_g2n(x):
         return x
 
 
-def reassign_obs(data: xarray.Dataset) -> xarray.Dataset:
+def normalise_obs_lon(data: xarray.Dataset) -> xarray.Dataset:
     return data.assign_coords({"lon": list(map(lon_n2g, data.lon.values))}).sortby(
         "lon"
     )
 
 
-def reassign_GENIE(data: xarray.Dataset) -> xarray.Dataset:
+def normalise_GENIE_lon(data: xarray.Dataset) -> xarray.Dataset:
+    """
+    Change parts of observational latitude [100, 180] to GENIE longitude [-260, -180]
+    """
     ## if hasattr(data, "assign_coords"):
     return data.assign_coords({"lon": list(map(lon_g2n, data.lon.values))}).sortby(
         "lon"
@@ -62,7 +65,7 @@ def mask_Arctic_Med(array, policy="na"):
 
 
 def GENIE_grid_mask(
-    base="worjh2", basin="ALL", basin_lvl="", mask_Arc_Med=False, invert=False
+    base="worjh2", basin="ALL", subbasin="", mask_Arc_Med=False, invert=False
 ):
     """
     Get a modern GENIE 36x36 mask array from input data.
@@ -70,14 +73,14 @@ def GENIE_grid_mask(
 
     :continent: worjh2, worlg4, worbe2, GIteiiaa, GIteiiaa, p0055c
     :basin: Atlantic/Pacific/Indian/ALL/Tanzania
-    :basin_lvl: N/S/ALL, ALL means Southern Ocean section included
+    :subbasin: N/S/ALL, ALL means Southern Ocean section included
 
     :returns: GENIE grid array where continent/ice cap is 0 and ocean is 1, default is 'worjh2'
     """
 
     file_path = (
         pathlib.Path(__file__).parent.parent
-        / f"data/mask_{base}_{basin}{basin_lvl}.txt"
+        / f"data/mask_{base}_{basin}{subbasin}.txt"
     )
     grid_mask_raw = np.loadtxt(file_path, dtype=int)
     grid_mask = np.flip(np.fliplr(grid_mask_raw))
