@@ -50,8 +50,9 @@ npac_sst = model.get_var("ocn_sur_temp").select_basin(47).isel(time=-1)
 
 ```python
 ## simply call `plot` after accessing the data
-zonal_sst.plot()
-npac_sst.plot()
+
+## map
+model.get_var("ocn_sur_temp").isel(time=-1).plot()
 ```
 
 ### 4. Others
@@ -68,9 +69,31 @@ model.get_pft("Phyto", "Biomass", "C").isel(time=-1).plot()
 
 ### A global biomass map of modelled picophytoplankton (0.6 μm) 
 
+```python
+## initialise a EcoModel instance before running this
+
+model.get_pft(1, "Biomass", "C").isel(time=-1).plot(contour=True)
+```
+
+
 ![map](example_map.png)
 
 ### A global distribution of basin-level nutrient (PO4) 
+
+```python
+## initialise a GenieModel instance before running this
+
+import matplotlib.pyplot as plt
+
+fig, axs=plt.subplots(nrows=1, ncols=3, figsize=(15, 3))        
+
+basins = ['Atlantic', 'Pacific', 'Indian']
+
+for i in range(3):
+	basin_data = model.get_var('ocn_PO4').isel(time=-1).mask_basin(base='worjh2',basin=basins[i], subbasin='')
+	basin_data.mean(dim='lon').plot(ax=axs[i], contour=True)
+	axs[i].title.set_text(basins[i])
+```
 
 ![modern_po4](example_transection.png)
 
