@@ -27,6 +27,7 @@ def scatter_map(
     y="Latitude",
     interpolate=None,
     log=False,
+    land_mask=True,
     *args,
     **kwargs,
 ):
@@ -41,15 +42,12 @@ def scatter_map(
 
     :returns: a map
     """
-    
-    ax.set_global()
-    # plot land and coastline, zorder is the drawing order, smaller -> backer layer
-    ax.add_feature(cfeature.LAND.with_scale('110m'), zorder=2, facecolor="#B1B2B4")
-    ax.add_feature(cfeature.COASTLINE.with_scale('110m'), zorder=3)
-    
 
-    if "Latitude" not in df.columns or "Longitude" not in df.columns:
-        raise ValueError("Input data lack Latitude/Longitude column")
+    if land_mask:
+        ax.set_global()
+        # plot land and coastline, zorder is the drawing order, smaller -> backer layer
+        ax.add_feature(cfeature.LAND.with_scale('110m'), zorder=2, facecolor="#B1B2B4")
+        ax.add_feature(cfeature.COASTLINE.with_scale('110m'), zorder=3)
 
     if log:
         df[var] = efficient_log(df[var])
@@ -201,14 +199,21 @@ class GeniePlottable:
         dim: time/lon/lat
         """
         if 'ax' not in kwargs:
-            fig, ax = self._init_fig()
+            fig, local_ax = self._init_fig()
+        else:
+            local_ax = kwargs.pop('ax')
 
         ## get the only dimension as x
         dim = self.array[self.array.dims[0]]
-                
-        ax.set_xlabel(dim.name)
-        ax.set_ylabel(f"{self.array.long_name} ({self.array.units})")
-        p = ax.plot(dim, self.array, *args, **kwargs)
+
+        if not 'swap_xy' in kwargs:            
+            local_ax.set_xlabel(dim.name)
+            local_ax.set_ylabel(f"{self.array.long_name} ({self.array.units})")
+            p = local_ax.plot(dim, self.array, *args, **kwargs)
+        else:
+            local_ax.set_xlabel(f"{self.array.long_name} ({self.array.units})")
+            local_ax.set_ylabel(dim.name)
+            p = local_ax.plot(self.array, dim, *args, **kwargs)
 
         return p
 
@@ -226,18 +231,20 @@ class GeniePlottable:
         else:
             raise ValueError(f"{dims} not supported")
 
-    def _plot_map(self, ax=None, x_edge="lon_edge", y_edge="lat_edge", contour=False, colorbar=True, *args, **kwargs):
+    def _plot_map(self, x_edge="lon_edge", y_edge="lat_edge", contour=False, colorbar=True, *args, **kwargs):
 
-        if not ax:
-            fig, ax = self._init_fig(subplot_kw={'projection': ccrs.EckertIV()})
+        if 'ax' not in kwargs:
+            fig, local_ax = self._init_fig(subplot_kw={'projection': ccrs.EckertIV()})
+        else:
+            local_ax = kwargs.pop('ax')
 
         x_edge_arr = self.grid_dict.get(x_edge)
         y_edge_arr = self.grid_dict.get(y_edge)
 
-        self._set_facecolor(ax)
-        self._set_borderline(ax)
-        p = self._add_pcolormesh(ax, x_edge=x_edge_arr, y_edge=y_edge_arr, transform=self.transform_crs, *args, **kwargs)
-        self._add_outline(ax, x_edge=x_edge_arr, y_edge=y_edge_arr,  transform=self.transform_crs)
+        self._set_facecolor(local_ax)
+        self._set_borderline(local_ax)
+        p = self._add_pcolormesh(local_ax, x_edge=x_edge_arr, y_edge=y_edge_arr, transform=self.transform_crs, *args, **kwargs)
+        self._add_outline(local_ax, x_edge=x_edge_arr, y_edge=y_edge_arr,  transform=self.transform_crs)
 
         if colorbar:
             self._add_colorbar(p)
@@ -250,7 +257,7 @@ class GeniePlottable:
             #     p = self._add_contour(ax, x=x_arr, y=y_arr, transform=self.transform_crs, *args, **kwargs)
             # else:
             #     p = self._add_contour(ax, x=x_arr, y=y_arr, transform=self.transform_crs)
-            p = self._add_contour(ax, x=x_arr, y=y_arr, transform=self.transform_crs, colors="k", linewidths=0.5, zorder=1)      
+            p = self._add_contour(local_ax, x=x_arr, y=y_arr, transform=self.transform_crs, colors="k", linewidths=0.5, zorder=1)      
 
         return p
 
@@ -443,7 +450,7 @@ class GeniePlottable:
         cbar.outline.set_edgecolor('black')
         cbar.minorticks_on()
         ## set colorbar label
-        cbar.set_label(f"{self.array.long_name} ({self.array.units})", size=10, labelpad=10)
+        cbar.set_label(f"{self.array.long_name}\n{self.array.units}", size=10, labelpad=10)
         
     def plot_quiver(x,y):
         pass
