@@ -251,10 +251,26 @@ class GenieArray(GeniePlottable):
 
     def search_grid(self, *args, **kwargs):
         """
-        search the nearest grid point to the given coordinates,
-        [] TODO ignore the NA values (i.e., land grid points) when sesarching
+        search the nearest grid point to the given coordinates
+        
+        -----------
+        Examples:
+        -----------
+        >>> model = GenieModel(path)
+        >>> var = model.get_var(target_var)
+        >>> var.search_grid(lon=XX, lat=XX, zt=XX)
+
+        
+        ## for loop over a data frame (df) with longitude, latitude, depth columns
+        >>> modelvar = []
+        >>> for i in range(len(df)):
+        >>>     lat = df.latitude.iloc[i][0]
+        >>>     lon = df.longitude[i].iloc[0]
+        >>>     zt = df.depth[i].iloc[0]
+        >>>     var = var.search_grid(lat= lat, lon=lon, zt=zt, method="nearest")
+        >>>     modelvar.append(var)
         """
-        return self.array.sel(*args, **kwargs, method="nearest")
+        return self.array.sel(*args, **kwargs)
 
     def select_box(self, lon_min=-255, lon_max=95, lat_min=0, lat_max=90):
         """
