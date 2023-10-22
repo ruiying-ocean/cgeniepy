@@ -267,7 +267,7 @@ class GenieArray(GeniePlottable):
         >>>     lat = df.latitude.iloc[i][0]
         >>>     lon = df.longitude[i].iloc[0]
         >>>     zt = df.depth[i].iloc[0]
-        >>>     var = var.search_grid(lat= lat, lon=lon, zt=zt, method="nearest")
+        >>>     var = var.search_grid(lat= lat, lon=lon, zt=zt, method="nearest").values
         >>>     modelvar.append(var)
         """
         return self.array.sel(*args, **kwargs)
