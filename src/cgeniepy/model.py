@@ -112,7 +112,7 @@ class GenieModel(object):
         for path, value_list in self.ncvar_dict().items():
             if var in value_list:
                 return path
-        raise ValueError(f"variable {var} not found in the model")
+        raise ValueError(f"variable {var} not found in the ncvar_dict")
 
     def _open_nc(self, nc_path):
         "Use xarray to open netcdf file"
