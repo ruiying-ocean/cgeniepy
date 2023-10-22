@@ -3,16 +3,32 @@ from scipy.spatial import distance
 from .grid import mask_Arctic_Med
 
 class ModelSkill:
-    "quantitatively compare similarity metrics between two 2D arrays"
+    
+    "quantitatively compare similarity metrics between two 2D arrays (model and observation)"
 
-    def __init__(self, model, observation, mask_MedArc=True):
+    def __init__(self, model, observation):
+        """
+        
+        :param: model: array-like data
+        :param: observation: array-like data
 
-        if mask_MedArc:
-            self.model = mask_Arctic_Med(model, policy="na")
-            self.data  = mask_Arctic_Med(observation, policy="na")
-        else:
-            self.model = model
-            self.data = observation
+        ------
+        Example:
+        -------
+        
+        from cgeniepy.skill import ModelSkill
+
+        ## generate 2d data
+        import numpy as np
+        x = np.random.rand(36, 36)
+        y = np.random.rand(36, 36)
+
+        ## calculate skill score
+        ms = ModelSkill(x, y)
+        ms.mscore()
+        """
+        self.model = model
+        self.data = observation
 
     def safe_unveil(self, array):
         "get pure array from a numpy masked array object"
