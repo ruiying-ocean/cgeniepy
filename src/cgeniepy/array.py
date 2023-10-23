@@ -93,6 +93,16 @@ class GenieArray(GeniePlottable):
             print("This array instance does not contain xarray.DataArray")
     
     def normalise_longitude(self):
+        """
+        Normalise GENIE's longitude (eastern degree) to normal longitude (-180, 180)
+
+        -----------
+        Example
+        -----------
+
+        >>> Model = GenieModel("a path")
+        >>> Model.normalise_longitude()
+        """
         self.array = normalise_GENIE_lon(self.array)
         return self
 
