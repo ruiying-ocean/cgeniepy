@@ -13,7 +13,7 @@
 `cgeniepy` is still under active development. But welcome to try the features after downloading cgeniep from [testpypi](https://test.pypi.org/project/cgeniepy/).
 
 ```bash
-python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.7.2
+python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.7.3
 ```
 
 ## Usage
@@ -85,12 +85,13 @@ model.get_pft(1, "Biomass", "C").isel(time=-1).plot(contour=True)
 
 import matplotlib.pyplot as plt
 
-fig, axs=plt.subplots(nrows=1, ncols=3, figsize=(15, 3))        
+fig, axs=plt.subplots(nrows=1, ncols=3, figsize=(15, 3), tight_layout=True)        
 
 basins = ['Atlantic', 'Pacific', 'Indian']
 
 for i in range(3):
 	basin_data = model.get_var('ocn_PO4').isel(time=-1).mask_basin(base='worjh2',basin=basins[i], subbasin='')
+	basin_data.array.values = basin_data.array.values * 1E6
 	basin_data.mean(dim='lon').plot(ax=axs[i], contour=True)
 	axs[i].title.set_text(basins[i])
 ```
@@ -107,6 +108,9 @@ for i in range(3):
 - [ ] ignore NAs when searching grid 
 - [ ] use lat/lon/zt from GENIE output
 - [ ] Move the computation functions in ecology.py and foram.py to array.py
+- [ ] Show one colorbar in transect plot
+- [ ] upload modelskill
+- [ ] figsize influences colorbar length
 - [x] create a simple logo
 - [X] allow reading an ensemble of models (netcdf & timeseries)
 - [X] formatting the ugly unit string
@@ -118,8 +122,8 @@ for i in range(3):
   author = {Rui Ying},
   title = {A Python interface to analyse and visualise cGENIE model output},
   url = {https://github.com/ruiying-ocean/cgeniepy/},
-  version = {0.7.2},
-  date = {2023-10-20},
+  version = {0.7.3},
+  date = {2023-10-23},
 }
 ```
 
