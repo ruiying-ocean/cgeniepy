@@ -28,7 +28,7 @@ class GenieModel(object):
     >>> model = GenieModel("path_to_GENIE_output")
     """
     
-    def __init__(self, model_path: Union[str, List, Tuple]):
+    def __init__(self, model_path: Union[str, List, Tuple], gemflag=None):
         
         ## check if model_path is a valid directory
         if isinstance(model_path, (list, tuple)):
@@ -40,6 +40,13 @@ class GenieModel(object):
             self.is_ensemble = False
             if not Path(model_path).is_dir():
                 raise ValueError(f"{model_path} is not a valid directory")
+
+
+        if not gemflag:
+            print("No gemflag is provided, assuming the model includes biogem and ecogem")
+            self.gemflag = ["biogem", "ecogem"]
+        else:
+            self.gemflag = gemflag
 
         
         self.model_path = model_path
@@ -77,8 +84,9 @@ class GenieModel(object):
 
         ## initialise a dictionary, key: model_path, value: ncvar_list
         var_path = {}
-        
-        for gem in ["biogem", "ecogem"]:
+
+            
+        for gem in self.gemflag:
             for dim in ["2d", "3d"]:
                 ## ignore ecogem 3d which is not available now (Oct 2023)
                 if gem == "ecogem" and dim == "3d": continue

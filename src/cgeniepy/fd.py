@@ -5,7 +5,7 @@
 import itertools
 import numpy as np
 from .utils import euc_distance
-from .core import GenieArray
+from .array import GenieArray
 
 class Species:
     "Species class, representing biological species, or functional groups in the biogeochemical modelling"
