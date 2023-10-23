@@ -111,6 +111,7 @@ for i in range(3):
 - [ ] Show one colorbar in transect plot
 - [ ] upload modelskill
 - [ ] figsize influences colorbar length
+- [ ] normalised_longitude returns a numpy array so can't be used to search_grid
 - [x] create a simple logo
 - [X] allow reading an ensemble of models (netcdf & timeseries)
 - [X] formatting the ugly unit string
