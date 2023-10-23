@@ -101,7 +101,7 @@ class GenieArray(GeniePlottable):
         -----------
 
         >>> Model = GenieModel("a path")
-        >>> Model.normalise_longitude()
+        >>> Model.get_var('abc').normalise_longitude()
         """
         self.array = normalise_GENIE_lon(self.array)
         return self
