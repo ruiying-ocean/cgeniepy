@@ -82,12 +82,12 @@ class EcoModel(GenieModel):
             return df
             
 
-    def get_pft(self, pft_index, bgc_prefix="Plankton", element="C"):
+    def get_pft(self, pft_index, prefix="Plankton", element="C"):
         """
         a variant of GenieModel's `get_var`, to select plankton functional type
 
         :param pft_index: the index of plankton functional type
-        :param bgc_prefix: 'Plankton' or 'Export'
+        :param prefix: 'Plankton' or 'Export'
         :param element: 'C', 'Fe', 'P', 'Si', 'N'
 
         :return: a GenieArray object
@@ -116,11 +116,11 @@ class EcoModel(GenieModel):
         >>> model.get_pft('all', "Plankton", "C")
         """
 
-        ### >>> preprocess the bgc_prefix
-        ## if bgc_prefix is "Biomass", replace it with "Plankton"
-        if bgc_prefix == "Biomass": bgc_prefix = "Plankton"        
-        ## always capitalize the bgc_prefix
-        bgc_prefix = bgc_prefix.capitalize()
+        ### >>> preprocess the prefix
+        ## if prefix is "Biomass", replace it with "Plankton"
+        if prefix == "Biomass": prefix = "Plankton"        
+        ## always capitalize the prefix
+        prefix = prefix.capitalize()
 
         ### >>> process the pft_index
         ## if pft_index is "phyto", replace it with phyto_indices
@@ -128,20 +128,20 @@ class EcoModel(GenieModel):
         if pft_index == "zoo": pft_index = self.zoo_indices
         if pft_index == "mixo": pft_index = self.mixo_indices
 
-        ## >>> construct variable name using pft_index, bgc_prefix and element
+        ## >>> construct variable name using pft_index, prefix and element
         if isinstance(pft_index, (int, str)):
-            fullstring = f"eco2D_{bgc_prefix}_{element}_{pft_index:03}"
+            fullstring = f"eco2D_{prefix}_{element}_{pft_index:03}"
         elif isinstance(pft_index, (list, tuple)):
             fullstring = []
             for i in pft_index:
-                fullstring.append(f"eco2D_{bgc_prefix}_{element}_{i:03}")
+                fullstring.append(f"eco2D_{prefix}_{element}_{i:03}")
         else:
             raise ValueError("pft_index must be an integer or a list/tuple of integers")
 
         ## modify the fullstring if pft_index is "all"
         ## eco2D_Plankton_C_Total/eco2D_Plankton_Chl_Total
         if pft_index == "all":
-            fullstring = f"eco2D_{bgc_prefix}_{element}_Total"
+            fullstring = f"eco2D_{prefix}_{element}_Total"
         
         return self.get_var(fullstring)
 
@@ -156,3 +156,5 @@ class EcoModel(GenieModel):
             self.pft_index = foram_groups()[foram_type][0]
 
         return self.get_pft(self.pft_index, *args, **kwargs)
+
+    ## [ ] Add support for relative abundance calculation
