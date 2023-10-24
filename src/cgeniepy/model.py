@@ -10,7 +10,6 @@ from .utils import file_exists
 from .chem import format_unit
 from .array import GenieArray
 
-
 # Add method to read in time series and parameter table
 
 class GenieModel(object):
@@ -226,7 +225,7 @@ class GenieModel(object):
  
             return all_df
 
-    def _grid_mask(self):
+    def grid_mask(self):
         """
         cGENIE continent mask array (by setting zero values),
         either calculated from existing data or using biogem.grid_mask
@@ -238,17 +237,19 @@ class GenieModel(object):
             print("grid_mask not found!")
 
     def grid_area(self):
-        "grid area array in km2"
+        "grid area array in m2"
         ## read grid_area from biogem
-        print("grid area calculated in the unit of 'm2'")
+        print("grid area returned in the unit of 'm2'")
         return self.get_var("grid_area")
 
     def grid_volume(self):
-        "grid volume array (3d) in km3"        
+        "grid volume array (3d) in m3"
         grid_volume = self.grid_area() ## m2
         depth = self.get_var("zt") ## m
         try:
             grid_volume = grid_volume * depth
+            grid_volume.array.attrs['units'] = "m$^{3}$"
+            grid_volume.array.attrs['long_name'] = "grid volume"
             print("grid volume calculated in the unit of 'm3'")
         except ValueError:
             print("Depth array not found! Please ensure 3d data is exported in the model!")
