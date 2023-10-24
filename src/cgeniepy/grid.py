@@ -162,51 +162,6 @@ def normal_lon(N=36, edge=False):
         return lon
 
 
-def GENIE_grid_area():
-    """
-    get grid area array with unit of km^2, not masked with continent/Arctic/Mediterranean!
-    """
-    # x level
-    lon_len = np.repeat(10, 36)
-    lon_len_km = lon_len * 111.320  # cos(rad(lat)) needed
-
-    # y level
-    lat_edge = np.rad2deg(np.arcsin(np.linspace(-1, 1, 37)))
-    lat_width = [lat_edge[i + 1] - lat_edge[i] for i in range(36)]
-    lat_width_km = np.array(lat_width) * 110.574
-
-    # multiplication in km^2
-    # np.outer: col x row -> out[i, j] = a[i] * b[j]
-    grid_area = np.outer(lat_width_km, lon_len_km)  # check the order!
-    # add the cos(rad(lat)) term
-    lat_rad = np.arcsin(np.linspace(-0.97222222, 0.97222222, 36))
-    for i in range(36):
-        grid_area[i,] = (
-            grid_area[
-                i,
-            ]
-            * np.cos(lat_rad)[i]
-        )
-
-    unit = ureg("km^2")
-
-    return grid_area * unit
-
-
-def GENIE_grid_vol():
-    """
-    get grid_volume array with unit of km^3, not masked with continent!
-    """
-
-    # z_edge level in 1st layer
-    vertical_width_km = Q_(80.8 / 1000, "km")
-
-    # grid volumn: km^3
-    grid_volume = GENIE_grid_area() * vertical_width_km
-
-    return grid_volume
-
-
 # check grid area (1)
 # print(marine_area.sum()*1e-8) #around 3.7
 

@@ -6,10 +6,6 @@ import pandas as pd
 from netCDF4 import Dataset
 import xarray as xr
 
-from .grid import (
-    GENIE_grid_area,
-    GENIE_grid_vol,
-)
 from .utils import file_exists
 from .chem import format_unit
 from .array import GenieArray
@@ -230,34 +226,34 @@ class GenieModel(object):
  
             return all_df
 
-    def _grid_mask(self, Arctic=True, Med=True):
+    def _grid_mask(self):
         """
         cGENIE continent mask array (by setting zero values),
         either calculated from existing data or using biogem.grid_mask
         """
         try:
             grid_mask = self.get_var("grid_mask").array
-            if Arctic: grid_mask[34:36, :] = 0
-            if Med: grid_mask[27:30, 25:30] = 0
             return grid_mask
         except ValueError:
             print("grid_mask not found!")
 
-    def _marine_area(self):
+    def grid_area(self):
         "grid area array in km2"
-        grid_mask = self._grid_mask()
-        grid_area = GENIE_grid_area()
-        mask_area = grid_area * grid_mask
+        ## read grid_area from biogem
+        print("grid area calculated in the unit of 'm2'")
+        return self.get_var("grid_area")
 
-        return mask_area
-
-    def _marine_volume(self):
-        "grid volume array in km3"
-        grid_mask = self._grid_mask()
-        grid_volume = GENIE_grid_vol()
-        mask_volume = grid_volume * grid_mask
-
-        return mask_volume
+    def grid_volume(self):
+        "grid volume array (3d) in km3"        
+        grid_volume = self.grid_area() ## m2
+        depth = self.get_var("zt") ## m
+        try:
+            grid_volume = grid_volume * depth
+            print("grid volume calculated in the unit of 'm3'")
+        except ValueError:
+            print("Depth array not found! Please ensure 3d data is exported in the model!")
+        
+        return grid_volume
 
     def diff(self, model2compare, var):
 

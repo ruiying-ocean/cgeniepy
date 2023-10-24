@@ -268,7 +268,7 @@ class GenieArray(GeniePlottable):
         -----------
         >>> model = GenieModel(path)
         >>> var = model.get_var(target_var)
-        >>> var.search_grid(lon=XX, lat=XX, zt=XX)
+        >>> var.search_grid(lon=XX, lat=XX, zt=XX, method='nearest')
         
         ## for loop over a data frame (df) with longitude, latitude, depth columns
         >>> modelvar = []
