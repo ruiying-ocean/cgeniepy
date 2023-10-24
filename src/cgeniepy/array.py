@@ -4,25 +4,26 @@ from scipy.stats import sem
 import regionmask
 
 from . import Q_, ureg
-from .grid import normalise_GENIE_lon, GENIE_grid_mask, mask_Arctic_Med, GENIE_grid_area
+from .grid import normalise_GENIE_lon, GENIE_grid_mask, mask_Arctic_Med
 from .chem import format_unit, pure_unit, molecular_weight
 from .plot import GeniePlottable
 
 
 def attr_conservation(cal_func):
     """
-    A decorator to keep the attribution after calculation
-    This function is NOT for modifying the units or long_name
+    A decorator to keep the attribution after array calculation
+
+    This is because xarray will remove the units and long_name after calculation
     """
     def wrappered_func(self, *args, **kwargs):
-        # Store the original units
+        # Temporially store the original units
         units = self.array.units
         long_name = self.array.long_name
         
         # Call the decorated function
         result = cal_func(self, *args, **kwargs)
         
-        # Restore the original units
+        # Assign back the unit to the array
         self.array.attrs['units'] = units
         self.array.attrs['long_name'] = long_name
         return result
@@ -70,7 +71,6 @@ class GenieArray(GeniePlottable):
 
         This funtion is useful when doing unit conversion
         """
-        
         uarray = Q_(self.array.values, self.array.units)
         return uarray
 
@@ -306,34 +306,6 @@ class GenieArray(GeniePlottable):
         self.array = mask_Arctic_Med(self.array, *args, **kwargs)
         return self
 
-
-    ## `bgc` is a pint context defined in cgneiepy/src/data
-    @ureg.with_context("bgc")
-    def integrate_flux(self):
-        """
-        integrate globally
-
-        For example,
-        concentration -> times grid_volume
-        flux -> times grid_area
-        """
-
-        ## check dimension of the array
-        if 'lon' not in self.array.dims or 'lat' not in self.array.dims:
-            raise ValueError("lon/lat dimension is required!")
-        
-        # concentration data
-        c = self.uarray().to_base_units()
-        # make volume in pint type
-        v = GENIE_grid_area().to_base_units()
-        # globall integrated value
-        s = c * v
-
-        # unit conversion
-        C_ = molecular_weight(self.element)
-        s = s.to("mol d^-1").to("g d^-1", "bgc", mw=C_ * ureg("g/mol")).to("Gt yr^-1")
-
-        return np.nansum(s)    
             
     # def compare_obs(self, obs, *args, **kwargs):
     #     return ModelSkill(model=self.array, observation=obs, *args, **kwargs)
