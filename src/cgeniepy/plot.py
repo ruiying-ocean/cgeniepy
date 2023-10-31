@@ -1,4 +1,5 @@
 import pathlib
+import xml.etree.ElementTree as ET
 
 import numpy as np
 import pandas as pd
@@ -99,7 +100,7 @@ def scatter_map(
         p = ax.scatter(
             x=df[x],
             y=df[y],
-            c=df[var],
+            color_map=df[var],
             linewidths=0.5,
             edgecolors="black",
             transform=ccrs.PlateCarree(),
@@ -109,34 +110,73 @@ def scatter_map(
 
     return p
 
-
-def genie_cmap(cmap_name, N=256, reverse=False, alpha=None):
+def open_cmap(cmap_name, N=256, reverse=False, alpha=None):
     """
     Get a self-defined colormap
 
-    :param cmap_name: parula, Zissou1, FantasticFox, Rushmore, Darjeeling, ODV 
+    :param cmap_name: parula, Zissou1, FantasticFox, Rushmore, Darjeeling, ODV, Section, w5m4
     :type cmap_name: str
 
     :returns: colormap
+
+    XML data: https://sciviscolor.org/colormaps/
     """
-    # get file path
-    file_name = f"data/{cmap_name}.txt"
-    file_path = pathlib.Path(__file__).parent.parent / file_name
+    
+    data_dir = pathlib.Path(__file__).parent.parent
 
-    # read in and format the prescribed data
-    colors = pd.read_csv(file_path, header=None).values.tolist()
-    colors = [colors[i][0] for i in range(len(colors))]
+    file_path = None
+    file_ext = None
+    colors = []
+    c = None
 
-    # optionally add transparency
-    if not alpha:
-        c = ListedColormap(colors, N=N)
+    # Search for the directory based on list comprehension
+    file_path = [f for f in data_dir.glob("**/*") if cmap_name in str(f)]
+    if len(file_path) > 1:
+        raise ValueError("Multiple colormaps found")
     else:
-        rgb_array = np.array([hex_to_rgb(i) for i in colors])
-        rgb_array[:,-1] = alpha
-        c = ListedColormap(rgb_array, N=N)
+        file_path = file_path[0]
+        file_ext = file_path.suffix    
 
-    if reverse:
+    if file_ext == ".txt":
+        colors = pd.read_csv(file_path, header=None).values.tolist()
+        colors = [colors[i][0] for i in range(len(colors))]
+        c = ListedColormap(colors, name=cmap_name)
+    elif file_ext == ".xml":
+        tree = ET.parse(file_path)
+        root = tree.getroot()
+        positions = []
+
+        # Extract color points and their positions from the XML
+        for point in root.findall('.//Point'):
+            r = float(point.get('r'))
+            g = float(point.get('g'))
+            b = float(point.get('b'))
+            colors.append((r, g, b))
+            positions.append(float(point.get('x')))
+
+        c = ListedColormap(colors, name=cmap_name)
+
+    # Optionally add transparency
+    if alpha is not None:
+        if file_ext == ".txt":
+            rgb_array = np.array([hex_to_rgb(i) for i in colors])
+            rgb_array[:, -1] = alpha
+            c = ListedColormap(rgb_array, N=N)
+        elif file_ext == ".xml":
+            # Assuming alpha is to be applied uniformly to all colors in the XML-based colormap
+            rgba_colors = [(color[0], color[1], color[2], alpha) for color in colors]
+            c = ListedColormap(rgba_colors, name=cmap_name)
+
+    if reverse and c is not None:
         return c.reversed()
+
+    ## if _r exsit in the string, reverse the colormap
+    if "_r" in cmap_name and c is not None:
+        return c.reversed()
+    
+    if c is None:
+        raise ValueError("Colormap could not be created")
+
     return c
 
 
