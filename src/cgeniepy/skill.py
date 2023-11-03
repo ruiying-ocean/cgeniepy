@@ -30,6 +30,13 @@ class ModelSkill:
         self.model = model
         self.data = observation
 
+        ## check data type, if not float, convert to float
+        if self.model.dtype != np.float64:
+            self.model = self.model.astype(np.float64)
+        if self.data.dtype != np.float64:
+            self.data = self.data.astype(np.float64)
+        
+
     def safe_unveil(self, array):
         "get pure array from a numpy masked array object"
         if array.__class__ != np.ma.core.MaskedArray:

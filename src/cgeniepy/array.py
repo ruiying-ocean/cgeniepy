@@ -310,24 +310,6 @@ class GenieArray(GeniePlottable):
     # def compare_obs(self, obs, *args, **kwargs):
     #     return ModelSkill(model=self.array, observation=obs, *args, **kwargs)
 
-    # def remove_outliers(self, outlier_level):
-    #     self.array = remove_outliers(self.array, m = outlier_level)
-    #     return self
-
-    # def sum_global(self):
-    #     "print in Tg, depending on the element"
-    #     X_ = molecular_weight(self.element)
-    #     c = self.uarray().to_base_units()
-    #     v = GENIE_grid_vol().to_base_units()
-    #     s = c * v
-    #     s = s.to("mol").to("g", "chemistry", mw=X_ * ureg("g/mole")).to("Gt")
-    #     return np.nansum(s)
-
-
-    # def _set_array(self):
-    #     # tested
-    #     return super()._set_array() * 80.8
-
 
     ## TODO
     ## [ ] foraminifera relative abundance, calcite
