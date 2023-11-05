@@ -196,30 +196,43 @@ class GenieModel(object):
             with open(f, 'r') as file:
                 lines = file.readlines()
 
-            # Remove " %" from the header and split it using "/"
+            # Remove " %" from the header and split it using " / "
+            # not '/' which is also included in the isotope unit (e.g. 'd13C o/oo')
             header = [col.strip().lstrip('% ') for col in lines[0].split(' / ')]
             data = [line.split() for line in lines[1:]]
             df= pd.DataFrame(data, columns=header)
 
             ## convert to numeric
             df = df.apply(pd.to_numeric, errors='coerce')
-            
+
+            ## add a column of model name
             df['model'] = self.model_path.split('/')[-1]
             return df
         else:
             ## concatenate all models' data into one data frame
             df_list = []
+            
             for path in self.model_path:
+                ## do the same thing as above
                 f = join(path, "biogem", filename)
                 if not file_exists(f): raise ValueError(f"{f} does not exist")
+
+                ## read text file into a DataFrame
                 with open(f, 'r') as file:
                     lines = file.readlines()
-                header = [col.strip().lstrip('%') for col in lines[0].split('/')]
+
+                ## Remove " %" from the header and split it using " / "
+                header = [col.strip().lstrip('%') for col in lines[0].split(' / ')]
                 data = [line.split() for line in lines[1:]]
+                
                 df= pd.DataFrame(data, columns=header)
+                
+                ## convert to numeric
                 df = df.apply(pd.to_numeric, errors='coerce')
+                
                 df['model'] = path.split('/')[-1]
                 df_list.append(df)
+                
             ## concatenate by row
             all_df = pd.concat(df_list, axis=0)
  
