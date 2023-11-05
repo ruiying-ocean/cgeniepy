@@ -120,7 +120,7 @@ class EcoModel(GenieModel):
         ## if prefix is "Biomass", replace it with "Plankton"
         if prefix == "Biomass": prefix = "Plankton"        
         ## always capitalize the prefix
-        prefix = prefix.capitalize()
+        ## prefix = prefix.capitalize()
 
         ### >>> process the pft_index
         ## if pft_index is "phyto", replace it with phyto_indices

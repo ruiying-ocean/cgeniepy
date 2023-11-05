@@ -13,19 +13,33 @@
 `cgeniepy` is still under active development. But welcome to try the features after downloading cgeniep from [testpypi](https://test.pypi.org/project/cgeniepy/).
 
 ```bash
-python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.7.3
+python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.7.4
 ```
 
 ## Usage
+### 0. initialise a model instance
+```python
+from cgeniepy.model import GenieModel
+
+## single model
+model = GenieModel('path_a')
+
+## model ensemble
+multi_dirs = ['/path_a/', '/path_b/']
+model = GenieModel(path_to_model_output)
+```
+
+
 ### 1. Read data
 + netCDF (*.nc)
 + time series (*.res)
 
 ```python
-## Example
-from cgeniepy.model import GenieModel
-model = GenieModel(path_to_model_output)
+## time slice data
 model.get_var("XXXXX").array
+
+## timeseries data
+model.get_ts("biogem_series_ocn_temp.res")
 ```
 
 ### 2. Data analysis
@@ -109,9 +123,7 @@ for i in range(3):
 - [ ] use lat/lon/zt from GENIE output
 - [ ] Move the computation functions in ecology.py and foram.py to array.py
 - [ ] Show one colorbar in transect plot
-- [ ] upload modelskill
 - [ ] figsize influences colorbar length
-- [ ] normalised_longitude returns a numpy array so can't be used to search_grid
 - [x] create a simple logo
 - [X] allow reading an ensemble of models (netcdf & timeseries)
 - [X] formatting the ugly unit string
