@@ -69,6 +69,44 @@ npac_sst = model.get_var("ocn_sur_temp").select_basin(47).isel(time=-1)
 model.get_var("ocn_sur_temp").isel(time=-1).plot()
 ```
 
+Color Palettes
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from cgeniepy.plot import open_cmap
+
+# List of colormaps from cgeniepy
+cmaps_list = [
+    'BluBr', 'BluGr','w5m4', 'ukiyoe', 
+    'BluOr', 'Speed', 'Darjeeling',
+    'FantasticFox', 'Rushmore', 'Section',
+    'Spectral', 'Zissou1', 'kovesi_rainbow',
+    'tol_rainbow', 'parula', 'ODV',
+]
+
+def plot_colormaps(cmaps):
+    ncols = 4
+    nrows = int(np.ceil(len(cmaps) / ncols))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(15, nrows))
+
+    for i, cmap_name in enumerate(cmaps):
+        row = i // ncols
+        col = i % ncols
+        ax = axes[row, col] if nrows > 1 else axes[col]
+
+        # Create a gradient image using the colormap
+        gradient = np.linspace(0, 1, 256).reshape(1, -1)
+        ax.imshow(gradient, aspect='auto', cmap=open_cmap(cmap_name))
+        ax.set_title(cmap_name, fontsize=8)
+        ax.axis('off')
+
+    plt.tight_layout()
+    plt.show()
+
+plot_colormaps(cmaps_list)
+```
+
 ### 4. Others
 + ECOGEM shortcuts
 
