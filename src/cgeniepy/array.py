@@ -16,17 +16,22 @@ def attr_conservation(cal_func):
     This is because xarray will remove the units and long_name after calculation
     """
     def wrappered_func(self, *args, **kwargs):
-        # Temporially store the original units
-        units = self.array.units
-        long_name = self.array.long_name
-        
-        # Call the decorated function
-        result = cal_func(self, *args, **kwargs)
-        
-        # Assign back the unit to the array
-        self.array.attrs['units'] = units
-        self.array.attrs['long_name'] = long_name
-        return result
+        try:
+            # Temporially store the original units
+            units = self.array.units
+            long_name = self.array.long_name
+
+            # Call the decorated function
+            result = cal_func(self, *args, **kwargs)
+
+            # Assign back the unit to the array
+            self.array.attrs['units'] = units
+            self.array.attrs['long_name'] = long_name
+            
+            return result
+        except AttributeError:
+            print("No unit attribution detected in `self.array`, be careful of unit when doing calculation")
+            return cal_func(self, *args, **kwargs)
     return wrappered_func
 
 
@@ -60,7 +65,7 @@ class GenieArray(GeniePlottable):
         always return a xarray.DataArray
         """
         arr = np.nan
-        return xr.DataArray(arr)
+        return xr.DataArray(arr)    
 
     def __getitem__(self, item):
         "make GenieArray subscriptable like xarray.DataArray"
@@ -118,6 +123,7 @@ class GenieArray(GeniePlottable):
         if hasattr(other, "array"):
             sum.array = self.array + other.array
         else:
+            ## a scalar
             sum.array = self.array + other
         return sum
 
@@ -129,29 +135,28 @@ class GenieArray(GeniePlottable):
         if hasattr(other, "array"):
             diff.array = self.array - other.array
         else:
+            ## a scalar
             diff.array = self.array - other
         return diff
 
     def __truediv__(self, other):
         """
         Allow GenieArray to be divided by a number or another GenieArray
-        It will ignore the NA values (i.e., land grid points) when dividing
-        """
-        quotient = GenieArray()
-        if hasattr(other, "array"):
-            quotient.array = np.divide(
-                self.array,
-                other.array,
-                out=np.zeros_like(self.array),
-                where=other.array != 0,
-            )
-        else:
-            try:
-                quotient.array = np.divide(self.array, other)
-            except ValueError:
-                print("Only number and GenieArray are accepted")
 
+        NA/NA -> NA
+        """
+        quotient_array = np.zeros_like(self.array)
+        
+        if isinstance(other, GenieArray):
+            quotient_array = np.divide(self.array, other.array)
+        else:
+            # Handle division by a scalar
+            quotient_array = np.divide(self.array, other)
+
+        quotient = GenieArray()
+        quotient.array = xr.DataArray(quotient_array)
         return quotient
+
 
     def __mul__(self, other):
         """
