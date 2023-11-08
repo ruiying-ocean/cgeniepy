@@ -39,7 +39,7 @@ def scatter_map(
     :param var: variable (column) in dataframe to plot
     :param x: coordinate attribute, default "Longitude"
     :param y: coordinate attribute, default "Latitude"
-    :param interplate: whether interpolate scatter data
+    :param interpolate: whether interpolate scatter data
 
     :returns: a map
     """
@@ -100,7 +100,7 @@ def scatter_map(
         p = ax.scatter(
             x=df[x],
             y=df[y],
-            color_map=df[var],
+            c=df[var],
             linewidths=0.5,
             edgecolors="black",
             transform=ccrs.PlateCarree(),
@@ -110,17 +110,21 @@ def scatter_map(
 
     return p
 
-def open_cmap(cmap_name, N=256, reverse=False, alpha=None):
+def community_palette(cmap_name, N=256, reverse=False, alpha=None):
     """
-    Get a self-defined colormap
+    community-driven colormaps with multiple sources
 
-    :param cmap_name: parula, Zissou1, FantasticFox, Rushmore, Darjeeling, ODV, Section, w5m4
+    :param cmap_name: colormap name, can be found in avail_palette()
     :type cmap_name: str
 
     :returns: colormap
 
     XML data: https://sciviscolor.org/colormaps/
+    txt data: from original packages
     """
+
+    if cmap_name not in avail_palette():
+        raise ValueError(f"{cmap_name} not found, accepted values are {avail_palette()}")
     
     data_dir = pathlib.Path(__file__).parent.parent
 
@@ -179,6 +183,11 @@ def open_cmap(cmap_name, N=256, reverse=False, alpha=None):
 
     return c
 
+def avail_palette():
+    """return a list of colormap names"""
+    data_dir = pathlib.Path(__file__).parent.parent
+
+    return [f.stem for f in data_dir.glob("data/colormaps/*") if f.suffix in [".txt", ".xml"]]
 
 def cbar_wrapper(plotting_func):
     """a decorator to add color bar

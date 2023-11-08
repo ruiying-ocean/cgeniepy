@@ -74,16 +74,10 @@ Color Palettes
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
-from cgeniepy.plot import open_cmap
+from cgeniepy.plot import community_palette, avail_palette
 
 # List of colormaps from cgeniepy
-cmaps_list = [
-    'BluBr', 'BluGr','w5m4', 'ukiyoe', 
-    'BluOr', 'Speed', 'Darjeeling',
-    'FantasticFox', 'Rushmore', 'Section',
-    'Spectral', 'Zissou1', 'kovesi_rainbow',
-    'tol_rainbow', 'parula', 'ODV',
-]
+cmaps_list = avail_palette()
 
 def plot_colormaps(cmaps):
     ncols = 4
@@ -97,11 +91,12 @@ def plot_colormaps(cmaps):
 
         # Create a gradient image using the colormap
         gradient = np.linspace(0, 1, 256).reshape(1, -1)
-        ax.imshow(gradient, aspect='auto', cmap=open_cmap(cmap_name))
-        ax.set_title(cmap_name, fontsize=8)
+        ax.imshow(gradient, aspect='auto', cmap=community_palette(cmap_name))
+        ax.set_title(cmap_name, fontsize=14, fontweight='bold')
         ax.axis('off')
 
     plt.tight_layout()
+    plt.savefig('/Users/yingrui/Downloads/open_cmaps.png', dpi=300, bbox_inches='tight')
     plt.show()
 
 plot_colormaps(cmaps_list)
