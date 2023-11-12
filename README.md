@@ -69,39 +69,6 @@ npac_sst = model.get_var("ocn_sur_temp").select_basin(47).isel(time=-1)
 model.get_var("ocn_sur_temp").isel(time=-1).plot()
 ```
 
-Color Palettes
-
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-from cgeniepy.plot import community_palette, avail_palette
-
-# List of colormaps from cgeniepy
-cmaps_list = avail_palette()
-
-def plot_colormaps(cmaps):
-    ncols = 4
-    nrows = int(np.ceil(len(cmaps) / ncols))
-    fig, axes = plt.subplots(nrows, ncols, figsize=(15, nrows))
-
-    for i, cmap_name in enumerate(cmaps):
-        row = i // ncols
-        col = i % ncols
-        ax = axes[row, col] if nrows > 1 else axes[col]
-
-        # Create a gradient image using the colormap
-        gradient = np.linspace(0, 1, 256).reshape(1, -1)
-        ax.imshow(gradient, aspect='auto', cmap=community_palette(cmap_name))
-        ax.set_title(cmap_name, fontsize=14, fontweight='bold')
-        ax.axis('off')
-
-    plt.tight_layout()
-    plt.savefig('/Users/yingrui/Downloads/open_cmaps.png', dpi=300, bbox_inches='tight')
-    plt.show()
-
-plot_colormaps(cmaps_list)
-```
-
 ### 4. Others
 + ECOGEM shortcuts
 
@@ -144,6 +111,47 @@ for i in range(3):
 ```
 
 ![modern_po4](example_transection.png)
+
+
+### Additional Colour Palettes
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from cgeniepy.plot import community_palette, avail_palette
+
+# List of colormaps from cgeniepy
+cmaps_list = avail_palette()
+
+def plot_colormaps(cmaps):
+    ncols = 4
+    nrows = int(np.ceil(len(cmaps) / ncols))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(15, nrows))
+
+    for i, cmap_name in enumerate(cmaps):
+        row = i // ncols
+        col = i % ncols
+        ax = axes[row, col] if nrows > 1 else axes[col]
+
+        # Create a gradient image using the colormap
+        gradient = np.linspace(0, 1, 256).reshape(1, -1)
+        ax.imshow(gradient, aspect='auto', cmap=community_palette(cmap_name))
+        ax.set_title(cmap_name, fontsize=14, fontweight='bold')
+        ax.axis('off')
+
+    ## remove the unused axes
+    for i in range(len(cmaps), ncols * nrows):
+        row = i // ncols
+        col = i % ncols
+        fig.delaxes(axes[row, col])
+        
+    plt.tight_layout()
+    
+plot_colormaps(cmaps_list)
+```
+
+![color_map](community_palette.png)
+
 
 ## Project Roadmap 🚩
 
