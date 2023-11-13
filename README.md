@@ -120,9 +120,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from cgeniepy.plot import community_palette, avail_palette
 
-# List of colormaps from cgeniepy
-cmaps_list = avail_palette()
-
 def plot_colormaps(cmaps):
     ncols = 4
     nrows = int(np.ceil(len(cmaps) / ncols))
@@ -146,7 +143,9 @@ def plot_colormaps(cmaps):
         fig.delaxes(axes[row, col])
         
     plt.tight_layout()
-    
+
+# List of colormaps from cgeniepy
+cmaps_list = avail_palette()
 plot_colormaps(cmaps_list)
 ```
 
