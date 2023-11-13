@@ -128,10 +128,13 @@ class GenieModel(object):
             combined_ds  = xr.concat(datasets, "model")
             return combined_ds
     
-    def get_var(self, var: Union[str, List, Tuple]):
+    def get_var(self, var: Union[str, List, Tuple], unit=None):
         """
         Get the data of target variable. 
         A list of variables is supported as well.
+
+        :param var: the name of target variable
+        :param unit: the unit of target variable, usually provided in the model output
         """
         self.target_var = var
 
@@ -156,7 +159,14 @@ class GenieModel(object):
         ## initialise GenieArray
         target_data = GenieArray()
         target_data.array = array
-        target_data.array.attrs['units'] = format_unit(target_data.array.attrs['units'] )
+        try:
+            target_data.array.attrs['units'] = format_unit(target_data.array.attrs['units'] )
+        except KeyError:
+            print("Unit not found in cGENIE output, please check the FORTRAN code!")
+
+        ## add unit if provided
+        if not unit:
+            target_data.array.attrs['units'] = unit
                 
         return target_data
     
