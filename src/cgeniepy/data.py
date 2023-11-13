@@ -10,38 +10,6 @@ def efficient_log(data):
     return np.where(data == 0, -10, np.log10(data))
 
 
-def obs_data(source, var):
-    """
-    An interface to fetch prescribed observational data.
-    The longitude coordinate will be assigned to fit GENIE output
-
-    :returns: numpy 2D array
-    :raise ValueError:
-    """
-    if source == "coretop":
-        file_path = pathlib.Path(__file__).parent.parent / "data/ForCenS_regridded.nc"
-    elif source == "net":
-        file_path = (
-            pathlib.Path(__file__).parent.parent / "data/plankton_tow_regridded_abs.nc"
-        )
-    elif source == "trap":
-        file_path = (
-            pathlib.Path(__file__).parent.parent
-            / "data/sediment_trap_regridded_organic.nc"
-        )
-    elif source == "margo":
-        file_path = pathlib.Path(__file__).parent.parent / "data/MARGO_regridded.nc"
-    else:
-        raise ValueError("type must be coretop, net or trap!")
-
-    ds = open_dataset(file_path)
-    long_name = foram_groups()[var][1]
-    obs = ds[long_name]
-    modified_obs = normalise_obs_lon(obs).to_numpy()
-
-    return modified_obs
-
-
 def foram_groups():
     """
     get a dictionary with foram abbrev (keys), pft_index and complete name (values).
