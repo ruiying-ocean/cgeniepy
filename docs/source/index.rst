@@ -11,10 +11,3 @@ Welcome to cgeniepy's documentation!
    :caption: Contents:
    
    install.md
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
