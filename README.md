@@ -13,7 +13,7 @@
 `cgeniepy` is still under active development. But welcome to try the features after downloading cgeniep from [testpypi](https://test.pypi.org/project/cgeniepy/).
 
 ```bash
-python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.7.4
+python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.7.5
 ```
 
 ## Usage
@@ -175,7 +175,7 @@ plot_colormaps(cmaps_list)
   author = {Rui Ying},
   title = {A Python interface to analyse and visualise cGENIE model output},
   url = {https://github.com/ruiying-ocean/cgeniepy/},
-  version = {0.7.4},
+  version = {0.7.5},
   date = {2023-11-12},
 }
 ```
