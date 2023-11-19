@@ -198,7 +198,7 @@ def cbar_wrapper(plotting_func):
 
     def wrappered_func(*args, **kwargs):
         p = plotting_func(*args, **kwargs)
-        cbar = plt.colorbar(p, fraction=0.05, pad=0.04, orientation="horizontal")
+        cbar = plt.colorbar(p, fraction=0.046, pad=0.04, orientation="horizontal")
         cbar.ax.tick_params(color="k", direction="in")
         cbar.outline.set_edgecolor('black')
         cbar.minorticks_on()
