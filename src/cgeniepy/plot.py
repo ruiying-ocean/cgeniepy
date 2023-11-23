@@ -377,8 +377,8 @@ class GeniePlottable:
         p = self._add_pcolormesh(ax, x_edge=x_edge_arr, y_edge=y_edge_arr, *args, **kwargs)
         self._add_outline(ax, x_edge=x_edge_arr, y_edge=y_edge_arr)
         ax.set_ylim(ax.get_ylim()[::-1])
-        ax.set_xlabel(x_edge[:3:1], fontsize=13)
-        ax.set_ylabel("Depth (km)", fontsize=12)
+        ax.set_xlabel(x_edge[:3:1])
+        ax.set_ylabel("Depth (km)")
 
         if colorbar:
             self._add_colorbar(p, location="vertical")
