@@ -9,32 +9,6 @@ from .chem import format_unit, pure_unit, molecular_weight
 from .plot import GeniePlottable
 
 
-def attr_conservation(cal_func):
-    """
-    A decorator to keep the attribution after array calculation
-
-    This is because xarray will remove the units and long_name after calculation
-    """
-    def wrappered_func(self, *args, **kwargs):
-        try:
-            # Temporially store the original units
-            units = self.array.units
-            long_name = self.array.long_name
-
-            # Call the decorated function
-            result = cal_func(self, *args, **kwargs)
-
-            # Assign back the unit to the array
-            self.array.attrs['units'] = units
-            self.array.attrs['long_name'] = long_name
-            
-            return result
-        except AttributeError:
-            print("No unit attribution detected in `self.array`, be careful of unit when doing calculation")
-            return cal_func(self, *args, **kwargs)
-    return wrappered_func
-
-
 class GenieArray(GeniePlottable):
     """
     GenieArray is a class to store and compute GENIE netcdf data.
@@ -79,7 +53,7 @@ class GenieArray(GeniePlottable):
         uarray = Q_(self.array.values, self.array.units)
         return uarray
 
-    @attr_conservation
+
     def sel(self, *args, **kwargs):
         "a wrapper to xarray `sel` method"
         try:
@@ -88,7 +62,7 @@ class GenieArray(GeniePlottable):
         except:
             print("This array instance does not contain xarray.DataArray")
 
-    @attr_conservation
+
     def isel(self, *args, **kwargs):
         "a wrapper to xarray `isel` method"
         try:
@@ -173,17 +147,17 @@ class GenieArray(GeniePlottable):
 
         return product
 
-    @attr_conservation
+
     def max(self, *args, **kwargs):
         self.array = self.array.max(*args, **kwargs)
         return self
 
-    @attr_conservation
+
     def min(self, *args, **kwargs):
         self.array = self.array.min(*args, **kwargs)
         return self
 
-    @attr_conservation
+
     def sum(self, *args, **kwargs):
         ## restore units
         units = self.array.units
@@ -191,32 +165,32 @@ class GenieArray(GeniePlottable):
         self.array.units = units
         return self        
 
-    @attr_conservation
+
     def mean(self, *args, **kwargs):
         self.array = self.array.mean(*args, **kwargs)
         return self
     
-    @attr_conservation
+
     def median(self, *args, **kwargs):
         self.array = np.median(self.array, *args, **kwargs)
         return self        
 
-    @attr_conservation
+
     def sd(self, *args, **kwargs):
         self.array = np.std(self.array, *args, **kwargs)
         return self        
 
-    @attr_conservation
+
     def variance(self, *args, **kwargs):
         self.array = np.var(self.array, *args, **kwargs)
         return self
     
-    @attr_conservation
+
     def se(self, *args, **kwargs):
         self.array = sem(self.array, nan_policy="omit", axis=None, *args, **kwargs)
         return self        
 
-    @attr_conservation
+    
     def select_basin(self, basin):
         """
         select (modern) basin from regionmask.defined_regions.ar6.ocean
@@ -244,7 +218,7 @@ class GenieArray(GeniePlottable):
 
         return self
 
-    @attr_conservation
+
     def mask_basin(self, base, basin, subbasin):
 
         """
@@ -310,13 +284,3 @@ class GenieArray(GeniePlottable):
         """
         self.array = mask_Arctic_Med(self.array, *args, **kwargs)
         return self
-
-            
-    # def compare_obs(self, obs, *args, **kwargs):
-    #     return ModelSkill(model=self.array, observation=obs, *args, **kwargs)
-
-
-    ## TODO
-    ## [ ] foraminifera relative abundance, calcite
-    ## [ ] Plankton biomass, export
-    ## [ ] Check unit when conduct calculation
