@@ -221,32 +221,24 @@ class GeniePlot:
         
         ## aesthetic parameters        
         self.aes_dict = {
+            "general_kwargs": {"cmap": "viridis", "font": "Helvetica", "fontsize": 10},
             "facecolor_kwargs": {"c": "silver"},
-            "borderline_kwargs": {"c": "black", "linewidth": 0.6},
+            "borderline_kwargs": {"c": "black", "linewidth": 0.5},
             "outline_kwargs": {"colors": "black", "linewidth": 0.5},
             "gridline_kwargs": {"colors": "gray", "linewidth": 0.5},
-            "pcolormesh_kwargs": {},
+            "pcolormesh_kwargs": {'shading': 'auto', "cmap": plt.get_cmap('viridis')},
             "contour_kwargs": {"linewidths": 0.6, "colors": "black", "linestyles": "solid", "zorder": 10},            
             "contour_label_kwargs": {"colors": ["black"],
                                      "fontsize": 8,
-                                     "inline": False},
+                                     "inline": False,
+                                     },
                         
             "colorbar_label_kwargs": {"label": f"{self.long_name}\n({self.units})",
                                 "size": 10,
-                                "labelpad":  10
+                                "labelpad": 10
                                 },
-            "colorbar_kwargs": {"fraction": 0.046,"pad":  0.04}
-        }
-        
-        # cbar.ax.tick_params(color="k", direction="in")
-        # cbar.outline.set_edgecolor('black')
-        # cbar.minorticks_on()
-        
-        # cbar = plt.colorbar(mappable_object, fraction=0.05, pad=0.04, orientation=location)
-        # cbar.ax.tick_params(color="k", direction="in")
-        # cbar.outline.set_edgecolor('black')
-
-        
+            "colorbar_kwargs": {"fraction": 0.046,"pad":  0.04}            
+        }        
         
     
     def plot(self, *args, **kwargs):
@@ -349,8 +341,8 @@ class GeniePlot:
             p_pcolormesh = self._add_pcolormesh(local_ax, x=x_edge_arr, y=y_edge_arr,transform=self.transform_crs, *args, **self.aes_dict["pcolormesh_kwargs"])
             if colorbar:
                 cbar = self._add_colorbar(p_pcolormesh, orientation='horizontal')
-                cbar._add_colorbar_label(cbar, **self.aes_dict['colorbar_label_kwargs'])
-        
+                self._add_colorbar_label(cbar, **self.aes_dict['colorbar_label_kwargs'])    
+
         if contour:
             ## contour uses center coordinates
             ## need to be transformed to PlateCarree
@@ -391,7 +383,7 @@ class GeniePlot:
         y_arr = self.grid_dict.get(y.split("_")[0])
 
         if 'ax' not in kwargs:
-            fig, local_ax = self._init_fig(figsize=(5, 2.5))
+            fig, local_ax = self._init_fig(figsize=(6, 3))
         else:
             local_ax = kwargs.pop('ax')
 
@@ -404,7 +396,7 @@ class GeniePlot:
             
         if outline:
             ## outline uses edge coordinates
-            self._add_outline(local_ax, x=x_edge_arr, y=y_edge_arr, **self.aes_dict["outline_kwargs"])            
+            self._add_outline(local_ax, x=x_edge_arr, y=y_edge_arr, **self.aes_dict["outline_kwargs"])
 
         if pcolormesh:
             ## pcolormesh uses edge coordinates
@@ -422,23 +414,18 @@ class GeniePlot:
 
         ## reverse y axis
         local_ax.set_ylim(local_ax.get_ylim()[::-1])
-        #local_ax.set_xlabel(x_edge_arr[:3:1])        
-        local_ax.set_ylabel("Depth (km)")
+        local_ax.set_ylabel("Depth (km)", fontsize=self.aes_dict['general_kwargs']['fontsize'],
+                            font=self.aes_dict['general_kwargs']['font'])
+        local_ax.set_xlabel(x.split("_")[0], fontsize=self.aes_dict['general_kwargs']['fontsize'],
+                            font=self.aes_dict['general_kwargs']['font'])
+
+        ## x/y tick label
+        local_ax.tick_params(axis='both', which='major', labelsize=self.aes_dict['general_kwargs']['fontsize'],
+                             labelfontfamily=self.aes_dict['general_kwargs']['font'])
             
         
         return local_ax    
 
-
-        # if pcolormesh and contour:
-        #     X, Y = np.meshgrid(x_arr, y_arr)
-        #     p_pcolormesh = self._add_pcolormesh(local_ax, x=X, y=Y,shading='Gouraud', *args, **kwargs)
-        #     p_contour = self._add_contour(local_ax, x=X, y=Y, linewidths=0.6, colors="black", linestyles="solid")
-        #     local_ax.set_ylim(local_ax.get_ylim()[::-1])
-        #     local_ax.set_xlabel(x_edge[:3:1])
-        #     local_ax.set_ylabel("Depth (km)")
-        #     return p_pcolormesh
-
-    
 
     def plot_polar(self, ax=None, hemisphere="South", x_edge="lon_edge", y_edge="lat_edge", contour=False, colorbar=True, *args, **kwargs):
 
@@ -480,16 +467,7 @@ class GeniePlot:
     ## ------- Below is implementations -------------------------
     
     def _init_fig(self, *args, **kwargs):
-        # self._init_style()
         return plt.subplots(dpi=120, *args, **kwargs)
-
-    def _init_style(self):
-        plt.rcParams["font.family"] = "Arial"
-        plt.rcParams['image.cmap'] = 'viridis'
-        plt.rcParams['grid.linestyle'] = '--'
-        plt.rcParams['grid.width'] = 0.3
-        plt.rc('xtick', labelsize='x-small')
-        plt.rc('ytick', labelsize='x-small')
 
     def _add_pcolormesh(self, ax, x, y, *args, **kwargs):
         return ax.pcolormesh(
@@ -579,7 +557,9 @@ class GeniePlot:
         ## set colorbar label
         cbar.set_label(*args, **kwargs)
         cbar.outline.set_edgecolor('black')
-        ## cbar.ax.tick_params(color="k", direction="in")
+        cbar.ax.tick_params(axis='both', which='major',
+                            labelsize=self.aes_dict['general_kwargs']['fontsize'],
+                            labelfontfamily=self.aes_dict['general_kwargs']['font'])
         
     def plot_quiver(x,y):
         pass
