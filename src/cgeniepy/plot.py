@@ -292,8 +292,8 @@ class GeniePlottable:
 
         self._set_facecolor(local_ax)
         self._set_borderline(local_ax)
-        p = self._add_pcolormesh(local_ax, x_edge=x_edge_arr, y_edge=y_edge_arr, transform=self.transform_crs, *args, **kwargs)
         self._add_outline(local_ax, x_edge=x_edge_arr, y_edge=y_edge_arr,  transform=self.transform_crs)
+        p = self._add_pcolormesh(local_ax, x_edge=x_edge_arr, y_edge=y_edge_arr, transform=self.transform_crs, *args, **kwargs)
 
         if colorbar:
             self._add_colorbar(p)
@@ -402,7 +402,7 @@ class GeniePlottable:
         return plt.subplots(dpi=120, *args, **kwargs)
 
     def _init_style(self):
-        plt.rcParams["font.family"] = "Fira Sans"
+        plt.rcParams["font.family"] = "Arial"
         plt.rcParams['image.cmap'] = 'viridis'
         plt.rcParams['grid.linestyle'] = '--'
         plt.rcParams['grid.width'] = 0.3
