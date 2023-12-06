@@ -6,10 +6,10 @@ import regionmask
 from . import Q_, ureg
 from .grid import normalise_GENIE_lon, GENIE_grid_mask, mask_Arctic_Med
 from .chem import format_unit, pure_unit, molecular_weight
-from .plot import GeniePlottable
+from .plot import GeniePlot
 
 
-class GenieArray(GeniePlottable):
+class GenieArray(GeniePlot):
     """
     GenieArray is a class to store and compute GENIE netcdf data.
 

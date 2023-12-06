@@ -16,21 +16,22 @@ from matplotlib.colors import ListedColormap, to_rgb as hex_to_rgb
 import mpl_toolkits.axisartist.floating_axes as fa
 import mpl_toolkits.axisartist.grid_finder as gf
 
+
 from .data import efficient_log
 from .grid import GENIE_lat, GENIE_lon, GENIE_depth
 
 
 def scatter_map(
-    df: pd.DataFrame,
-    var,
-    ax,
-    x="Longitude",
-    y="Latitude",
-    interpolate=None,
-    log=False,
-    land_mask=True,
-    *args,
-    **kwargs,
+        df: pd.DataFrame,
+        var,
+        ax,
+        x="Longitude",
+        y="Latitude",
+        interpolate=None,
+        log=False,
+        land_mask=True,
+        *args,
+        **kwargs,
 ):
     """plot map based on dataframe with latitude/longitude
     using cartopy as engine
@@ -189,50 +190,76 @@ def avail_palette():
 
     return [f.stem for f in data_dir.glob("data/colormaps/*") if f.suffix in [".txt", ".xml"]]
 
-def cbar_wrapper(plotting_func):
-    """a decorator to add color bar
 
-    :param plotting_func: function returning a mappable object
-    :returns: plotting function with colorbar
-    """
-
-    def wrappered_func(*args, **kwargs):
-        p = plotting_func(*args, **kwargs)
-        cbar = plt.colorbar(p, fraction=0.046, pad=0.04, orientation="horizontal")
-        cbar.ax.tick_params(color="k", direction="in")
-        cbar.outline.set_edgecolor('black')
-        cbar.minorticks_on()
-        
-    wrappered_func.__unwrapped__ =  plotting_func
-
-    return wrappered_func
-
-def cond_cbar(func):
-    def funct_w_cond(colorbar):
-        return func if colorbar else func.__unwrappered__
-    return funct_w_cond
-
-## TODO: add more layers: quiver,
-
-class GeniePlottable:
+class GeniePlot:
 
     transform_crs = ccrs.PlateCarree()  # do not change
 
     grid_dict = {
-    "lon": GENIE_lon(edge=False),
-    "lat": GENIE_lat(edge=False),
-    "zt":  GENIE_depth(edge=False)/1000,
+        "lon": GENIE_lon(edge=False),
+        "lat": GENIE_lat(edge=False),
+        "zt":  GENIE_depth(edge=False)/1000,
 
     "lon_edge": GENIE_lon(edge=True),
-    "lat_edge": GENIE_lat(edge=True),
-    "zt_edge": GENIE_depth(edge=True)/1000,
+        "lat_edge": GENIE_lat(edge=True),
+        "zt_edge": GENIE_depth(edge=True)/1000,
     }
 
     
     def __init__(self, array):
         self.array = array
 
+        if hasattr(self.array, "units"):
+            self.units = self.array.units
+        else:
+            self.units = ""
+
+        if hasattr(self.array, "long_name"):
+            self.long_name = self.array.long_name
+        else:
+            self.long_name = ""
+        
+        ## aesthetic parameters        
+        self.aes_dict = {
+            "facecolor_kwargs": {"c": "silver"},
+            "borderline_kwargs": {"c": "black", "linewidth": 0.6},
+            "outline_kwargs": {"colors": "black", "linewidth": 0.5},
+            "gridline_kwargs": {"colors": "gray", "linewidth": 0.5},
+            "pcolormesh_kwargs": {},
+            "contour_kwargs": {"linewidths": 0.6, "colors": "black", "linestyles": "solid", "zorder": 10},            
+            "contour_label_kwargs": {"colors": ["black"],
+                                     "fontsize": 8,
+                                     "inline": False},
+                        
+            "colorbar_label_kwargs": {"label": f"{self.long_name}\n({self.units})",
+                                "size": 10,
+                                "labelpad":  10
+                                },
+            "colorbar_kwargs": {"fraction": 0.046,"pad":  0.04}
+        }
+        
+        # cbar.ax.tick_params(color="k", direction="in")
+        # cbar.outline.set_edgecolor('black')
+        # cbar.minorticks_on()
+        
+        # cbar = plt.colorbar(mappable_object, fraction=0.05, pad=0.04, orientation=location)
+        # cbar.ax.tick_params(color="k", direction="in")
+        # cbar.outline.set_edgecolor('black')
+
+        
+        
+    
     def plot(self, *args, **kwargs):
+        """
+        visualise the data based on the dimension of the array
+        
+        *args and **kwargs are passed to plotting functions
+        in practical, turn on/off the plotting elements
+        e.g., plot(x, y, pcolormesh=False, contour=True)
+        each plotting function will seek for the corresponding kwargs
+        in self.aes_dict
+        """
+
         if self.array.ndim == 1:
             return self._plot_1d(*args, **kwargs)
         elif self.array.ndim == 2:
@@ -266,49 +293,152 @@ class GeniePlottable:
 
         return p
 
-    def _plot_2d(self, *args, **kwargs):
+    def _plot_2d(self, *arg, **kwargs):
+        "plot 2D data, e.g., map, cross section"
         ## if lon, lat then plot map
         ## if lon, zt then plot cross section
         ## if lat, zt then plot cross section
         dims = self.array.dims
         if 'lon' in dims and 'lat' in dims:
-            return self._plot_map(*args, **kwargs)
+            return self._plot_map(*arg, **kwargs)
         elif 'zt' in dims and 'lon' in dims:
-            return self._plot_cross_section(*args, **kwargs)
+            return self._plot_cross_section(*arg, **kwargs)
         elif 'zt' in dims and 'lat' in dims:
-            return self._plot_cross_section(*args, **kwargs)
+            return self._plot_cross_section(*arg, **kwargs)
         else:
             raise ValueError(f"{dims} not supported")
 
-    def _plot_map(self, x_edge="lon_edge", y_edge="lat_edge", contour=False, colorbar=True, *args, **kwargs):
+    def _plot_3d(self, *args, **kwargs):
+        "plot 3D data = plot mutiple 2D plots"
+        print("3D plot not supported yet")
+        pass
+
+    def _plot_map(self, x="lon_edge", y="lat_edge",
+                 pcolormesh=True, contour=False, colorbar=False,
+                 outline=True, facecolor=True, borderline=True,
+                 gridline=False, *args, **kwargs):
+
+
+        x_edge_arr = self.grid_dict.get(x)
+        y_edge_arr = self.grid_dict.get(y)
+        x_arr = self.grid_dict.get(x.split("_")[0])
+        y_arr = self.grid_dict.get(y.split("_")[0])
 
         if 'ax' not in kwargs:
             fig, local_ax = self._init_fig(subplot_kw={'projection': ccrs.EckertIV()})
         else:
             local_ax = kwargs.pop('ax')
+            
+        if facecolor:
+            self._set_facecolor(local_ax, **self.aes_dict["facecolor_kwargs"])
+            
+        if borderline:
+            self._set_borderline(local_ax, geo=True, **self.aes_dict["borderline_kwargs"])
+            
+        if outline:
+            ## outline uses edge coordinates
+            ## need to be transformed to PlateCarree
+            self._add_outline(local_ax, x=x_edge_arr, y=y_edge_arr,transform=self.transform_crs, **self.aes_dict["outline_kwargs"])
 
-        x_edge_arr = self.grid_dict.get(x_edge)
-        y_edge_arr = self.grid_dict.get(y_edge)
+        if gridline:            
+            self._add_gridline(local_ax, transform=self.transform_crs, **self.aes_dict["gridline_kwargs"])
 
-        self._set_facecolor(local_ax)
-        self._set_borderline(local_ax)
-        self._add_outline(local_ax, x_edge=x_edge_arr, y_edge=y_edge_arr,  transform=self.transform_crs)
-        p = self._add_pcolormesh(local_ax, x_edge=x_edge_arr, y_edge=y_edge_arr, transform=self.transform_crs, *args, **kwargs)
-
-        if colorbar:
-            self._add_colorbar(p)
+        if pcolormesh:
+            ## pcolormesh uses edge coordinates
+            ## need to be transformed to PlateCarree
+            p_pcolormesh = self._add_pcolormesh(local_ax, x=x_edge_arr, y=y_edge_arr,transform=self.transform_crs, *args, **self.aes_dict["pcolormesh_kwargs"])
+            if colorbar:
+                cbar = self._add_colorbar(p_pcolormesh, orientation='horizontal')
+                cbar._add_colorbar_label(cbar, **self.aes_dict['colorbar_label_kwargs'])
         
         if contour:
-            x_arr = self.grid_dict.get(x_edge[:3:1])
-            y_arr = self.grid_dict.get(y_edge[:3:1])
-            ## if cmap is specified, also do it in contour
-            # if "cmap" in kwargs:
-            #     p = self._add_contour(ax, x=x_arr, y=y_arr, transform=self.transform_crs, *args, **kwargs)
-            # else:
-            #     p = self._add_contour(ax, x=x_arr, y=y_arr, transform=self.transform_crs)
-            p = self._add_contour(local_ax, x=x_arr, y=y_arr, transform=self.transform_crs, colors="k", linewidths=0.5, zorder=1)      
+            ## contour uses center coordinates
+            ## need to be transformed to PlateCarree
+            p_contour = self._add_contour(local_ax, x_arr, y_arr,transform=self.transform_crs, **self.aes_dict['contour_kwargs'])
+            self._add_contour_label(local_ax, p_contour, **self.aes_dict['contour_label_kwargs'])
+            ## contour will not be used to plot colorbar because it's set to black
+        
+        return local_ax    
+        
 
-        return p
+    def _plot_cross_section(self, x="lat_edge", y="zt_edge",
+                            pcolormesh=True, contour=False, colorbar=True,
+                            outline=True, facecolor=True, borderline=True,
+                            *args, **kwargs):
+        """
+        Examples
+
+        import matplotlib.pyplot as plt
+
+        model = EcoModel("path_to_model")
+        
+        fig, axs=plt.subplots(nrows=1, ncols=3, figsize=(15, 3))
+        
+        basins = ['Atlantic', 'Pacific', 'Indian']
+        
+        for i in range(3):
+            model.get_var('ocn_PO4').isel(time=-1).mask_basin(base='worjh2',basin=basins[i], subbasin='').mean(dim='lon').plot(ax=axs[i])
+            axs[i].title.set_text(basins[i])
+
+
+        available kwargs:
+        outline_kwargs = {'outline_color': 'red', 'outline_width': .5}
+        """
+
+        x_edge_arr = self.grid_dict.get(x)
+        y_edge_arr = self.grid_dict.get(y)
+        x_arr = self.grid_dict.get(x.split("_")[0])
+        y_arr = self.grid_dict.get(y.split("_")[0])
+
+        if 'ax' not in kwargs:
+            fig, local_ax = self._init_fig(figsize=(5, 2.5))
+        else:
+            local_ax = kwargs.pop('ax')
+
+            
+        if facecolor:
+            self._set_facecolor(local_ax, **self.aes_dict["facecolor_kwargs"])
+            
+        if borderline:
+            self._set_borderline(local_ax, geo=False, **self.aes_dict["borderline_kwargs"])
+            
+        if outline:
+            ## outline uses edge coordinates
+            self._add_outline(local_ax, x=x_edge_arr, y=y_edge_arr, **self.aes_dict["outline_kwargs"])            
+
+        if pcolormesh:
+            ## pcolormesh uses edge coordinates
+            p_pcolormesh = self._add_pcolormesh(local_ax, x=x_edge_arr, y=y_edge_arr, *args, **self.aes_dict["pcolormesh_kwargs"])
+            if colorbar:
+                cbar = self._add_colorbar(p_pcolormesh, orientation='vertical')
+                self._add_colorbar_label(cbar, **self.aes_dict['colorbar_label_kwargs'])
+        
+        if contour:
+            ## contour uses center coordinates
+            ## need to be transformed to PlateCarree
+            p_contour = self._add_contour(local_ax, x_arr, y_arr, **self.aes_dict['contour_kwargs'])
+            self._add_contour_label(local_ax, p_contour, **self.aes_dict['contour_label_kwargs'])
+            ## contour will not be used to plot colorbar because it's set to black
+
+        ## reverse y axis
+        local_ax.set_ylim(local_ax.get_ylim()[::-1])
+        #local_ax.set_xlabel(x_edge_arr[:3:1])        
+        local_ax.set_ylabel("Depth (km)")
+            
+        
+        return local_ax    
+
+
+        # if pcolormesh and contour:
+        #     X, Y = np.meshgrid(x_arr, y_arr)
+        #     p_pcolormesh = self._add_pcolormesh(local_ax, x=X, y=Y,shading='Gouraud', *args, **kwargs)
+        #     p_contour = self._add_contour(local_ax, x=X, y=Y, linewidths=0.6, colors="black", linestyles="solid")
+        #     local_ax.set_ylim(local_ax.get_ylim()[::-1])
+        #     local_ax.set_xlabel(x_edge[:3:1])
+        #     local_ax.set_ylabel("Depth (km)")
+        #     return p_pcolormesh
+
+    
 
     def plot_polar(self, ax=None, hemisphere="South", x_edge="lon_edge", y_edge="lat_edge", contour=False, colorbar=True, *args, **kwargs):
 
@@ -324,16 +454,16 @@ class GeniePlottable:
 
         self._set_facecolor(ax)
         self._set_borderline(ax)
-        p = self._add_pcolormesh(ax, x_edge=x_edge_arr, y_edge=y_edge_arr, transform=self.transform_crs, *args, **kwargs)
-        self._add_outline(ax, x_edge=x_edge_arr, y_edge=y_edge_arr, transform=self.transform_crs)
+        p = self._add_pcolormesh(ax, x=x_edge_arr, y=y_edge_arr, transform=self.transform_crs, *args, **kwargs)
+        self._add_outline(ax, x=x_edge_arr, y=y_edge_arr, transform=self.transform_crs)
         self._add_gridline(ax,
-            transform=self.transform_crs,
-            draw_labels=False,
-            linewidth=0.5,
-            color="gray",
-            alpha=0.5,
-            linestyle="-",
-        )
+                           transform=self.transform_crs,
+                           draw_labels=False,
+                           linewidth=0.5,
+                           color="gray",
+                           alpha=0.5,
+                           linestyle="-",
+                           )
 
         if colorbar:
             self._add_colorbar(p)
@@ -345,58 +475,10 @@ class GeniePlottable:
             p = self._add_contour(ax, x=x_arr, y=y_arr, transform=self.transform_crs)
 
             
-        return p
-
-    
-    def _plot_cross_section(self, ax=None, x_edge="lat_edge", y_edge="zt_edge", contour=False, colorbar=True, *args, **kwargs):
-        """
-        Examples
-
-        import matplotlib.pyplot as plt
-
-        model = EcoModel("path_to_model")
-        
-        fig, axs=plt.subplots(nrows=1, ncols=3, figsize=(15, 3))
-        
-        basins = ['Atlantic', 'Pacific', 'Indian']
-        
-        for i in range(3):
-            model.get_var('ocn_PO4').isel(time=-1).mask_basin(base='worjh2',basin=basins[i], subbasin='').mean(dim='lon').plot(ax=axs[i])
-            axs[i].title.set_text(basins[i])
-        """
-        if not ax:
-            fig, ax = self._init_fig(figsize=(5, 2.5))
-
-        x_edge_arr = self.grid_dict.get(x_edge)
-        y_edge_arr = self.grid_dict.get(y_edge)
-
-        
-        self._set_facecolor(ax)
-        self._set_borderline(ax, geo=False)
-
-        p = self._add_pcolormesh(ax, x_edge=x_edge_arr, y_edge=y_edge_arr, *args, **kwargs)
-        self._add_outline(ax, x_edge=x_edge_arr, y_edge=y_edge_arr)
-        ax.set_ylim(ax.get_ylim()[::-1])
-        ax.set_xlabel(x_edge[:3:1])
-        ax.set_ylabel("Depth (km)")
-
-        if colorbar:
-            self._add_colorbar(p, location="vertical")
-        
-        if contour:
-            ## e.g., lat_edge[:3:1] -> "lat"
-            ##       zt_edge[:2:1] -> "zt"
-            x_arr = self.grid_dict.get(x_edge[:3:1])
-            y_arr = self.grid_dict.get(y_edge[:2:1])
-            
-            p = self._add_contour(ax, x=x_arr, y=y_arr, linewidths=0.6, colors="black", linestyles="solid")
-            ax.clabel(p, p.levels[::1], colors=["black"], fontsize=8.5, inline=False)
-
-        return p
-
+        return p    
 
     ## ------- Below is implementations -------------------------
-
+    
     def _init_fig(self, *args, **kwargs):
         # self._init_style()
         return plt.subplots(dpi=120, *args, **kwargs)
@@ -409,45 +491,47 @@ class GeniePlottable:
         plt.rc('xtick', labelsize='x-small')
         plt.rc('ytick', labelsize='x-small')
 
-    def _add_pcolormesh(self, ax, x_edge, y_edge, *args, **kwargs):
+    def _add_pcolormesh(self, ax, x, y, *args, **kwargs):
         return ax.pcolormesh(
-            x_edge,
-            y_edge,
+            x,
+            y,
             self.array,
-            *args,
-            **kwargs
+            *args, **kwargs
         )
 
     def _add_contour(self, ax, x, y, *args, **kwargs):
-        cs = ax.contour(x, y, self.array, *args, **kwargs)
+        return ax.contour(x, y, self.array, *args, **kwargs)
+    
+    def _add_contour_label(self, ax, cs,*args, **kwargs):
         # label every three levels
-        ax.clabel(cs, cs.levels[::3], colors=["black"], fontsize=8, inline=False)
+        ax.clabel(cs, cs.levels[::3], *args, **kwargs)
         return cs
 
-    def _add_gridline(self, ax, *args, **kwargs):
+    def _add_gridline(self, ax,*args, **kwargs):
         ax.gridlines(*args, **kwargs)
 
-    def _set_borderline(self, ax, geo=True, width=1):
+    def _set_borderline(self, ax, geo=True, **kwargs):
         if geo:
-            ax.spines["geo"].set_edgecolor("black")
-            ax.spines["geo"].set_linewidth(width)
+            ax.spines["geo"].set_edgecolor(kwargs['c'])
+            ax.spines["geo"].set_linewidth(kwargs['linewidth'])
         else:
-            for direction in ['top','bottom','left','right']:
-                ax.spines[direction].set_linewidth(width)
-                ax.spines[direction].set_edgecolor("black")
+            for direction in ['top','bottom','left','right']:                
+                ax.spines[direction].set_edgecolor(kwargs["c"])
+                ax.spines[direction].set_linewidth(kwargs['linewidth'])
                 # vertical layer order
                 ax.spines[direction].set_zorder(0)
 
-    def _set_facecolor(self, ax):
-        ax.patch.set_color("silver")
+    def _set_facecolor(self, ax, **kwargs):
+        ax.patch.set_color(**kwargs)
 
-    def _add_outline(self, ax, x_edge, y_edge, *args, **kwargs):
-        outline_color = "black"
-        outline_width = 1
+    def _add_outline(self, ax, x, y, **kwargs):
+        """
+        draw outlines for the NA grids
+        """
         mask_array = np.where(~np.isnan(self.array), 1, 0)
 
-        Ny_edge = len(y_edge)
-        Nx_edge = len(x_edge)
+        Ny_edge = len(y)
+        Nx_edge = len(x)
         # dimension of array
         Ny_array = Ny_edge - 1
         Nx_array = Nx_edge - 1
@@ -463,43 +547,39 @@ class GeniePlottable:
                 # compare with the right grid, and plot vertical line if different
                 if j < Nx_index and mask_array[i, j] != mask_array[i, j + 1]:
                     ax.vlines(
-                        x_edge[j + 1],
-                        y_edge[i],
-                        y_edge[i + 1],
-                        color=outline_color,
-                        linewidth=outline_width,
-                        *args, **kwargs
+                        x[j + 1],
+                        y[i],
+                        y[i + 1],
+                        **kwargs
                     )
 
                 # connect the circular xgitude axis
                 if j == Nx_index and mask_array[i, j] != mask_array[i, 0]:
                     ax.vlines(
-                        x_edge[j + 1],
-                        y_edge[i],
-                        y_edge[i + 1],
-                        color=outline_color,
-                        linewidth=outline_width,
-                        *args, **kwargs
+                        x[j + 1],
+                        y[i],
+                        y[i + 1],
+                        **kwargs
                     )
 
                 # compare with the above grid, and plot horizontal line if different
                 if i < Ny_index and mask_array[i, j] != mask_array[i + 1, j]:
                     ax.hlines(
-                        y_edge[i + 1],
-                        x_edge[j],
-                        x_edge[j + 1],
-                        colors=outline_color,
-                        linewidth=outline_width,
-                        *args, **kwargs
+                        y[i + 1],
+                        x[j],
+                        x[j + 1],
+                        **kwargs
                     )
 
-    def _add_colorbar(self, mappable_object, location="horizontal"):
-        cbar = plt.colorbar(mappable_object, fraction=0.05, pad=0.04, orientation=location)
-        cbar.ax.tick_params(color="k", direction="in")
-        cbar.outline.set_edgecolor('black')
-        cbar.minorticks_on()
+    def _add_colorbar(self, mappable_object, *args, **kwargs):
+        cbar = plt.colorbar(mappable_object, *args, **kwargs)
+        return cbar
+        
+    def _add_colorbar_label(self, cbar, *args, **kwargs):        
         ## set colorbar label
-        cbar.set_label(f"{self.array.long_name}\n{self.array.units}", size=10, labelpad=10)
+        cbar.set_label(*args, **kwargs)
+        cbar.outline.set_edgecolor('black')
+        ## cbar.ax.tick_params(color="k", direction="in")
         
     def plot_quiver(x,y):
         pass
@@ -516,14 +596,14 @@ class TaylorDiagram(object):
     """
 
     def __init__(
-        self,
-        fig=None,
-        figscale=1,
-        subplot=111,
-        xmax=None,
-        tmax=np.pi / 2,
-        ylabel="Standard Deviation",
-        rotation=None,
+            self,
+            fig=None,
+            figscale=1,
+            subplot=111,
+            xmax=None,
+            tmax=np.pi / 2,
+            ylabel="Standard Deviation",
+            rotation=None,
     ):
 
         """
