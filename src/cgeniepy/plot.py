@@ -219,13 +219,14 @@ class GeniePlot:
                                      "fontsize": 8,
                                      "inline": False,
                                      },
+            "contourf_kwargs": {"levels": 20},
                         
             "colorbar_label_kwargs": {"label": f"{self.long_name}\n({self.units})",
                                 "size": 10,
                                 "labelpad": 10
                                 },
             "colorbar_kwargs": {"fraction": 0.046,"pad":  0.04}            
-        }        
+        }
         
     
     def plot(self, *args, **kwargs):
@@ -328,7 +329,7 @@ class GeniePlot:
         if pcolormesh:
             ## pcolormesh uses edge coordinates
             ## need to be transformed to PlateCarree
-            p_pcolormesh = self._add_pcolormesh(local_ax, x=x_edge_arr, y=y_edge_arr,transform=self.transform_crs, *args, **self.aes_dict["pcolormesh_kwargs"])
+            p_pcolormesh = self._add_pcolormesh(local_ax, x=x_arr, y=y_arr,transform=self.transform_crs, *args, **self.aes_dict["pcolormesh_kwargs"])
             if colorbar:
                 cbar = self._add_colorbar(p_pcolormesh, orientation='horizontal')
                 self._add_colorbar_label(cbar, **self.aes_dict['colorbar_label_kwargs'])    
@@ -339,12 +340,16 @@ class GeniePlot:
             p_contour = self._add_contour(local_ax, x_arr, y_arr,transform=self.transform_crs, **self.aes_dict['contour_kwargs'])
             self._add_contour_label(local_ax, p_contour, **self.aes_dict['contour_label_kwargs'])
             ## contour will not be used to plot colorbar because it's set to black
+
+        if contourf:
+            p_contourf = self._add_contourf(local_ax, x_arr, y_arr, transform=self.transform_crs,  **self.aes_dict['contourf_kwargs'])
         
         return local_ax    
         
 
     def _plot_cross_section(self, x="lat_edge", y="zt_edge",
                             pcolormesh=True, contour=False, colorbar=True,
+                            contourf=False,
                             outline=True, facecolor=True, borderline=True,
                             *args, **kwargs):
         """
@@ -391,7 +396,7 @@ class GeniePlot:
 
         if pcolormesh:
             ## pcolormesh uses edge coordinates
-            p_pcolormesh = self._add_pcolormesh(local_ax, x=x_edge_arr, y=y_edge_arr, *args, **self.aes_dict["pcolormesh_kwargs"])
+            p_pcolormesh = self._add_pcolormesh(local_ax, x=x_arr, y=y_arr, *args, **self.aes_dict["pcolormesh_kwargs"])
             if colorbar:
                 cbar = self._add_colorbar(p_pcolormesh, orientation='vertical')
                 self._add_colorbar_label(cbar, **self.aes_dict['colorbar_label_kwargs'])
@@ -402,6 +407,9 @@ class GeniePlot:
             p_contour = self._add_contour(local_ax, x_arr, y_arr, **self.aes_dict['contour_kwargs'])
             self._add_contour_label(local_ax, p_contour, **self.aes_dict['contour_label_kwargs'])
             ## contour will not be used to plot colorbar because it's set to black
+
+        if contourf:
+            p_contourf = self._add_contourf(local_ax, x_arr, y_arr)
 
         ## reverse y axis
         local_ax.set_ylim(local_ax.get_ylim()[::-1])
@@ -470,11 +478,13 @@ class GeniePlot:
 
     def _add_contour(self, ax, x, y, *args, **kwargs):
         return ax.contour(x, y, self.array, *args, **kwargs)
+
+    
+    def _add_contourf(self, ax, x, y, *args, **kwargs):
+        return ax.contourf(x, y, self.array, *args, **kwargs)    
     
     def _add_contour_label(self, ax, cs,*args, **kwargs):
-        # label every three levels
         ax.clabel(cs, cs.levels[::3], *args, **kwargs)
-        return cs
 
     def _add_gridline(self, ax,*args, **kwargs):
         ax.gridlines(*args, **kwargs)
@@ -547,10 +557,12 @@ class GeniePlot:
     def _add_colorbar_label(self, cbar, *args, **kwargs):        
         ## set colorbar label
         cbar.set_label(*args, **kwargs)
-        cbar.outline.set_edgecolor('black')
         cbar.ax.tick_params(axis='both', which='major',
                             labelsize=self.aes_dict['general_kwargs']['fontsize'],
                             labelfontfamily=self.aes_dict['general_kwargs']['font'])
+        cbar.outline.set_edgecolor('black')
+        cbar.outline.set_linewidth(0.5)
+
         
     def plot_quiver(x,y):
         pass
