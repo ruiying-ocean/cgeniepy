@@ -4,7 +4,7 @@ from scipy.stats import sem
 import regionmask
 
 from . import Q_, ureg
-from .grid import normalise_GENIE_lon, GENIE_grid_mask, mask_Arctic_Med
+from .grid import normalise_GENIE_lon, GENIE_grid_mask, mask_Arctic_Med, regridder
 from .chem import format_unit, pure_unit, molecular_weight
 from .plot import GeniePlot
 
@@ -53,6 +53,10 @@ class GenieArray(GeniePlot):
         uarray = Q_(self.array.values, self.array.units)
         return uarray
 
+    def interpolate(self, *args, **kwargs):        
+        
+        self.array = regridder(self.array, *args, **kwargs).to_xarray()
+        return self
 
     def sel(self, *args, **kwargs):
         "a wrapper to xarray `sel` method"
