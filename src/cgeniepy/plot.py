@@ -8,7 +8,6 @@ import cartopy.feature as cfeature
 from metpy.interpolate import natural_neighbor_to_grid, inverse_distance_to_grid
 from scipy.interpolate import griddata
 
-
 import matplotlib.pyplot as plt
 from matplotlib.projections import PolarAxes
 from matplotlib.ticker import AutoMinorLocator
@@ -16,9 +15,7 @@ from matplotlib.colors import ListedColormap, to_rgb as hex_to_rgb
 import mpl_toolkits.axisartist.floating_axes as fa
 import mpl_toolkits.axisartist.grid_finder as gf
 
-
 from .data import efficient_log
-from .grid import GENIE_lat, GENIE_lon, GENIE_depth
 
 
 def scatter_map(
@@ -194,30 +191,20 @@ def avail_palette():
 class GeniePlot:
 
     transform_crs = ccrs.PlateCarree()  # do not change
-
-    grid_dict = {
-        "lon": GENIE_lon(edge=False),
-        "lat": GENIE_lat(edge=False),
-        "zt":  GENIE_depth(edge=False)/1000,
-
-    "lon_edge": GENIE_lon(edge=True),
-        "lat_edge": GENIE_lat(edge=True),
-        "zt_edge": GENIE_depth(edge=True)/1000,
-    }
-
     
     def __init__(self, array):
-        self.array = array
+
+        self.array = self.array
 
         if hasattr(self.array, "units"):
             self.units = self.array.units
         else:
-            self.units = ""
+            self.units = None
 
         if hasattr(self.array, "long_name"):
             self.long_name = self.array.long_name
         else:
-            self.long_name = ""
+            self.long_name = None
         
         ## aesthetic parameters        
         self.aes_dict = {
@@ -305,16 +292,19 @@ class GeniePlot:
         print("3D plot not supported yet")
         pass
 
-    def _plot_map(self, x="lon_edge", y="lat_edge",
-                 pcolormesh=True, contour=False, colorbar=False,
+    def _plot_map(self, 
+                 pcolormesh=True, contour=False, 
+                  colorbar=False, contourf=False,
                  outline=True, facecolor=True, borderline=True,
                  gridline=False, *args, **kwargs):
 
+        
+        x_name = self.array.dims[1] ## lon
+        y_name = self.array.dims[0] ## lat
 
-        x_edge_arr = self.grid_dict.get(x)
-        y_edge_arr = self.grid_dict.get(y)
-        x_arr = self.grid_dict.get(x.split("_")[0])
-        y_arr = self.grid_dict.get(y.split("_")[0])
+        x_arr = self.array[x_name]
+        y_arr = self.array[y_name]
+        
 
         if 'ax' not in kwargs:
             fig, local_ax = self._init_fig(subplot_kw={'projection': ccrs.EckertIV()})
@@ -377,10 +367,11 @@ class GeniePlot:
         outline_kwargs = {'outline_color': 'red', 'outline_width': .5}
         """
 
-        x_edge_arr = self.grid_dict.get(x)
-        y_edge_arr = self.grid_dict.get(y)
-        x_arr = self.grid_dict.get(x.split("_")[0])
-        y_arr = self.grid_dict.get(y.split("_")[0])
+        x_name = self.array.dims[1] ## lat
+        y_name = self.array.dims[0] ## zt
+
+        x_arr = self.array[x_name]
+        y_arr = self.array[y_name]
 
         if 'ax' not in kwargs:
             fig, local_ax = self._init_fig(figsize=(6, 3))
