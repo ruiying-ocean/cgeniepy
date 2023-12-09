@@ -3,10 +3,10 @@ import pathlib
 
 import numpy as np
 import pandas as pd
-import xarray
+import xarray as xr
 import geopandas as gpd
+from scipy.interpolate import RegularGridInterpolator
 from shapely.geometry import Point
-
 
 def lon_n2g(x):
     """
@@ -34,13 +34,13 @@ def lon_g2n(x):
         return x
 
 
-def normalise_obs_lon(data: xarray.Dataset) -> xarray.Dataset:
+def normalise_obs_lon(data: xr.Dataset) -> xr.Dataset:
     return data.assign_coords({"lon": list(map(lon_n2g, data.lon.values))}).sortby(
         "lon"
     )
 
 
-def normalise_GENIE_lon(data: xarray.Dataset) -> xarray.Dataset:
+def normalise_GENIE_lon(data: xr.Dataset) -> xr.Dataset:
     """
     Change parts of observational latitude [100, 180] to GENIE longitude [-260, -180]
     """
@@ -107,19 +107,6 @@ def GENIE_lat(N=36, edge=False):
         return lat
 
 
-def GENIE_lon(N=36, edge=False):
-    """
-    return cGENIE longitude in 10 degree resolution,
-    if edge is False, then return midpoint
-    """
-    if edge:
-        lon_edge = np.linspace(-260, 100, N + 1)
-        return lon_edge
-    else:
-        lon = np.linspace(-255, 95, N)
-        return lon
-
-
 def GENIE_depth(edge=False):
     z_edge = np.array(
         [
@@ -162,7 +149,7 @@ def normal_lon(N=36, edge=False):
         return lon
 
 
-# check grid area (1)
+## check grid area (1)
 # print(marine_area.sum()*1e-8) #around 3.7
 
 # check grid area (2)
@@ -374,3 +361,70 @@ def detect_basin(lon, lat):
         return ocean_name[0]
     else:
         return ""
+
+
+class regridder:
+    """
+    regridder class, make cGENIE to finer resolution
+    """
+    
+    def __init__(self, array, grid_number=200, method='linear'):
+        """
+        initialize regridder
+        
+        :param array: xr data array
+        :param grid_number: number of target grid points
+        :param method: interpolation method, only linear is supported
+        """
+        self.array = array
+        ## a tuple of dimensions
+        self.dims = array.dims
+        ## dimension values
+        self.coords = tuple([array[dim].values for dim in self.dims])
+        ## array values
+        self.values = array.values
+
+        ## interpolation function
+        self.interp_function = self._create_interp_function(method=method)        
+        ## number of grid points
+        self.grid_number = grid_number        
+        ## create new coordinates, meshgrid
+        self.gridded_coord = self.new_coordinate(n=grid_number)      
+        self.meshgrid = self.new_meshgrid(*self.gridded_coord, indexing='ij')
+        self.gridded_data = self.interpolate_data(tuple(self.meshgrid))
+        
+    def _create_interp_function(self, method):        
+        interp_function = RegularGridInterpolator(self.coords,
+                                                  self.values,
+                                                  method=method,
+                                                  bounds_error=True, 
+                                                  fill_value=None)
+        return interp_function
+
+    def new_coordinate(self, n):
+        new_coords = []
+        for dim_values in self.coords:
+            min_val, max_val = np.min(dim_values), np.max(dim_values)
+            new_values = np.linspace(min_val, max_val, n)
+            new_coords.append(new_values)
+        return new_coords
+
+    def new_meshgrid(self, *args, **kwargs):
+        "regrid to finer dimensions"        
+        return np.meshgrid(*args, **kwargs)
+
+    def interpolate_data(self, *args, **kwargs):        
+        "Use the interpolation function to get regridded values"
+        return self.interp_function(*args, **kwargs)
+    
+    def to_xarray(self):
+        """
+        convert numpy array to xr data array
+        """
+        return xr.DataArray(self.gridded_data, dims=self.dims, coords=self.gridded_coord)
+        
+    # def to_geniearray(self):
+    #     """
+    #     convert numpy array to cGENIE 36x36 array
+    #     """
+    #     return GenieArray(self.to_xarray())
