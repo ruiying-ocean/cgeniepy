@@ -53,7 +53,10 @@ class GenieArray(GeniePlot):
         uarray = Q_(self.array.values, self.array.units)
         return uarray
 
-    def interpolate(self, *args, **kwargs):        
+    def interpolate(self, *args, **kwargs):
+        """
+        Interpolate the GENIE array to a finer grid, might be useful for plotting        
+        """
         
         self.array = regridder(self.array, *args, **kwargs).to_xarray()
         return self
@@ -281,10 +284,3 @@ class GenieArray(GeniePlot):
                     lon=lon[(lon >= lon_min) & (lon <= lon_max)],
                 )
             ]
-
-    def mask_Arctic_Med(self, *args, **kwargs):
-        """
-        only support modern grid configuration
-        """
-        self.array = mask_Arctic_Med(self.array, *args, **kwargs)
-        return self
