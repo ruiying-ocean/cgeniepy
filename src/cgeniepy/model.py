@@ -7,7 +7,7 @@ from netCDF4 import Dataset
 import xarray as xr
 
 from .utils import file_exists
-from .chem import format_unit
+from .chem import Chemistry
 from .array import GenieArray
 
 
@@ -163,7 +163,8 @@ class GenieModel(object):
         target_data = GenieArray()
         target_data.array = array
         try:
-            target_data.array.attrs['units'] = format_unit(target_data.array.attrs['units'] )
+            c = Chemistry()
+            target_data.array.attrs['units'] = c.format_unit(target_data.array.attrs['units'] )
         except KeyError:
             print("Unit not found in cGENIE output, please check the FORTRAN code!")
 
