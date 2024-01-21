@@ -2,11 +2,7 @@
   <img src="logo.png"/>
 </p>
 
-`cgeniepy` is an Python interface to the output of [cGENIE Earth System Model](https://www.seao2.info/mymuffin.html). It is an alternative to the exisiting [MATLAB libraries](https://github.com/derpycode/muffinplot). It aims to do three things:
-
-+ Read model output
-+ Data analysis
-+ Data visualisation
+`cgeniepy` is an Python interface to the output of [cGENIE Earth System Model](https://www.seao2.info/mymuffin.html). It is an alternative to the existing [MATLAB libraries](https://github.com/derpycode/muffinplot). It aims to facilitate the post-simulation analysis, including reading and analysing the model output, and observational data.
 
 ⚠ `cgeniepy` is still in alpha phase and under active changes.
 
@@ -21,10 +17,10 @@ python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.7.5
 2. Install from GitHub:
 
 ```bash
-pip3 install git+https://github.com/ruiying-ocean/cgeniepy.git@master
+python3 -m pip install git+https://github.com/ruiying-ocean/cgeniepy.git@master
 ```
 
-## Usage
+## Quickstart
 ### 0. initialise a model instance
 ```python
 from cgeniepy.model import GenieModel
