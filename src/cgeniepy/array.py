@@ -4,8 +4,7 @@ from scipy.stats import sem
 import regionmask
 
 from . import Q_, ureg
-from .grid import normalise_GENIE_lon, GENIE_grid_mask, mask_Arctic_Med, regridder
-from .chem import format_unit, pure_unit, molecular_weight
+from .grid import normalise_GENIE_lon, GENIE_grid_mask, regridder
 from .plot import GeniePlot
 
 
