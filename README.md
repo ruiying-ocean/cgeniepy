@@ -7,13 +7,21 @@
 + Read model output
 + Data analysis
 + Data visualisation
-  
+
+⚠ `cgeniepy` is still in alpha phase and under active changes.
+
 ## Installation
 
-`cgeniepy` is still under active development. But welcome to try the features after downloading cgeniep from [testpypi](https://test.pypi.org/project/cgeniepy/).
+1. Install from [testpypi](https://test.pypi.org/project/cgeniepy/).
 
 ```bash
 python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.7.5
+```
+
+2. Install from GitHub:
+
+```bash
+pip3 install git+https://github.com/ruiying-ocean/cgeniepy.git@master
 ```
 
 ## Usage
@@ -167,6 +175,11 @@ plot_colormaps(cmaps_list)
 - [X] allow reading an ensemble of models (netcdf & timeseries)
 - [X] formatting the ugly unit string
 - [ ] observation.py including plot scatter
+- [ ] Add global inventory function
+
+## Features
+[] Model-data comparison
+[]
 
 ## Citation
 
