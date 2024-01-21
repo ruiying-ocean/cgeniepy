@@ -11,6 +11,14 @@ copyright = '2023, Rui Ying'
 author = 'Rui Ying'
 release = '0.7.4'
 
+## source code path
+import os
+import sys
+
+# Assuming conf.py is inside docs/source/
+# Add the path to the directory containing your project to sys.path
+sys.path.insert(0, os.path.abspath('../../src'))
+
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 

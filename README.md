@@ -154,19 +154,19 @@ plot_colormaps(cmaps_list)
 
 ## Project Roadmap 🚩
 
-- [ ] Publish the first stable version to `pypi`
+- [ ] Publish the first stable version
 - [ ] Examples and Documentation
 - [ ] plot.py 3D facet subplots
-- [ ] plot.py more dependency of data.dimension
 - [ ] plot.py scatter data overlay
 - [ ] ignore NAs when searching grid 
 - [ ] use lat/lon/zt from GENIE output
 - [ ] Move the computation functions in ecology.py and foram.py to array.py
 - [ ] Show one colorbar in transect plot
-- [ ] figsize influences colorbar length
+- [X] figsize influences colorbar length
 - [x] create a simple logo
 - [X] allow reading an ensemble of models (netcdf & timeseries)
 - [X] formatting the ugly unit string
+- [ ] observation.py including plot scatter
 
 ## Citation
 

@@ -10,20 +10,24 @@ from .utils import file_exists
 from .chem import format_unit
 from .array import GenieArray
 
-# Add method to read in time series and parameter table
 
 class GenieModel(object):
     """
-    GenieModel is the fundamental class for users to access cGENIE output
-
-    Initialise a GenieModel object with a path to cGENIE output directory
-    -------
-    Example
-    >>> from cgeniepy.model import GenieModel
-    >>> model = GenieModel("path_to_GENIE_output")
+    GenieModel is the interface to cGENIE output    
     """
     
     def __init__(self, model_path: Union[str, List, Tuple], gemflag=None):
+        """
+        Initialise a GenieModel object with a path to cGENIE output directory
+        
+        -------
+        Example
+        >>> from cgeniepy.model import GenieModel
+        >>> model = GenieModel("path_to_GENIE_output")
+
+        ## specify cgenie component
+        >>> model = GenieModel("path_to_GENIE_output", gemflag=["biogem"])
+        """
         
         ## check if model_path is a valid directory
         if isinstance(model_path, (list, tuple)):
@@ -36,9 +40,8 @@ class GenieModel(object):
             if not Path(model_path).is_dir():
                 raise ValueError(f"{model_path} is not a valid directory")
 
-
         if not gemflag:
-            print("No gemflag is provided, assuming the model includes biogem and ecogem")
+            print( ">>> No gemflag is provided, use default gemflags: [biogem, ecogem]")
             self.gemflag = ["biogem", "ecogem"]
         else:
             self.gemflag = gemflag
@@ -68,13 +71,13 @@ class GenieModel(object):
                     nc_paths.append(nc_path)
             ## make `nc_paths` hashable
             nc_paths = tuple(nc_paths)
-            return nc_paths            
+            return nc_paths
             
 
     def ncvar_dict(self) -> dict:
         """
         Return all available variables and related biogem/ecogem (2d or 3d)
-        NetCDF path for each model        
+        NetCDF path for each model
         """
 
         ## initialise a dictionary, key: model_path, value: ncvar_list
@@ -293,7 +296,6 @@ class GenieModel(object):
         B = GenieModel(model2compare)
         diff = self.get_var(var) / B.get_var(var)
         return diff
-        
     
     def _run_method(self, method: str, *args, **kwargs):
         return getattr(self, method)(*args, **kwargs)

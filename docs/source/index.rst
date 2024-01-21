@@ -3,11 +3,20 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to cgeniepy's documentation!
+Cgeniepy documentation
 ====================================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-   
+	     
    install.md
+   
+
+API Reference
+===============
+
+.. autosummary::
+   :toctree: _autosummary
+   :recursive:
+   

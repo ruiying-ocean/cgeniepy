@@ -9,3 +9,7 @@ kernelspec:
 ```python
 python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.7.4
 ```
+
+```{code-cell}
+print("test")
+```

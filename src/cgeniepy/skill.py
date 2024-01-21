@@ -155,3 +155,173 @@ class ModelSkill:
 
         return crmse    
     
+
+
+# class TaylorDiagram(object):
+#     """
+#     Taylor diagram.
+#     Plot model standard deviation and correlation to reference data in a single-quadrant polar plot,
+#     with r=stddev and theta=arccos(correlation).
+
+#     modified from Yannick Copin, https://gist.github.com/ycopin/3342888
+#     reference: https://matplotlib.org/stable/gallery/axisartist/demo_floating_axes.html
+#     """
+
+#     def __init__(
+#             self,
+#             fig=None,
+#             figscale=1,
+#             subplot=111,
+#             xmax=None,
+#             tmax=np.pi / 2,
+#             ylabel="Standard Deviation",
+#             rotation=None,
+#     ):
+
+#         """
+#         Set up Taylor diagram axes, i.e. single quadrant polar
+#         plot, using `mpl_toolkits.axisartist.floating_axes`.
+
+#         Parameters:
+
+#         * fig: input Figure or None
+#         * subplot: subplot definition
+#         * xmax: the length of radius, xmax can be 1.5* reference std
+#         """
+
+#         # --------------- tickers --------------------------
+#         # Correlation labels (if half round)
+#         cor_label = np.array([0, 0.2, 0.4, 0.6, 0.8, 0.9, 0.95, 0.99, 1])
+
+#         # add the negative ticks if more than half round
+#         excess_theta = tmax - np.pi / 2
+#         if excess_theta > 0:
+#             cor_label = np.concatenate((-cor_label[:0:-1], cor_label))
+
+#         # convert to radian
+#         rad = np.arccos(cor_label)
+#         # tick location
+#         gl = gf.FixedLocator(rad)
+#         # tick formatting: bind radian and correlation coefficient
+#         tf = gf.DictFormatter(dict(zip(rad, map(str, cor_label))))
+
+#         # --------------- coordinate -----------------------
+#         # Standard deviation axis extent (in units of reference stddev)
+#         # xmin must be 0, which is the centre of round
+
+#         self.xmin = 0
+#         self.xmax = xmax
+#         self.tmax = tmax
+
+#         # ------- curvilinear coordinate definition -------
+#         # use built-in polar transformation (i.e., from theta and r to x and y)
+#         tr = PolarAxes.PolarTransform()
+#         ghelper = fa.GridHelperCurveLinear(
+#             tr,
+#             extremes=(0, self.tmax, self.xmin, self.xmax),
+#             grid_locator1=gl,
+#             tick_formatter1=tf,
+#         )
+
+#         # ------- create floating axis -------
+#         if fig is None:
+#             fig_height = 4.5 * figscale
+#             fig_width = fig_height * (1 + np.sin(excess_theta))
+#             fig = plt.figure(figsize=(fig_width, fig_height), dpi=100)
+
+#         ax = fa.FloatingSubplot(fig, subplot, grid_helper=ghelper)
+#         fig.add_subplot(ax)
+
+#         # Adjust axes
+#         # Angle axis
+#         ax.axis["top"].label.set_text("Correlation")
+#         ax.axis["top"].toggle(ticklabels=True, label=True)
+#         # inverse the direction
+#         ax.axis["top"].set_axis_direction("bottom")
+#         ax.axis["top"].major_ticklabels.set_axis_direction("top")
+#         ax.axis["top"].label.set_axis_direction("top")
+
+#         # X axis
+#         ax.axis["left"].set_axis_direction("bottom")
+
+#         # Y axis direction & label
+#         ax.axis["right"].toggle(all=True)
+#         ax.axis["right"].label.set_text(ylabel)
+#         ax.axis["right"].set_axis_direction("top")
+#         # ticklabel direction
+#         ax.axis["right"].major_ticklabels.set_axis_direction("left")
+
+#         ax.axis["bottom"].set_visible(False)
+
+#         # ------- Set instance attribute ----------
+#         self.fig = fig
+#         # Graphical axes
+#         self._ax = ax
+#         # grid line
+#         self._ax.grid(True, zorder=0, linestyle="--")
+#         # aspect ratio
+#         self._ax.set_aspect(1)
+#         # A parasite axes for further plotting data
+#         self.ax = ax.get_aux_axes(tr)
+#         # Collect sample points for latter use (e.g. legend)
+#         self.samplePoints = []
+
+#     def add_ref(self, refstd, reflabel="Observation", linestyle="-", color="k"):
+#         """add a reference point"""
+#         self.refstd = refstd
+#         # Add reference point
+#         # slightly higher than 0 so star can be fully seen
+#         l = self.ax.plot(0.01, self.refstd, "k*", ls="", ms=10)
+#         # xy for the point, xytext for the text (the coordinates are
+#         # defined in xycoords and textcoords, respectively)
+#         self.ax.annotate(
+#             reflabel,
+#             xy=(0.01, self.refstd),
+#             xycoords="data",
+#             xytext=(-25, -30),
+#             textcoords="offset points",
+#         )
+#         # add stddev contour
+#         t = np.linspace(0, self.tmax)
+#         r = np.zeros_like(t) + self.refstd
+#         self.ax.plot(t, r, linestyle=linestyle, color=color)
+#         self.samplePoints.append(l)
+
+#     def add_scatter(self, stddev, corrcoef, *args, **kwargs):
+#         """
+#         Add sample (*stddev*, *corrcoeff*) to the Taylor
+#         diagram. *args* and *kwargs* are directly propagated to the
+#         `Figure.plot` command.
+#         """
+
+#         l = self.ax.scatter(
+#             np.arccos(corrcoef), stddev, *args, **kwargs
+#         )  # (theta, radius)
+#         self.samplePoints.append(l)
+
+#         return l
+
+#     def add_contours(self, levels=5, **kwargs):
+#         """
+#         Add constant centered RMS difference contours, defined by *levels*.
+#         """
+
+#         rs, ts = np.meshgrid(
+#             np.linspace(self.xmin, self.xmax), np.linspace(0, self.tmax)
+#         )
+#         # Compute centered RMS difference
+#         crmse = np.sqrt(self.refstd**2 + rs**2 - 2 * self.refstd * rs * np.cos(ts))
+#         contours = self.ax.contour(ts, rs, crmse, levels, linestyles="--", **kwargs)
+#         self.ax.clabel(contours, contours.levels[::1], inline=False)
+
+#         return contours
+
+#     def add_legend(self, *args, **kwargs):
+#         return self.ax.legend(*args, **kwargs)
+
+#     def add_annotation(self, *args, **kwargs):
+#         return self.ax.annotation(*args, **kwargs)
+
+#     def savefig(self, *args, **kwargs):
+#         self.fig.savefig(*args, **kwargs)
+    

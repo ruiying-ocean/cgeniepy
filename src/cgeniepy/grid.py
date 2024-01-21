@@ -94,48 +94,6 @@ def GENIE_grid_mask(
     return grid_mask
 
 
-def GENIE_lat(N=36, edge=False):
-    """
-    return cGENIE latitude in log-sine normally degree resolution,
-    if edge is False, then return midpoint
-    """
-    if edge:
-        lat_edge = np.rad2deg(np.arcsin(np.linspace(-1, 1, N + 1)))
-        return lat_edge
-    else:
-        lat = np.rad2deg(np.arcsin(np.linspace(-0.97222222, 0.97222222, N)))
-        return lat
-
-
-def GENIE_depth(edge=False):
-    z_edge = np.array(
-        [
-            0.0000,
-            80.8407,
-            174.7519,
-            283.8467,
-            410.5801,
-            557.8040,
-            728.8313,
-            927.5105,
-            1158.3124,
-            1426.4307,
-            1737.8987,
-            2099.7254,
-            2520.0527,
-            3008.3391,
-            3575.5723,
-            4234.45166,
-            5000.0000,
-        ]
-    )
-    if edge:
-        return z_edge
-    else:
-        z = np.array([(z_edge[i] + z_edge[i + 1]) / 2 for i in range(len(z_edge) - 1)])
-        return z
-
-
 def normal_lon(N=36, edge=False):
     """
     Normal longitude in 10 degree resolution,
