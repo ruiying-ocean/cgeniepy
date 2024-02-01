@@ -253,44 +253,7 @@ class GeniePlot:
             
         
         return local_ax    
-
-
-    def plot_polar(self, ax=None, hemisphere="South", x_edge="lon_edge", y_edge="lat_edge", contour=False, colorbar=True, *args, **kwargs):
-
-        if not ax:
-            match hemisphere:
-                case "North":
-                    fig, ax = self._init_fig(subplot_kw={'projection': ccrs.Orthographic(0, 90)})
-                case "South":
-                    fig, ax = self._init_fig(subplot_kw={'projection': ccrs.Orthographic(180, -90)})
-
-        x_edge_arr = self.grid_dict.get(x_edge)
-        y_edge_arr = self.grid_dict.get(y_edge)
-
-        self._set_facecolor(ax)
-        self._set_borderline(ax)
-        p = self._add_pcolormesh(ax, x=x_edge_arr, y=y_edge_arr, transform=self.transform_crs, *args, **kwargs)
-        self._add_outline(ax, x=x_edge_arr, y=y_edge_arr, transform=self.transform_crs)
-        self._add_gridline(ax,
-                           transform=self.transform_crs,
-                           draw_labels=False,
-                           linewidth=0.5,
-                           color="gray",
-                           alpha=0.5,
-                           linestyle="-",
-                           )
-
-        if colorbar:
-            self._add_colorbar(p)
-
-        
-        if contour:
-            x_arr = self.grid_dict.get(x_edge[:3:1])
-            y_arr = self.grid_dict.get(y_edge[:3:1])
-            p = self._add_contour(ax, x=x_arr, y=y_arr, transform=self.transform_crs)
-
-            
-        return p    
+    
 
     ## ------- Below is implementations -------------------------
     
