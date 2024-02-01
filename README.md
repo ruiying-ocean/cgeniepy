@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logo.jpg"/>
+  <img src="logo.png"/>
 </p>
 
 `cgeniepy` is an Python interface to the output of [cGENIE Earth System Model](https://www.seao2.info/mymuffin.html). It is an alternative to the existing [MATLAB libraries](https://github.com/derpycode/muffinplot). It aims to facilitate the post-simulation analysis, including reading and analysing the model output, and observational data.
