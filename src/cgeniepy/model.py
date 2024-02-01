@@ -5,6 +5,8 @@ from pathlib import Path
 import pandas as pd
 from netCDF4 import Dataset
 import xarray as xr
+from scipy.ndimage import binary_dilation
+import numpy as np
 
 from .utils import file_exists
 from .chem import Chemistry
@@ -262,6 +264,20 @@ class GenieModel(object):
             return grid_mask
         except ValueError:
             print("grid_mask not found!")
+
+
+    def grid_catogry(self):
+        """an alogirthm to define surface grid catogories depending on the land-sea mask
+        0: coastal sea
+        1: land
+        2: open ocean
+        """
+
+        is_sea = np.isnan(self.grid_mask())
+        land_around = binary_dilation(is_sea)
+        grid_catogories = xr.where(land_around, np.logical_and(land_around, is_sea), 2)
+
+        return grid_catogories
 
     def grid_area(self):
         "grid area array in m2"
