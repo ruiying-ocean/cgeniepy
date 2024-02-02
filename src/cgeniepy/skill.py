@@ -2,7 +2,7 @@ import numpy as np
 from scipy.spatial import distance
 from .grid import mask_Arctic_Med
 
-class ModelSkill:
+class ModelDataComparison:
     
     "quantitatively compare similarity metrics between two 2D arrays (model and observation)"
 

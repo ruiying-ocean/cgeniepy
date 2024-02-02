@@ -15,8 +15,7 @@ import mpl_toolkits.axisartist.grid_finder as gf
 from .data import efficient_log
 
 
-
-class GeniePlot:
+class Visualisation:
 
     transform_crs = ccrs.PlateCarree()  # do not change
     
@@ -152,7 +151,7 @@ class GeniePlot:
             ## need to be transformed to PlateCarree
             self._add_outline(local_ax, x=x_edge_arr, y=y_edge_arr,transform=self.transform_crs, **self.aes_dict["outline_kwargs"])
 
-        if gridline:            
+        if gridline:
             self._add_gridline(local_ax, transform=self.transform_crs, **self.aes_dict["gridline_kwargs"])
 
         if pcolormesh:

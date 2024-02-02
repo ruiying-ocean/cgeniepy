@@ -5,10 +5,10 @@ import regionmask
 
 from . import Q_, ureg
 from .grid import normalise_GENIE_lon, GENIE_grid_mask, regridder
-from .plot import GeniePlot
+from .plot import Visualisation
 
 
-class GenieArray(GeniePlot):
+class Array(Visualisation):
     """
     GenieArray is a class to store and compute GENIE netcdf data.
 
@@ -99,7 +99,7 @@ class GenieArray(GeniePlot):
         """
         Allow GenieArray to be added by a number or another GenieArray
         """
-        sum = GenieArray()
+        sum = Array()
         if hasattr(other, "array"):
             sum.array = self.array + other.array
         else:
@@ -111,7 +111,7 @@ class GenieArray(GeniePlot):
         """
         Allow GenieArray to be subtracted by a number or another GenieArray
         """
-        diff = GenieArray()
+        diff = Array()
         if hasattr(other, "array"):
             diff.array = self.array - other.array
         else:
@@ -127,13 +127,13 @@ class GenieArray(GeniePlot):
         """
         quotient_array = np.zeros_like(self.array)
         
-        if isinstance(other, GenieArray):
+        if isinstance(other, Array):
             quotient_array = np.divide(self.array, other.array)
         else:
             # Handle division by a scalar
             quotient_array = np.divide(self.array, other)
 
-        quotient = GenieArray()
+        quotient = Array()
         quotient.array = xr.DataArray(quotient_array)
         return quotient
 
@@ -142,7 +142,7 @@ class GenieArray(GeniePlot):
         """
         Allow GenieArray to be multiplied by a number or another GenieArray
         """
-        product = GenieArray()
+        product = Array()
         if hasattr(other, "array"):
             product.array = self.array * other.array
         else:

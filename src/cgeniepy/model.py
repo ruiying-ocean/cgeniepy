@@ -10,7 +10,7 @@ import numpy as np
 
 from .utils import file_exists
 from .chem import Chemistry
-from .array import GenieArray
+from .array import Array
 
 
 class GenieModel(object):
@@ -162,7 +162,7 @@ class GenieModel(object):
             array.name = "ensemble_variable"
 
         ## initialise GenieArray
-        target_data = GenieArray()
+        target_data = Array()
         target_data.array = array
         try:
             c = Chemistry()
