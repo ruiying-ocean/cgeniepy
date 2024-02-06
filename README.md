@@ -159,7 +159,6 @@ plot_colormaps(cmaps_list)
 ## Project Roadmap 🚩
 
 - [ ] Publish the first stable version
-
 - [ ] plot.py 3D facet subplots
 - [ ] plot.py scatter data overlay
 - [ ] ignore NAs when searching grid 
@@ -175,8 +174,8 @@ plot_colormaps(cmaps_list)
 - [ ] Add global inventory function
 
 ## Features
-[] Model-data comparison
-[]
+[ ] Model-data comparison
+[ ] Model ensemble support
 
 ## Citation
 
