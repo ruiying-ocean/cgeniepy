@@ -32,3 +32,7 @@ def is_empty(path):
         return os.stat(path).st_size == 0
     else:
         Path(path).touch()
+
+def efficient_log(data):
+    "keep NA, remove zeros"
+    return np.where(data == 0, -10, np.log10(data))

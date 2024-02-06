@@ -3,14 +3,14 @@ import xarray as xr
 from scipy.stats import sem
 import regionmask
 
-from . import Q_, ureg
+from . import Q_
 from .grid import normalise_GENIE_lon, GENIE_grid_mask, regridder
 from .plot import Visualisation
 
 
 class Array(Visualisation):
     """
-    GenieArray is a class to store and compute GENIE netcdf data.
+    Array is a class to store and compute GENIE netcdf data.
 
     It stores data in xarray.DataArray format, and provides a set of methods to compute statistics and plot.
     

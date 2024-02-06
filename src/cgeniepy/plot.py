@@ -12,7 +12,7 @@ from matplotlib.colors import ListedColormap, to_rgb as hex_to_rgb
 import mpl_toolkits.axisartist.floating_axes as fa
 import mpl_toolkits.axisartist.grid_finder as gf
 
-from .data import efficient_log
+from .utils import efficient_log
 
 
 class Visualisation:

@@ -3,7 +3,7 @@ import numpy as np
 import re
 
 from .model import GenieModel
-from .data import foram_groups
+#from .data import foram_groups
 
 class EcoModel(GenieModel):
     """
