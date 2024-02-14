@@ -3,7 +3,7 @@ import xarray as xr
 from scipy.stats import sem
 import regionmask
 
-from .grid import normalise_GENIE_lon, GENIE_grid_mask, regridder
+from .grid import normalise_GENIE_lon, GENIE_grid_mask, Interporaltor
 from .plot import ArrayVis
 
 ## TODO 
@@ -42,7 +42,11 @@ class GriddedData(ArrayVis):
         Interpolate the GENIE array to a finer grid, might be useful for plotting        
         """
         
-        self.array = regridder(self.array, *args, **kwargs).to_xarray()
+        coords = tuple([self.array[dim].values for dim in self.array.dims])
+        values = self.array.values
+        dims = self.array.dims
+        self.array = Interporaltor(dims, coords,values, *args, **kwargs).to_xarray()
+        
         return self
 
     def sel(self, *args, **kwargs):

@@ -1,17 +1,11 @@
-from metpy.interpolate import natural_neighbor_to_grid, inverse_distance_to_grid
-from scipy.interpolate import griddata
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-
 import pathlib
 import geopandas as gpd
 from shapely.geometry import Point
+import pandas as pd
 
-from .utils import efficient_log
 from io import StringIO
+
+from cgeniepy.grid import Interporaltor
 
 from .skill import DataFrameComp
 from .plot import ScatterVis
@@ -40,7 +34,7 @@ class ScatterData(ScatterVis):
         else:
             self.df = pd.read_csv(path, *args, **kwargs)
 
-        self.coordinates = []
+        self.dims = []
 
 
     def parse_tab_file(self, filename, begin_cmt = '/*', end_cmt = '*/'):
@@ -68,28 +62,28 @@ class ScatterData(ScatterVis):
         data = '\n'.join(lines)
         return data
 
-    def specify_cols(self, coord_cols: dict, var_col: str):
+    def specify_cols(self, dim_cols: dict, var_col: str):
         "assign coordinate and variable columns"
-        self._check_cols(list(coord_cols.values()) + [var_col])
+        self._check_cols(list(dim_cols.values()) + [var_col])
         
         ## if all the cols are given in name
-        if 'lon' in coord_cols:
-            self.lon = coord_cols['lon']
-            self.coordinates.append(self.lon)
-        if 'lat' in coord_cols:
-            self.lat = coord_cols['lat']
-            self.coordinates.append(self.lat)
-        if 'age' in coord_cols:
-            self.age = coord_cols['age']
-            self.coordinates.append(self.age)
-        if 'depth' in coord_cols:
-            self.depth = coord_cols['depth']
-            self.coordinates.append(self.depth)
+        if 'lon' in dim_cols:
+            self.lon = dim_cols['lon']
+            self.dims.append(self.lon)
+        if 'lat' in dim_cols:
+            self.lat = dim_cols['lat']
+            self.dims.append(self.lat)
+        if 'age' in dim_cols:
+            self.age = dim_cols['age']
+            self.dims.append(self.age)
+        if 'depth' in dim_cols:
+            self.depth = dim_cols['depth']
+            self.dims.append(self.depth)
             
         self.var = var_col
 
         ## check the datatype of the coordinate columns
-        for col in self.coordinates:
+        for col in self.dims:
             if self.df[col].dtype != 'float64':
                 self.df[col] = self.df[col].astype('float64')
 
@@ -145,19 +139,23 @@ class ScatterData(ScatterVis):
     def to_xarray(self):
         "convert to xarray dataset"
         ## set the coordinate using the data from self.coordinates         
-        return self.df.set_index(self.coordinates, inplace=False).to_xarray()
+        return self.df.set_index(self.dims, inplace=False).to_xarray()
 
     def to_gridded(self):
         "convert to gridded data"
-        output = GriddedData()
-        output.array = self.to_xarray()[self.var]
-        return output        
+        output = GriddedData(self.to_xarray()[self.var])
+        return output
     
-    def regrid(self, example):
-        "convert to gridded data"
+    def to_genie(self, example):
+        "convert to GENIE grid"
         ## to be done
         pass
 
-            
-
+    def interpolate(self):
+        ## a tuple of coordinate arrays
+        coords =  tuple([self.df[dim].values for dim in self.dims])
+        ## array values
+        values = self.df[self.var].values
+        dims = self.dims
+        return Interporaltor(dims, coords, values, 200, 'ir-linear')
     

@@ -1,13 +1,15 @@
 import pathlib
 
-from . import ureg, Q_
-
 import numpy as np
 import pandas as pd
 import xarray as xr
 
-from scipy.interpolate import RegularGridInterpolator
-
+from scipy.interpolate import RegularGridInterpolator, LinearNDInterpolator, NearestNDInterpolator
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
 def lon_n2g(x):
     """
@@ -214,18 +216,6 @@ def regrid_lon(x):
     return x
 
 
-def new_basin_mask(mask_array, basin, filename):
-    """
-    a dirty way to copy the basin mask from worjh2 and facilitate further manual modification
-    """
-
-    x = mask_array + GENIE_grid_mask(base="worjh2", basin=basin)
-    o = np.where(x > 1, 1, 0)
-    o = np.flip(np.fliplr(o))
-    np.savetxt(filename, o, fmt="%i")
-    print(f"array saved in {filename}")
-
-
 def regrid_dataframe(
     dataframe,
     low_threshold=None,
@@ -306,48 +296,63 @@ def regrid_dataframe(
     return df_genie_wide
 
 
-class regridder:
-    """
-    regridder class, make cGENIE to finer resolution
-    """
+class Interporaltor:
     
-    def __init__(self, array, grid_number=200, method='linear'):
+    def __init__(self, dims, coordinates, values, grid_number=200, method='r-linear'):
         """
         initialize regridder
         
-        :param array: xr data array
+        :param array: xr data array or dataframe
         :param grid_number: number of target grid points
         :param method: interpolation method, only linear is supported
         """
-        self.array = array
-        ## a tuple of dimensions
-        self.dims = array.dims
-        ## dimension values
-        self.coords = tuple([array[dim].values for dim in self.dims])
-        ## array values
-        self.values = array.values
-
-        ## interpolation function
-        self.interp_function = self._create_interp_function(method=method)        
+        self.dims = dims
+        self.coords = coordinates
+        self.values = values
+        
         ## number of grid points
-        self.grid_number = grid_number        
-        ## create new coordinates, meshgrid
+        self.grid_number = grid_number
+        ## create new coordinates
         self.gridded_coord = self.new_coordinate(n=grid_number)      
+        ## create meshgrid
         self.meshgrid = self.new_meshgrid(*self.gridded_coord, indexing='ij')
+        ## interpolation function
+        self.interp_function = self._create_interp_function(method=method)                
+        ## interpolate data
         self.gridded_data = self.interpolate_data(tuple(self.meshgrid))
         
-    def _create_interp_function(self, method):        
-        interp_function = RegularGridInterpolator(self.coords,
-                                                  self.values,
-                                                  method=method,
-                                                  bounds_error=True, 
-                                                  fill_value=None)
+    def _create_interp_function(self, method):     
+        """
+        create interpolation function
+
+        :param method: interpolation method, use "x-y" format. where x is strcutre or not, y is the algorithm
+        """
+
+
+        data_class = method.split("-")[0]
+        ## regular grid interpolation
+        if data_class == "r":
+            true_method = method.split("-")[1]
+            interp_function = RegularGridInterpolator(self.coords,
+                                                            self.values,
+                                                            method=true_method)            
+        ## irregular grid
+        elif data_class == "ir":
+            true_method = method.split("-")[1]
+            if true_method == 'linear':
+                interp_function = LinearNDInterpolator(self.coords, self.values)
+            elif true_method == 'nearest':
+                interp_function = NearestNDInterpolator(self.coords, self.values)
+        else:
+            raise ValueError("Method not supported")                
+
         return interp_function
 
     def new_coordinate(self, n):
+        "create new coordinates for regridding"
         new_coords = []
-        for dim_values in self.coords:
-            min_val, max_val = np.min(dim_values), np.max(dim_values)
+        for coord_values in self.coords:
+            min_val, max_val = np.min(coord_values), np.max(coord_values)
             new_values = np.linspace(min_val, max_val, n)
             new_coords.append(new_values)
         return new_coords
@@ -365,9 +370,3 @@ class regridder:
         convert numpy array to xr data array
         """
         return xr.DataArray(self.gridded_data, dims=self.dims, coords=self.gridded_coord)
-        
-    # def to_geniearray(self):
-    #     """
-    #     convert numpy array to cGENIE 36x36 array
-    #     """
-    #     return GenieArray(self.to_xarray())

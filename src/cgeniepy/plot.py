@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
+import xarray as xr
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
@@ -364,12 +365,11 @@ class ScatterVis:
         self.df = df
 
     def _init_fig(self, *args, **kwargs):
-        return plt.subplots(dpi=300, *args, **kwargs)
+        return plt.subplots(dpi=120, *args, **kwargs)
 
     def plot_map(
         self,
         ax = None,
-        interpolate=None,
         log=False,
         land_mask=True,
         *args,
@@ -401,73 +401,50 @@ class ScatterVis:
         if self.df[self.var].dtype != float:
             self.df[self.var] = self.df[self.var].astype(float)
 
-        if interpolate:        
-            subdf = self.df[[self.lon, self.lat, self.var]]
-            subdf = subdf.dropna().astype('float64').to_numpy()
-            lat = subdf[:,0]
-            lon = subdf[:,1]
-            values = subdf[:,2]
-            
-            # construct meshgrid
-            min_lat=round(min(lat))
-            max_lat=round(max(lat))
-            min_lon=round(min(lon))
-            max_lon=round(max(lon))
+    
+        p = ax.scatter(
+            x=self.df[self.lon],
+            y=self.df[self.lat],
+            c=self.df[self.var],
+            transform=ccrs.PlateCarree(),
+            *args,
+            **kwargs,
+        )
 
-            # every 1x1 pixel
-            # equivalent to
-            # grid_lat, grid_lon = np.mgrid[min_lat:max_lat:nlat*1j, min_lon:max_lon:nlon*1j]
-            grid_lat, grid_lon = np.meshgrid(np.linspace(min_lat, max_lat, max_lat-min_lat),
-                                            np.linspace(min_lon, max_lon, max_lon-min_lon))
-            
-            # interpolate and return data in 2D array
-            match interpolate:
-                case 'natural_neighbor':
-                    grid_values = natural_neighbor_to_grid(lat, lon, values, grid_lat, grid_lon)
-                case 'inverse_distance':
-                    grid_values = inverse_distance_to_grid(lat, lon, values, grid_lat,grid_lon,r=3, min_neighbors=0.5)
-                case 'linear':
-                    grid_values = griddata((lat, lon), values, (grid_lat, grid_lon), method='linear')
-                case 'nearest':
-                    points = subdf[:,1:3]
-                    grid_values = griddata((lat, lon), values, (grid_lat, grid_lon), method='nearest')
-                case 'cubic':
-                    points = subdf[:,1:3]
-                    grid_values = griddata((lat, lon), values, (grid_lat, grid_lon), method='cubic')
-                case _:
-                    raise ValueError(f"Interpolation method {interpolate} not supported")
+        return p
 
-            # plot
-            p = ax.pcolormesh(grid_lat, grid_lon,
-                            grid_values,
-                            transform=ccrs.PlateCarree(),
-                            zorder=1,
-                            *args,
-                            **kwargs)
-        else:
-            p = ax.scatter(
+    def plot_transect(self, ax=None, bathy_lon=None, *args, **kwargs,):
+        if not ax: fig, ax = self._init_fig()        
+        p = ax.scatter(
                 x=self.df[self.lon],
-                y=self.df[self.lat],
+                y=self.df[self.depth],
                 c=self.df[self.var],
-                transform=ccrs.PlateCarree(),
                 *args,
                 **kwargs,
             )
 
-        return p
+        if bathy_lon:
+            data_dir = pathlib.Path(__file__).parent.parent
+            bathy = xr.open_dataset(data_dir / "data/GEBCO2002_bathy.nc")
 
-    def plot_transect(self):
-        pass
+            ## get the lat range
+            min_lat = self.df[self.lat].min()
+            max_lat = self.df[self.lat].max()
+            min_depth = self.df[self.depth].min()
+            
+            up = bathy.z.sel(lon=slice(*bathy_lon)).mean(dim="lon")
+            #up = up.sel(lat=slice(min_lat, max_lat))
+            bottom = np.ones(len(up)) * -5500
+            
+            ax.fill_between(up.lat, up, bottom, color="black")
 
-    
-    def add_bathy(self, longitude):
-        
+        return p        
 
 
     
 class CommunityPalette:
 
-    def __init__():
+    def __init__(self):
         pass
     
     def get_palette(self, cmap_name, N=256, reverse=False, alpha=None):
