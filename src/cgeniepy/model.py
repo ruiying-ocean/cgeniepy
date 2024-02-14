@@ -165,8 +165,7 @@ class GenieModel(object):
             array.name = "ensemble_variable"
 
         ## initialise GenieArray
-        target_data = GriddedData()
-        target_data.array = array
+        target_data = GriddedData(array)
         try:
             c = Chemistry()
             target_data.array.attrs['units'] = c.format_unit(target_data.array.attrs['units'] )

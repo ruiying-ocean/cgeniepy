@@ -16,33 +16,23 @@ class GriddedData(ArrayVis):
     """
     GriddedData is a class to store and compute GENIE netcdf data.
 
-    It stores data in xarray.DataArray format, and provides additional methods to compute statistics and plot.
-    
-    Particularly, it provides:
-
-    1) ready-to-use plotting system
-    2) subset grid cells (select basin, search by lat/lon, etc.)
-    3) statistics (median, mean, sd, variance, se)
+    It stores data in xarray.DataArray format, and provides optimalised methods for GENIE model output to compute statistics.    
     """
     
-    def __init__(self):
+    def __init__(self, arr=np.nan):
         """
-        Initialise an empty array, default as NaN
+        Initialise an instance of GriddedData
+
+        Parameters
+        ----------
+        arr : xarray.DataArray
         """
         
         # set data
-        self.array = self._set_array()
+        self.array = arr
         
         # init plottable instance
         super().__init__(array=self.array)
-
-    def _set_array(self) -> xr.DataArray:
-        """
-        a function to be overwritten by subclass
-        always return a xarray.DataArray
-        """
-        arr = np.nan
-        return xr.DataArray(arr)    
 
     def __getitem__(self, item):
         "make GenieArray subscriptable like xarray.DataArray"
@@ -94,10 +84,6 @@ class GriddedData(ArrayVis):
         """
         self.array = normalise_GENIE_lon(self.array)
         return self
-
-    def _run_method(self, method: str, *args, **kwargs):
-        "an alias to run stat for GenieArray class"
-        return getattr(self, method)(*args, **kwargs)
 
     def __add__(self, other):
         """
@@ -187,6 +173,7 @@ class GriddedData(ArrayVis):
 
 
     def sd(self, *args, **kwargs):
+        "standard deviation of the mean"
         self.array = np.std(self.array, *args, **kwargs)
         return self        
 
@@ -197,6 +184,7 @@ class GriddedData(ArrayVis):
     
 
     def se(self, *args, **kwargs):
+        "standard error of the mean"
         self.array = sem(self.array, nan_policy="omit", axis=None, *args, **kwargs)
         return self        
 
@@ -271,7 +259,7 @@ class GriddedData(ArrayVis):
         """
         return self.array.sel(*args, **kwargs)
 
-    def select_box(self, lon_min=-255, lon_max=95, lat_min=0, lat_max=90):
+    def select_bbox(self, lon_min=-255, lon_max=95, lat_min=0, lat_max=90):
         """
         default longitude is unassigned of cGENIE grids
         """

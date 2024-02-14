@@ -18,11 +18,7 @@ from .utils import efficient_log
 class ArrayVis:
 
     transform_crs = ccrs.PlateCarree()  # do not change
-
-    ## an hard coded x_edge_arr and y_edge_arr
-    lon_edge = np.linspace(-260, 100, 36 + 1)
-    lat_edge = np.rad2deg(np.arcsin(np.linspace(-1, 1, 36 + 1)))
-
+    
     
     def __init__(self, array):
 
@@ -138,7 +134,9 @@ class ArrayVis:
 
         x_arr = self.array[x_name]
         y_arr = self.array[y_name]
-        
+
+        x_edge = np.linspace(-260, 100, x_arr.size + 1)
+        y_edge = np.rad2deg(np.arcsin(np.linspace(-1, 1, y_arr.size + 1)))        
 
         if 'ax' not in kwargs:
             fig, local_ax = self._init_fig(subplot_kw={'projection': ccrs.EckertIV()})
@@ -154,7 +152,8 @@ class ArrayVis:
         if outline:
             ## outline uses edge coordinates
             ## need to be transformed to PlateCarree
-            self._add_outline(local_ax, x=self.lon_edge, y=self.lat_edge,transform=self.transform_crs, **self.aes_dict["outline_kwargs"])
+            self._add_outline(local_ax, x=x_edge, y=y_edge,
+                              transform=self.transform_crs, **self.aes_dict["outline_kwargs"])
 
         if gridline:
             self._add_gridline(local_ax, transform=self.transform_crs, **self.aes_dict["gridline_kwargs"])
@@ -162,7 +161,7 @@ class ArrayVis:
         if pcolormesh:
             ## pcolormesh uses edge coordinates
             ## need to be transformed to PlateCarree
-            p_pcolormesh = self._add_pcolormesh(local_ax, x=self.lon_edge, y=self.lat_edge,transform=self.transform_crs, *args, **self.aes_dict["pcolormesh_kwargs"])
+            p_pcolormesh = self._add_pcolormesh(local_ax, x=x_edge, y=y_edge, transform=self.transform_crs, *args, **self.aes_dict["pcolormesh_kwargs"])
             if colorbar:
                 cbar = self._add_colorbar(p_pcolormesh, orientation='horizontal')
                 self._add_colorbar_label(cbar, **self.aes_dict['colorbar_label_kwargs'])    
