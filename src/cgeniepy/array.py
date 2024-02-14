@@ -3,7 +3,6 @@ import xarray as xr
 from scipy.stats import sem
 import regionmask
 
-from . import Q_
 from .grid import normalise_GENIE_lon, GENIE_grid_mask, regridder
 from .plot import ArrayVis
 
@@ -37,14 +36,6 @@ class GriddedData(ArrayVis):
     def __getitem__(self, item):
         "make GenieArray subscriptable like xarray.DataArray"
         return self.array[item]
-
-    def uarray(self):
-        """convert array to pint.Quantity
-
-        This funtion is useful when doing unit conversion
-        """
-        uarray = Q_(self.array.values, self.array.units)
-        return uarray
 
     def interpolate(self, *args, **kwargs):
         """
@@ -177,17 +168,14 @@ class GriddedData(ArrayVis):
         self.array = np.std(self.array, *args, **kwargs)
         return self        
 
-
     def variance(self, *args, **kwargs):
         self.array = np.var(self.array, *args, **kwargs)
-        return self
-    
+        return self    
 
     def se(self, *args, **kwargs):
         "standard error of the mean"
         self.array = sem(self.array, nan_policy="omit", axis=None, *args, **kwargs)
         return self        
-
     
     def select_basin(self, basin):
         """

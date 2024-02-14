@@ -17,8 +17,7 @@ from .utils import efficient_log
 
 class ArrayVis:
 
-    transform_crs = ccrs.PlateCarree()  # do not change
-    
+    transform_crs = ccrs.PlateCarree()  # do not change    
     
     def __init__(self, array):
 
@@ -111,9 +110,9 @@ class ArrayVis:
         if 'lon' in dims and 'lat' in dims:
             return self._plot_map(*arg, **kwargs)
         elif 'zt' in dims and 'lon' in dims:
-            return self._plot_cross_section(*arg, **kwargs)
+            return self._plot_transect(*arg, **kwargs)
         elif 'zt' in dims and 'lat' in dims:
-            return self._plot_cross_section(*arg, **kwargs)
+            return self._plot_transect(*arg, **kwargs)
         else:
             raise ValueError(f"{dims} not supported")
 
@@ -179,7 +178,7 @@ class ArrayVis:
         return local_ax    
         
 
-    def _plot_cross_section(self, x="lat_edge", y="zt_edge",
+    def _plot_transect(self, x="lat_edge", y="zt_edge",
                             pcolormesh=True, contour=False, colorbar=True,
                             contourf=False,
                             outline=False, facecolor=True, borderline=True,
@@ -214,7 +213,6 @@ class ArrayVis:
             fig, local_ax = self._init_fig(figsize=(6, 3))
         else:
             local_ax = kwargs.pop('ax')
-
             
         if facecolor:
             self._set_facecolor(local_ax, **self.aes_dict["facecolor_kwargs"])
@@ -224,7 +222,7 @@ class ArrayVis:
             
         if outline:
             ## outline uses edge coordinates
-            self._add_outline(local_ax, x=x_edge_arr, y=y_edge_arr, **self.aes_dict["outline_kwargs"])
+            self._add_outline(local_ax, x=x_arr, y=y_arr, **self.aes_dict["outline_kwargs"])
 
         if pcolormesh:
             ## pcolormesh uses edge coordinates
@@ -360,6 +358,7 @@ class ArrayVis:
 
 
 class ScatterVis:
+    "Visualisation object based on dataframe"
 
     def __init__(self, df):
         self.df = df
@@ -368,13 +367,13 @@ class ScatterVis:
         return plt.subplots(dpi=300, *args, **kwargs)
 
     def plot_map(
-            self,
-            ax = None,
-            interpolate=None,
-            log=False,
-            land_mask=True,
-            *args,
-            **kwargs,
+        self,
+        ax = None,
+        interpolate=None,
+        log=False,
+        land_mask=True,
+        *args,
+        **kwargs,
     ):
         """plot map based on dataframe with latitude/longitude
         using cartopy as engine
@@ -462,7 +461,7 @@ class ScatterVis:
 
     
     def add_bathy(self, longitude):
-        pass
+        
 
 
     
