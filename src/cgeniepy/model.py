@@ -301,18 +301,3 @@ class GenieModel(object):
             print("Depth array not found! Please ensure 3d data is exported in the model!")
         
         return grid_volume
-
-    def diff(self, model2compare, var):
-
-        if isinstance(model2compare, GenieModel):
-            B = model2compare
-        else:
-            B = GenieModel(model2compare)
-
-        diff = self.get_var(var) - B.get_var(var)
-        return diff
-
-    def div(self, model2compare, var):
-        B = GenieModel(model2compare)
-        diff = self.get_var(var) / B.get_var(var)
-        return diff
