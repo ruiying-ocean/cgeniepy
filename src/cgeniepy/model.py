@@ -47,6 +47,9 @@ class GenieModel(object):
             self.gemflag = ["biogem", "ecogem"]
         else:
             self.gemflag = gemflag
+            ## if gemflag is a string, convert it to a list
+            if isinstance(gemflag, str):
+                self.gemflag = [gemflag]
 
         
         self.model_path = model_path
