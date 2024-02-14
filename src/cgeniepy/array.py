@@ -3,13 +3,8 @@ import xarray as xr
 from scipy.stats import sem
 import regionmask
 
-from .grid import normalise_GENIE_lon, GENIE_grid_mask, Interporaltor
+from .grid import Interporaltor, GridOperation
 from .plot import ArrayVis
-
-## TODO 
-## Add nearest-valid method to search grid
-## Add nearest-surround method to search grid
-## (if slow) add in parallel computing for search grid
 
 class GriddedData(ArrayVis):
     """
@@ -77,7 +72,8 @@ class GriddedData(ArrayVis):
         >>> Model = GenieModel("a path")
         >>> Model.get_var('abc').normalise_longitude()
         """
-        self.array = normalise_GENIE_lon(self.array)
+        gp = GridOperation()
+        self.array = gp.normalise_GENIE_lon(self.array)
         return self
 
     def __add__(self, other):
@@ -121,7 +117,6 @@ class GriddedData(ArrayVis):
         quotient = GriddedData()
         quotient.array = xr.DataArray(quotient_array)
         return quotient
-
 
     def __mul__(self, other):
         """
@@ -214,9 +209,9 @@ class GriddedData(ArrayVis):
         """
         similar to select_basin, but use pre-defined grid mask
         """
-        
+        gp = GridOperation()
         data = self.array
-        mask = GENIE_grid_mask(base=base, basin=basin, subbasin=subbasin, invert=True)
+        mask = gp.GENIE_grid_mask(base=base, basin=basin, subbasin=subbasin, invert=True)
 
         if self.array.ndim > 2:
             mask = np.broadcast_to(mask, (16, 36, 36))

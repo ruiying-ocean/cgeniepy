@@ -15,13 +15,13 @@ from .array import GriddedData
 
 class GenieModel(object):
     """
-    GenieModel is the interface to cGENIE output    
+    GenieModel is the interface to cGENIE output
     """
-    
+
     def __init__(self, model_path: Union[str, List, Tuple], gemflag=None):
         """
         Initialise a GenieModel object with a path to cGENIE output directory
-        
+
         -------
         Example
         >>> from cgeniepy.model import GenieModel
@@ -30,7 +30,7 @@ class GenieModel(object):
         ## specify cgenie component
         >>> model = GenieModel("path_to_GENIE_output", gemflag=["biogem"])
         """
-        
+
         ## check if model_path is a valid directory
         if isinstance(model_path, (list, tuple)):
             self.is_ensemble = True
@@ -43,7 +43,7 @@ class GenieModel(object):
                 raise ValueError(f"{model_path} is not a valid directory")
 
         if not gemflag:
-            print( ">>> No gemflag is provided, use default gemflags: [biogem, ecogem]")
+            print(">>> No gemflag is provided, use default gemflags: [biogem, ecogem]")
             self.gemflag = ["biogem", "ecogem"]
         else:
             self.gemflag = gemflag
@@ -51,7 +51,6 @@ class GenieModel(object):
             if isinstance(gemflag, str):
                 self.gemflag = [gemflag]
 
-        
         self.model_path = model_path
 
     def _model_ncpath(self, gem="ecogem", dim="2d"):
@@ -77,7 +76,6 @@ class GenieModel(object):
             ## make `nc_paths` hashable
             nc_paths = tuple(nc_paths)
             return nc_paths
-            
 
     def ncvar_dict(self) -> dict:
         """
@@ -88,11 +86,11 @@ class GenieModel(object):
         ## initialise a dictionary, key: model_path, value: ncvar_list
         var_path = {}
 
-            
         for gem in self.gemflag:
             for dim in ["2d", "3d"]:
                 ## ignore ecogem 3d which is not available now (Oct 2023)
-                if gem == "ecogem" and dim == "3d": continue
+                if gem == "ecogem" and dim == "3d":
+                    continue
 
                 if self.is_ensemble:
                     ## use one model to get the nc_path
@@ -110,7 +108,7 @@ class GenieModel(object):
                     var_path[all_nc_path] = ncvar_list
                 else:
                     var_path[nc_path] = ncvar_list
-                
+
         return var_path
 
     def _lookup_ncpath(self, var):
@@ -131,14 +129,14 @@ class GenieModel(object):
         if not isinstance(nc_path, (list, tuple)):
             ## `open_dataset` to lazy load the data
             return xr.open_dataset(nc_path)
-        else:            
+        else:
             datasets = [xr.open_dataset(file) for file in nc_path]
-            combined_ds  = xr.concat(datasets, "model")
+            combined_ds = xr.concat(datasets, "model")
             return combined_ds
-    
+
     def get_var(self, var: Union[str, List, Tuple], unit=None):
         """
-        Get the data of target variable. 
+        Get the data of target variable.
         A list of variables is supported as well.
 
         :param var: the name of target variable
@@ -149,7 +147,7 @@ class GenieModel(object):
         ## if varstr is a string
         if isinstance(self.target_var, str):
             ## find the path to the netcdf file
-            path2nc =self._lookup_ncpath(var=self.target_var)
+            path2nc = self._lookup_ncpath(var=self.target_var)
             ## open the netcdf file
             array = self._open_nc(path2nc)[self.target_var]
         ## if varstr is a list/tuple of strings
@@ -157,10 +155,10 @@ class GenieModel(object):
         elif isinstance(self.target_var, (list, tuple)):
             array_container = []
             for v in self.target_var:
-                path2nc =self._lookup_ncpath(var=v)
+                path2nc = self._lookup_ncpath(var=v)
                 single_array = self._open_nc(path2nc)[v]
-                array_container.append(single_array)            
-            
+                array_container.append(single_array)
+
             array = xr.concat(array_container, "variable")
             array.name = "ensemble_variable"
 
@@ -168,25 +166,27 @@ class GenieModel(object):
         target_data = GriddedData(array)
         try:
             c = Chemistry()
-            target_data.array.attrs['units'] = c.format_unit(target_data.array.attrs['units'] )
+            target_data.array.attrs["units"] = c.format_unit(
+                target_data.array.attrs["units"]
+            )
         except KeyError:
             print("Unit not found in cGENIE output, please check the FORTRAN code!")
 
         ## add unit if provided
         if not unit:
-            target_data.array.attrs['units'] = unit
-                
+            target_data.array.attrs["units"] = unit
+
         return target_data
-    
+
     def tsvar_list(self):
         """list all files biogem timeseries files
 
-        If the model is an ensemble, it assumes that all models share the same 
+        If the model is an ensemble, it assumes that all models share the same
         file/data structure and only return the first model's timeseries list
         """
-        
+
         if self.is_ensemble:
-            biogem_path = join(self.model_path[0],"biogem")
+            biogem_path = join(self.model_path[0], "biogem")
         else:
             biogem_path = join(self.model_path, "biogem")
 
@@ -195,7 +195,7 @@ class GenieModel(object):
 
         ## find out files with .res extension
         tsvar_list = [f for f in all_bg_files.glob("*.res")]
-                
+
         return tsvar_list
 
     def get_ts(self, filename: str):
@@ -205,55 +205,57 @@ class GenieModel(object):
         :param filename: the name of the time series file
         :return: a pandas DataFrame
         """
-        
+
         if not self.is_ensemble:
             f = join(self.model_path, "biogem", filename)
-            if not file_exists(f): raise ValueError(f"{f} does not exist")
+            if not file_exists(f):
+                raise ValueError(f"{f} does not exist")
 
             # Read the text file into a DataFrame
-            with open(f, 'r') as file:
+            with open(f, "r") as file:
                 lines = file.readlines()
 
             # Remove " %" from the header and split it using " / "
             # not '/' which is also included in the isotope unit (e.g. 'd13C o/oo')
-            header = [col.strip().lstrip('% ') for col in lines[0].split(' / ')]
+            header = [col.strip().lstrip("% ") for col in lines[0].split(" / ")]
             data = [line.split() for line in lines[1:]]
-            df= pd.DataFrame(data, columns=header)
+            df = pd.DataFrame(data, columns=header)
 
             ## convert to numeric
-            df = df.apply(pd.to_numeric, errors='coerce')
+            df = df.apply(pd.to_numeric, errors="coerce")
 
             ## add a column of model name
-            df['model'] = self.model_path.split('/')[-1]
+            df["model"] = self.model_path.split("/")[-1]
             return df
         else:
             ## concatenate all models' data into one data frame
             df_list = []
-            
+
             for path in self.model_path:
                 ## do the same thing as above
                 f = join(path, "biogem", filename)
-                if not file_exists(f): raise ValueError(f"{f} does not exist")
+                if not file_exists(f):
+                    raise ValueError(f"{f} does not exist")
 
                 ## read text file into a DataFrame
-                with open(f, 'r') as file:
+                with open(f, "r") as file:
                     lines = file.readlines()
 
                 ## Remove " %" from the header and split it using " / "
-                header = [col.strip().lstrip('%') for col in lines[0].split(' / ')]
+                header = [col.strip().lstrip("%") for col in lines[0].split(" / ")]
                 data = [line.split() for line in lines[1:]]
-                
-                df= pd.DataFrame(data, columns=header)
-                
+
+                df = pd.DataFrame(data, columns=header)
+
                 ## convert to numeric
-                df = df.apply(pd.to_numeric, errors='coerce')
-                
-                df['model'] = path.split('/')[-1]
+                df = df.apply(pd.to_numeric, errors="coerce")
+
+                df["model"] = path.split("/")[-1]
                 df_list.append(df)
-                
+
             ## concatenate by row
             all_df = pd.concat(df_list, axis=0)
- 
+
             return all_df
 
     def grid_mask(self):
@@ -266,7 +268,6 @@ class GenieModel(object):
             return grid_mask
         except ValueError:
             print("grid_mask not found!")
-
 
     def grid_category(self):
         """an alogirthm to define surface grid catogories depending on the land-sea mask
@@ -289,14 +290,16 @@ class GenieModel(object):
 
     def grid_volume(self):
         "grid volume array (3d) in m3"
-        grid_volume = self.grid_area() ## m2
-        depth = self.get_var("zt") ## m
+        grid_volume = self.grid_area()  ## m2
+        depth = self.get_var("zt")  ## m
         try:
             grid_volume = grid_volume * depth
-            grid_volume.array.attrs['units'] = "m$^{3}$"
-            grid_volume.array.attrs['long_name'] = "grid volume"
+            grid_volume.array.attrs["units"] = "m$^{3}$"
+            grid_volume.array.attrs["long_name"] = "grid volume"
             print("grid volume calculated in the unit of 'm3'")
         except ValueError:
-            print("Depth array not found! Please ensure 3d data is exported in the model!")
-        
+            print(
+                "Depth array not found! Please ensure 3d data is exported in the model!"
+            )
+
         return grid_volume

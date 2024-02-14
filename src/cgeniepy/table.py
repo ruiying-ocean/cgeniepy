@@ -145,11 +145,6 @@ class ScatterData(ScatterVis):
         "convert to gridded data"
         output = GriddedData(self.to_xarray()[self.var])
         return output
-    
-    def to_genie(self, example):
-        "convert to GENIE grid"
-        ## to be done
-        pass
 
     def interpolate(self):
         ## a tuple of coordinate arrays
@@ -158,4 +153,85 @@ class ScatterData(ScatterVis):
         values = self.df[self.var].values
         dims = self.dims
         return Interporaltor(dims, coords, values, 200, 'ir-linear')
-    
+
+
+    def to_genie(
+        self,
+        low_threshold=None,
+        new_low_bound=None,
+        high_threshold=None,
+        new_high_bound=None,
+    ):
+        """
+        Regrid a dataframe within certain format to cGENIE grids
+
+        Input: A dataframe with three necessary columns: "Latitude", "Longitude", "Observation".
+        The other columns will be unselected. Note that observation column is the data you want to process.
+        Rename dataframe by using command: `df = df.rename({"old name": "new name"}, axis='columns')`
+
+        Output:
+        A 36x36 2D array.
+
+        Optional parameters:
+        low_threshold/new_low_bound: change the data that is smaller than low_threshold to new_low_bound.
+        For example, covert any data < 0.03 to 0. Work same to high_threshold/new_high_bound.
+        """
+
+        df = self.df.copy()
+
+        # subset
+        df = df[["Longitude", "Latitude", "Observation"]]
+
+        # drop NAN
+        df = df.dropna(axis="rows", how="any")
+
+        # regrid coordinate
+        df.loc[:, "Latitude"] = df.loc[:, "Latitude"].apply(regrid_lat)
+        df.loc[:, "Longitude"] = df.loc[:, "Longitude"].apply(regrid_lon)
+
+        # group and aggregate (still in long format)
+        df_agg = df.groupby(["Longitude", "Latitude"]).agg("mean")
+
+        # Create a all-nan data frame with full cGENIE grids
+        lat = GENIE_lat()
+        lon = normal_lon()
+        data = np.zeros([36 * 36])
+        index = pd.MultiIndex.from_product([lon, lat], names=["Longitude", "Latitude"])
+        df_genie = pd.DataFrame(data, index=index, columns=["Observation"])
+        df_genie["Observation"] = df_genie["Observation"].replace(0, np.nan)
+
+        # transform the tuple elements in multindex to lists
+        df_genie_index_list = [list(item) for item in df_genie.index.values]
+        df_agg_index_list = [list(item) for item in df_agg.index.values]
+
+        # copy aggregated dataframe to full-grid dataframe, one by one
+        # if the returned dataframe is full of NA, it's very likely from this step
+        for i in df_genie_index_list:
+
+            longitude = i[0]
+            latitude = i[1]
+
+            if i in df_agg_index_list:
+                df_genie.loc[longitude, latitude] = df_agg.loc[longitude, latitude]
+            else:
+                df_genie.loc[longitude, latitude] = np.nan
+
+        # filter data if necessary
+        if (low_threshold is not None) and (new_low_bound is not None):
+            df_genie.loc[
+                df_genie.Observation < low_threshold, "Observation"
+            ] = new_low_bound
+
+        if (high_threshold is not None) and (new_high_bound is not None):
+            df_genie.loc[
+                df_genie.Observation > high_threshold, "Observation"
+            ] = new_high_bound
+
+        # long -> wide data format
+        df_genie_wide = df_genie.pivot_table(
+            values="Observation", index="Latitude", columns="Longitude", dropna=False
+        )
+
+        return df_genie_wide
+        
+        

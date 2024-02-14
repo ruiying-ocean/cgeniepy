@@ -18,8 +18,8 @@ from .utils import efficient_log
 
 class ArrayVis:
 
-    transform_crs = ccrs.PlateCarree()  # do not change    
-    
+    transform_crs = ccrs.PlateCarree()  # do not change
+
     def __init__(self, array):
 
         self.array = array
@@ -33,8 +33,8 @@ class ArrayVis:
             self.long_name = self.array.long_name
         else:
             self.long_name = None
-        
-        ## aesthetic parameters        
+
+        ## aesthetic parameters
         self.aes_dict = {
             ## x,ylabel
             "general_kwargs": {"cmap": "viridis", "font": "Helvetica", "fontsize": 10},
@@ -42,26 +42,31 @@ class ArrayVis:
             "borderline_kwargs": {"c": "black", "linewidth": 0.5},
             "outline_kwargs": {"colors": "black", "linewidth": 0.5},
             "gridline_kwargs": {"colors": "gray", "linewidth": 0.5},
-            "pcolormesh_kwargs": {'shading': 'auto', "cmap": plt.get_cmap('viridis')},
-            "contour_kwargs": {"linewidths": 0.6, "colors": "black", "linestyles": "solid", "zorder": 10},            
-            "contour_label_kwargs": {"colors": ["black"],
-                                     "fontsize": 8,
-                                     "inline": False,
-                                     },
+            "pcolormesh_kwargs": {"shading": "auto", "cmap": plt.get_cmap("viridis")},
+            "contour_kwargs": {
+                "linewidths": 0.6,
+                "colors": "black",
+                "linestyles": "solid",
+                "zorder": 10,
+            },
+            "contour_label_kwargs": {
+                "colors": ["black"],
+                "fontsize": 8,
+                "inline": False,
+            },
             "contourf_kwargs": {"levels": 20},
-                        
-            "colorbar_label_kwargs": {"label": f"{self.long_name}\n({self.units})",
-                                "size": 10,
-                                "labelpad": 10
-                                },
-            "colorbar_kwargs": {"fraction": 0.046,"pad":  0.04}            
+            "colorbar_label_kwargs": {
+                "label": f"{self.long_name}\n({self.units})",
+                "size": 10,
+                "labelpad": 10,
+            },
+            "colorbar_kwargs": {"fraction": 0.046, "pad": 0.04},
         }
-        
-    
+
     def plot(self, *args, **kwargs):
         """
         visualise the data based on the dimension of the array
-        
+
         *args and **kwargs are passed to plotting functions
         in practical, turn on/off the plotting elements
         e.g., plot(x, y, pcolormesh=False, contour=True)
@@ -83,15 +88,15 @@ class ArrayVis:
         plot 1D data, e.g., zonal_average, time series
         dim: time/lon/lat
         """
-        if 'ax' not in kwargs:
+        if "ax" not in kwargs:
             fig, local_ax = self._init_fig()
         else:
-            local_ax = kwargs.pop('ax')
+            local_ax = kwargs.pop("ax")
 
         ## get the only dimension as x
         dim = self.array[self.array.dims[0]]
 
-        if not 'swap_xy' in kwargs:            
+        if not "swap_xy" in kwargs:
             local_ax.set_xlabel(dim.name)
             local_ax.set_ylabel(f"{self.array.long_name} ({self.array.units})")
             p = local_ax.plot(dim, self.array, *args, **kwargs)
@@ -108,11 +113,11 @@ class ArrayVis:
         ## if lon, zt then plot transect
         ## if lat, zt then plot transect
         dims = self.array.dims
-        if 'lon' in dims and 'lat' in dims:
+        if "lon" in dims and "lat" in dims:
             return self._plot_map(*arg, **kwargs)
-        elif 'zt' in dims and 'lon' in dims:
+        elif "zt" in dims and "lon" in dims:
             return self._plot_transect(*arg, **kwargs)
-        elif 'zt' in dims and 'lat' in dims:
+        elif "zt" in dims and "lat" in dims:
             return self._plot_transect(*arg, **kwargs)
         else:
             raise ValueError(f"{dims} not supported")
@@ -122,79 +127,126 @@ class ArrayVis:
         print("3D plot not supported yet")
         pass
 
-    def _plot_map(self, 
-                 pcolormesh=True, contour=False, 
-                  colorbar=False, contourf=False,
-                 outline=False, facecolor=True, borderline=True,
-                 gridline=False, *args, **kwargs):
+    def _plot_map(
+        self,
+        pcolormesh=True,
+        contour=False,
+        colorbar=False,
+        contourf=False,
+        outline=False,
+        facecolor=True,
+        borderline=True,
+        gridline=False,
+        *args,
+        **kwargs,
+    ):
 
-        
-        x_name = self.array.dims[1] ## lon
-        y_name = self.array.dims[0] ## lat
+        x_name = self.array.dims[1]  ## lon
+        y_name = self.array.dims[0]  ## lat
 
         x_arr = self.array[x_name]
         y_arr = self.array[y_name]
 
         x_edge = np.linspace(-260, 100, x_arr.size + 1)
-        y_edge = np.rad2deg(np.arcsin(np.linspace(-1, 1, y_arr.size + 1)))        
+        y_edge = np.rad2deg(np.arcsin(np.linspace(-1, 1, y_arr.size + 1)))
 
-        if 'ax' not in kwargs:
-            fig, local_ax = self._init_fig(subplot_kw={'projection': ccrs.EckertIV()})
+        if "ax" not in kwargs:
+            fig, local_ax = self._init_fig(subplot_kw={"projection": ccrs.EckertIV()})
         else:
-            local_ax = kwargs.pop('ax')
-            
+            local_ax = kwargs.pop("ax")
+
         if facecolor:
             self._set_facecolor(local_ax, **self.aes_dict["facecolor_kwargs"])
-            
+
         if borderline:
-            self._set_borderline(local_ax, geo=True, **self.aes_dict["borderline_kwargs"])
-            
+            self._set_borderline(
+                local_ax, geo=True, **self.aes_dict["borderline_kwargs"]
+            )
+
         if outline:
             ## outline uses edge coordinates
             ## need to be transformed to PlateCarree
-            self._add_outline(local_ax, x=x_edge, y=y_edge,
-                              transform=self.transform_crs, **self.aes_dict["outline_kwargs"])
+            self._add_outline(
+                local_ax,
+                x=x_edge,
+                y=y_edge,
+                transform=self.transform_crs,
+                **self.aes_dict["outline_kwargs"],
+            )
 
         if gridline:
-            self._add_gridline(local_ax, transform=self.transform_crs, **self.aes_dict["gridline_kwargs"])
+            self._add_gridline(
+                local_ax,
+                transform=self.transform_crs,
+                **self.aes_dict["gridline_kwargs"],
+            )
 
         if pcolormesh:
             ## pcolormesh uses edge coordinates
             ## need to be transformed to PlateCarree
-            p_pcolormesh = self._add_pcolormesh(local_ax, x=x_edge, y=y_edge, transform=self.transform_crs, *args, **self.aes_dict["pcolormesh_kwargs"])
+            p_pcolormesh = self._add_pcolormesh(
+                local_ax,
+                x=x_edge,
+                y=y_edge,
+                transform=self.transform_crs,
+                *args,
+                **self.aes_dict["pcolormesh_kwargs"],
+            )
             if colorbar:
-                cbar = self._add_colorbar(p_pcolormesh, orientation='horizontal')
-                self._add_colorbar_label(cbar, **self.aes_dict['colorbar_label_kwargs'])    
+                cbar = self._add_colorbar(p_pcolormesh, orientation="horizontal")
+                self._add_colorbar_label(cbar, **self.aes_dict["colorbar_label_kwargs"])
 
         if contour:
             ## contour uses center coordinates
             ## need to be transformed to PlateCarree
-            p_contour = self._add_contour(local_ax, x_arr, y_arr,transform=self.transform_crs, **self.aes_dict['contour_kwargs'])
-            self._add_contour_label(local_ax, p_contour, **self.aes_dict['contour_label_kwargs'])
+            p_contour = self._add_contour(
+                local_ax,
+                x_arr,
+                y_arr,
+                transform=self.transform_crs,
+                **self.aes_dict["contour_kwargs"],
+            )
+            self._add_contour_label(
+                local_ax, p_contour, **self.aes_dict["contour_label_kwargs"]
+            )
             ## contour will not be used to plot colorbar because it's set to black
 
         if contourf:
-            p_contourf = self._add_contourf(local_ax, x_arr, y_arr, transform=self.transform_crs,  **self.aes_dict['contourf_kwargs'])
-        
-        return local_ax    
-        
+            p_contourf = self._add_contourf(
+                local_ax,
+                x_arr,
+                y_arr,
+                transform=self.transform_crs,
+                **self.aes_dict["contourf_kwargs"],
+            )
 
-    def _plot_transect(self, x="lat_edge", y="zt_edge",
-                            pcolormesh=True, contour=False, colorbar=True,
-                            contourf=False,
-                            outline=False, facecolor=True, borderline=True,
-                            *args, **kwargs):
+        return local_ax
+
+    def _plot_transect(
+        self,
+        x="lat_edge",
+        y="zt_edge",
+        pcolormesh=True,
+        contour=False,
+        colorbar=True,
+        contourf=False,
+        outline=False,
+        facecolor=True,
+        borderline=True,
+        *args,
+        **kwargs,
+    ):
         """
         Examples
 
         import matplotlib.pyplot as plt
 
         model = EcoModel("path_to_model")
-        
+
         fig, axs=plt.subplots(nrows=1, ncols=3, figsize=(15, 3))
-        
+
         basins = ['Atlantic', 'Pacific', 'Indian']
-        
+
         for i in range(3):
             model.get_var('ocn_PO4').isel(time=-1).mask_basin(base='worjh2',basin=basins[i], subbasin='').mean(dim='lon').plot(ax=axs[i])
             axs[i].title.set_text(basins[i])
@@ -204,39 +256,49 @@ class ArrayVis:
         outline_kwargs = {'outline_color': 'red', 'outline_width': .5}
         """
 
-        x_name = self.array.dims[1] ## lat
-        y_name = self.array.dims[0] ## zt
+        x_name = self.array.dims[1]  ## lat
+        y_name = self.array.dims[0]  ## zt
 
         x_arr = self.array[x_name]
         y_arr = self.array[y_name]
 
-        if 'ax' not in kwargs:
+        if "ax" not in kwargs:
             fig, local_ax = self._init_fig(figsize=(6, 3))
         else:
-            local_ax = kwargs.pop('ax')
-            
+            local_ax = kwargs.pop("ax")
+
         if facecolor:
             self._set_facecolor(local_ax, **self.aes_dict["facecolor_kwargs"])
-            
+
         if borderline:
-            self._set_borderline(local_ax, geo=False, **self.aes_dict["borderline_kwargs"])
-            
+            self._set_borderline(
+                local_ax, geo=False, **self.aes_dict["borderline_kwargs"]
+            )
+
         if outline:
             ## outline uses edge coordinates
-            self._add_outline(local_ax, x=x_arr, y=y_arr, **self.aes_dict["outline_kwargs"])
+            self._add_outline(
+                local_ax, x=x_arr, y=y_arr, **self.aes_dict["outline_kwargs"]
+            )
 
         if pcolormesh:
             ## pcolormesh uses edge coordinates
-            p_pcolormesh = self._add_pcolormesh(local_ax, x=x_arr, y=y_arr, *args, **self.aes_dict["pcolormesh_kwargs"])
+            p_pcolormesh = self._add_pcolormesh(
+                local_ax, x=x_arr, y=y_arr, *args, **self.aes_dict["pcolormesh_kwargs"]
+            )
             if colorbar:
-                cbar = self._add_colorbar(p_pcolormesh, orientation='vertical')
-                self._add_colorbar_label(cbar, **self.aes_dict['colorbar_label_kwargs'])
-        
+                cbar = self._add_colorbar(p_pcolormesh, orientation="vertical")
+                self._add_colorbar_label(cbar, **self.aes_dict["colorbar_label_kwargs"])
+
         if contour:
             ## contour uses center coordinates
             ## need to be transformed to PlateCarree
-            p_contour = self._add_contour(local_ax, x_arr, y_arr, **self.aes_dict['contour_kwargs'])
-            self._add_contour_label(local_ax, p_contour, **self.aes_dict['contour_label_kwargs'])
+            p_contour = self._add_contour(
+                local_ax, x_arr, y_arr, **self.aes_dict["contour_kwargs"]
+            )
+            self._add_contour_label(
+                local_ax, p_contour, **self.aes_dict["contour_label_kwargs"]
+            )
             ## contour will not be used to plot colorbar because it's set to black
 
         if contourf:
@@ -244,53 +306,55 @@ class ArrayVis:
 
         ## reverse y axis
         local_ax.set_ylim(local_ax.get_ylim()[::-1])
-        local_ax.set_ylabel("Depth (km)", fontsize=self.aes_dict['general_kwargs']['fontsize'],
-                            font=self.aes_dict['general_kwargs']['font'])
-        local_ax.set_xlabel(x.split("_")[0], fontsize=self.aes_dict['general_kwargs']['fontsize'],
-                            font=self.aes_dict['general_kwargs']['font'])
+        local_ax.set_ylabel(
+            "Depth (km)",
+            fontsize=self.aes_dict["general_kwargs"]["fontsize"],
+            font=self.aes_dict["general_kwargs"]["font"],
+        )
+        local_ax.set_xlabel(
+            x.split("_")[0],
+            fontsize=self.aes_dict["general_kwargs"]["fontsize"],
+            font=self.aes_dict["general_kwargs"]["font"],
+        )
 
         ## x/y tick label
-        local_ax.tick_params(axis='both', which='major', labelsize=self.aes_dict['general_kwargs']['fontsize'],
-                             labelfontfamily=self.aes_dict['general_kwargs']['font'])
-            
-        
-        return local_ax    
-    
+        local_ax.tick_params(
+            axis="both",
+            which="major",
+            labelsize=self.aes_dict["general_kwargs"]["fontsize"],
+            labelfontfamily=self.aes_dict["general_kwargs"]["font"],
+        )
+
+        return local_ax
 
     ## ------- Below is implementations -------------------------
-    
+
     def _init_fig(self, *args, **kwargs):
         return plt.subplots(dpi=120, *args, **kwargs)
 
     def _add_pcolormesh(self, ax, x, y, *args, **kwargs):
-        return ax.pcolormesh(
-            x,
-            y,
-            self.array,
-            *args, **kwargs
-        )
+        return ax.pcolormesh(x, y, self.array, *args, **kwargs)
 
     def _add_contour(self, ax, x, y, *args, **kwargs):
         return ax.contour(x, y, self.array, *args, **kwargs)
 
-    
     def _add_contourf(self, ax, x, y, *args, **kwargs):
-        return ax.contourf(x, y, self.array, *args, **kwargs)    
-    
-    def _add_contour_label(self, ax, cs,*args, **kwargs):
+        return ax.contourf(x, y, self.array, *args, **kwargs)
+
+    def _add_contour_label(self, ax, cs, *args, **kwargs):
         ax.clabel(cs, cs.levels[::3], *args, **kwargs)
 
-    def _add_gridline(self, ax,*args, **kwargs):
+    def _add_gridline(self, ax, *args, **kwargs):
         ax.gridlines(*args, **kwargs)
 
     def _set_borderline(self, ax, geo=True, **kwargs):
         if geo:
-            ax.spines["geo"].set_edgecolor(kwargs['c'])
-            ax.spines["geo"].set_linewidth(kwargs['linewidth'])
+            ax.spines["geo"].set_edgecolor(kwargs["c"])
+            ax.spines["geo"].set_linewidth(kwargs["linewidth"])
         else:
-            for direction in ['top','bottom','left','right']:                
+            for direction in ["top", "bottom", "left", "right"]:
                 ax.spines[direction].set_edgecolor(kwargs["c"])
-                ax.spines[direction].set_linewidth(kwargs['linewidth'])
+                ax.spines[direction].set_linewidth(kwargs["linewidth"])
                 # vertical layer order
                 ax.spines[direction].set_zorder(0)
 
@@ -319,42 +383,30 @@ class ArrayVis:
             for j in range(Nx_array):
                 # compare with the right grid, and plot vertical line if different
                 if j < Nx_index and mask_array[i, j] != mask_array[i, j + 1]:
-                    ax.vlines(
-                        x[j + 1],
-                        y[i],
-                        y[i + 1],
-                        **kwargs
-                    )
+                    ax.vlines(x[j + 1], y[i], y[i + 1], **kwargs)
 
                 # connect the circular xgitude axis
                 if j == Nx_index and mask_array[i, j] != mask_array[i, 0]:
-                    ax.vlines(
-                        x[j + 1],
-                        y[i],
-                        y[i + 1],
-                        **kwargs
-                    )
+                    ax.vlines(x[j + 1], y[i], y[i + 1], **kwargs)
 
                 # compare with the above grid, and plot horizontal line if different
                 if i < Ny_index and mask_array[i, j] != mask_array[i + 1, j]:
-                    ax.hlines(
-                        y[i + 1],
-                        x[j],
-                        x[j + 1],
-                        **kwargs
-                    )
+                    ax.hlines(y[i + 1], x[j], x[j + 1], **kwargs)
 
     def _add_colorbar(self, mappable_object, *args, **kwargs):
         cbar = plt.colorbar(mappable_object, *args, **kwargs)
         return cbar
-        
-    def _add_colorbar_label(self, cbar, *args, **kwargs):        
+
+    def _add_colorbar_label(self, cbar, *args, **kwargs):
         ## set colorbar label
         cbar.set_label(*args, **kwargs)
-        cbar.ax.tick_params(axis='both', which='major',
-                            labelsize=self.aes_dict['general_kwargs']['fontsize'],
-                            labelfontfamily=self.aes_dict['general_kwargs']['font'])
-        cbar.outline.set_edgecolor('black')
+        cbar.ax.tick_params(
+            axis="both",
+            which="major",
+            labelsize=self.aes_dict["general_kwargs"]["fontsize"],
+            labelfontfamily=self.aes_dict["general_kwargs"]["font"],
+        )
+        cbar.outline.set_edgecolor("black")
         cbar.outline.set_linewidth(0.5)
 
 
@@ -369,7 +421,7 @@ class ScatterVis:
 
     def plot_map(
         self,
-        ax = None,
+        ax=None,
         log=False,
         land_mask=True,
         *args,
@@ -387,13 +439,15 @@ class ScatterVis:
         :returns: a map
         """
         if not ax:
-            fig, ax = self._init_fig(subplot_kw={'projection': ccrs.EckertIV()})
+            fig, ax = self._init_fig(subplot_kw={"projection": ccrs.EckertIV()})
 
         if land_mask:
             ax.set_global()
             # plot land and coastline, zorder is the drawing order, smaller -> backer layer
-            ax.add_feature(cfeature.LAND.with_scale('110m'), zorder=2, facecolor="#B1B2B4")
-            ax.add_feature(cfeature.COASTLINE.with_scale('110m'), zorder=3)
+            ax.add_feature(
+                cfeature.LAND.with_scale("110m"), zorder=2, facecolor="#B1B2B4"
+            )
+            ax.add_feature(cfeature.COASTLINE.with_scale("110m"), zorder=3)
 
         if log:
             self.df[self.var] = efficient_log(self.df[self.var])
@@ -401,7 +455,6 @@ class ScatterVis:
         if self.df[self.var].dtype != float:
             self.df[self.var] = self.df[self.var].astype(float)
 
-    
         p = ax.scatter(
             x=self.df[self.lon],
             y=self.df[self.lat],
@@ -413,15 +466,22 @@ class ScatterVis:
 
         return p
 
-    def plot_transect(self, ax=None, bathy_lon=None, *args, **kwargs,):
-        if not ax: fig, ax = self._init_fig()        
+    def plot_transect(
+        self,
+        ax=None,
+        bathy_lon=None,
+        *args,
+        **kwargs,
+    ):
+        if not ax:
+            fig, ax = self._init_fig()
         p = ax.scatter(
-                x=self.df[self.lon],
-                y=self.df[self.depth],
-                c=self.df[self.var],
-                *args,
-                **kwargs,
-            )
+            x=self.df[self.lon],
+            y=self.df[self.depth],
+            c=self.df[self.var],
+            *args,
+            **kwargs,
+        )
 
         if bathy_lon:
             data_dir = pathlib.Path(__file__).parent.parent
@@ -431,22 +491,20 @@ class ScatterVis:
             min_lat = self.df[self.lat].min()
             max_lat = self.df[self.lat].max()
             min_depth = self.df[self.depth].min()
-            
+
             up = bathy.z.sel(lon=slice(*bathy_lon)).mean(dim="lon")
-            #up = up.sel(lat=slice(min_lat, max_lat))
+            # up = up.sel(lat=slice(min_lat, max_lat))
             bottom = np.ones(len(up)) * -5500
-            
+
             ax.fill_between(up.lat, up, bottom, color="black")
 
-        return p        
+        return p
 
 
-    
 class CommunityPalette:
-
     def __init__(self):
         pass
-    
+
     def get_palette(self, cmap_name, N=256, reverse=False, alpha=None):
         """
         community-driven colormaps with multiple sources
@@ -461,7 +519,9 @@ class CommunityPalette:
         """
 
         if cmap_name not in self.avail_palette():
-            raise ValueError(f"{cmap_name} not found, accepted values are {self.avail_palette()}")
+            raise ValueError(
+                f"{cmap_name} not found, accepted values are {self.avail_palette()}"
+            )
 
         data_dir = pathlib.Path(__file__).parent.parent
 
@@ -476,7 +536,7 @@ class CommunityPalette:
             raise ValueError("Multiple colormaps found")
         else:
             file_path = file_path[0]
-            file_ext = file_path.suffix    
+            file_ext = file_path.suffix
 
         if file_ext == ".txt":
             colors = pd.read_csv(file_path, header=None).values.tolist()
@@ -488,12 +548,12 @@ class CommunityPalette:
             positions = []
 
             # Extract color points and their positions from the XML
-            for point in root.findall('.//Point'):
-                r = float(point.get('r'))
-                g = float(point.get('g'))
-                b = float(point.get('b'))
+            for point in root.findall(".//Point"):
+                r = float(point.get("r"))
+                g = float(point.get("g"))
+                b = float(point.get("b"))
                 colors.append((r, g, b))
-                positions.append(float(point.get('x')))
+                positions.append(float(point.get("x")))
 
             c = ListedColormap(colors, name=cmap_name)
 
@@ -505,7 +565,9 @@ class CommunityPalette:
                 c = ListedColormap(rgb_array, N=N)
             elif file_ext == ".xml":
                 # Assuming alpha is to be applied uniformly to all colors in the XML-based colormap
-                rgba_colors = [(color[0], color[1], color[2], alpha) for color in colors]
+                rgba_colors = [
+                    (color[0], color[1], color[2], alpha) for color in colors
+                ]
                 c = ListedColormap(rgba_colors, name=cmap_name)
 
         if reverse and c is not None:
@@ -524,4 +586,8 @@ class CommunityPalette:
         """return a list of colormap names"""
         data_dir = pathlib.Path(__file__).parent.parent
 
-        return [f.stem for f in data_dir.glob("data/colormaps/*") if f.suffix in [".txt", ".xml"]]
+        return [
+            f.stem
+            for f in data_dir.glob("data/colormaps/*")
+            if f.suffix in [".txt", ".xml"]
+        ]
