@@ -1,12 +1,11 @@
 from . import ureg, Q_
-import pathlib
 
 import numpy as np
 import pandas as pd
 import xarray as xr
-import geopandas as gpd
+
 from scipy.interpolate import RegularGridInterpolator
-from shapely.geometry import Point
+
 
 def lon_n2g(x):
     """
@@ -232,7 +231,6 @@ def regrid_dataframe(
     high_threshold=None,
     new_high_bound=None,
 ):
-
     """
     Regrid a dataframe within certain format to cGENIE grids
 
@@ -304,21 +302,6 @@ def regrid_dataframe(
     )
 
     return df_genie_wide
-
-
-def detect_basin(lon, lat):
-    "use point-in-polygon strategy to detect ocean basin according to lon/lat"
-
-    file_path = pathlib.Path(__file__).parent.parent / "data/oceans/oceans.shp"
-
-    oceans = gpd.read_file(file_path)
-    p = Point(lon, lat)
-
-    ocean_name = oceans[oceans.contains(p)].Oceans.values
-    if ocean_name.size > 0:
-        return ocean_name[0]
-    else:
-        return ""
 
 
 class regridder:

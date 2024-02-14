@@ -5,14 +5,18 @@ import regionmask
 
 from . import Q_
 from .grid import normalise_GENIE_lon, GENIE_grid_mask, regridder
-from .plot import Visualisation
+from .plot import ArrayVis
 
+## TODO 
+## Add nearest-valid method to search grid
+## Add nearest-surround method to search grid
+## (if slow) add in parallel computing for search grid
 
-class Array(Visualisation):
+class GriddedData(ArrayVis):
     """
-    Array is a class to store and compute GENIE netcdf data.
+    GriddedData is a class to store and compute GENIE netcdf data.
 
-    It stores data in xarray.DataArray format, and provides a set of methods to compute statistics and plot.
+    It stores data in xarray.DataArray format, and provides additional methods to compute statistics and plot.
     
     Particularly, it provides:
 
@@ -99,7 +103,7 @@ class Array(Visualisation):
         """
         Allow GenieArray to be added by a number or another GenieArray
         """
-        sum = Array()
+        sum = GriddedData()
         if hasattr(other, "array"):
             sum.array = self.array + other.array
         else:
@@ -111,7 +115,7 @@ class Array(Visualisation):
         """
         Allow GenieArray to be subtracted by a number or another GenieArray
         """
-        diff = Array()
+        diff = GriddedData()
         if hasattr(other, "array"):
             diff.array = self.array - other.array
         else:
@@ -127,13 +131,13 @@ class Array(Visualisation):
         """
         quotient_array = np.zeros_like(self.array)
         
-        if isinstance(other, Array):
+        if isinstance(other, GriddedData):
             quotient_array = np.divide(self.array, other.array)
         else:
             # Handle division by a scalar
             quotient_array = np.divide(self.array, other)
 
-        quotient = Array()
+        quotient = GriddedData()
         quotient.array = xr.DataArray(quotient_array)
         return quotient
 
@@ -142,7 +146,7 @@ class Array(Visualisation):
         """
         Allow GenieArray to be multiplied by a number or another GenieArray
         """
-        product = Array()
+        product = GriddedData()
         if hasattr(other, "array"):
             product.array = self.array * other.array
         else:

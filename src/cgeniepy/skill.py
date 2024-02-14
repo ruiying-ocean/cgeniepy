@@ -1,8 +1,9 @@
 import numpy as np
 from scipy.spatial import distance
 from .grid import mask_Arctic_Med
+import matplotlib.pyplot as plt
 
-class ModelDataComparison:
+class ArrayComp:
     
     "quantitatively compare similarity metrics between two 2D arrays (model and observation)"
 
@@ -12,9 +13,9 @@ class ModelDataComparison:
         :param: model: array-like data
         :param: observation: array-like data
 
-        ------
+        --------
         Example:
-        -------
+        --------
         
         from cgeniepy.skill import ModelSkill
 
@@ -153,10 +154,24 @@ class ModelDataComparison:
         # central rmse
         crmse = sigma1**2 + sigma2**2 - 2 * sigma1 * sigma2 * corr
 
-        return crmse    
+        return crmse
     
+class DataFrameComp(ArrayComp):
 
+    def __init__(self, df, model_col, observation_col):
+        self.model = df[model_col].to_numpy()
+        self.data = df[observation_col].to_numpy()
+        super().__init__(self.model, self.data)
 
+    def plot(self):
+        ## a x-y plot
+        fig, ax = plt.subplots()
+        ax.scatter(self.model, self.data)
+        ax.set_xlabel("Model")
+        ax.set_ylabel("Observation")
+        ax.set_title("Model vs Observation")
+
+ 
 # class TaylorDiagram(object):
 #     """
 #     Taylor diagram.

@@ -15,13 +15,18 @@ import mpl_toolkits.axisartist.grid_finder as gf
 from .utils import efficient_log
 
 
-class Visualisation:
+class ArrayVis:
 
     transform_crs = ccrs.PlateCarree()  # do not change
+
+    ## an hard coded x_edge_arr and y_edge_arr
+    lon_edge = np.linspace(-260, 100, 36 + 1)
+    lat_edge = np.rad2deg(np.arcsin(np.linspace(-1, 1, 36 + 1)))
+
     
     def __init__(self, array):
 
-        self.array = self.array
+        self.array = array
 
         if hasattr(self.array, "units"):
             self.units = self.array.units
@@ -102,10 +107,10 @@ class Visualisation:
         return p
 
     def _plot_2d(self, *arg, **kwargs):
-        "plot 2D data, e.g., map, cross section"
+        "plot 2D data, e.g., map, trasect"
         ## if lon, lat then plot map
-        ## if lon, zt then plot cross section
-        ## if lat, zt then plot cross section
+        ## if lon, zt then plot transect
+        ## if lat, zt then plot transect
         dims = self.array.dims
         if 'lon' in dims and 'lat' in dims:
             return self._plot_map(*arg, **kwargs)
@@ -124,7 +129,7 @@ class Visualisation:
     def _plot_map(self, 
                  pcolormesh=True, contour=False, 
                   colorbar=False, contourf=False,
-                 outline=True, facecolor=True, borderline=True,
+                 outline=False, facecolor=True, borderline=True,
                  gridline=False, *args, **kwargs):
 
         
@@ -149,7 +154,7 @@ class Visualisation:
         if outline:
             ## outline uses edge coordinates
             ## need to be transformed to PlateCarree
-            self._add_outline(local_ax, x=x_edge_arr, y=y_edge_arr,transform=self.transform_crs, **self.aes_dict["outline_kwargs"])
+            self._add_outline(local_ax, x=self.lon_edge, y=self.lat_edge,transform=self.transform_crs, **self.aes_dict["outline_kwargs"])
 
         if gridline:
             self._add_gridline(local_ax, transform=self.transform_crs, **self.aes_dict["gridline_kwargs"])
@@ -157,7 +162,7 @@ class Visualisation:
         if pcolormesh:
             ## pcolormesh uses edge coordinates
             ## need to be transformed to PlateCarree
-            p_pcolormesh = self._add_pcolormesh(local_ax, x=x_arr, y=y_arr,transform=self.transform_crs, *args, **self.aes_dict["pcolormesh_kwargs"])
+            p_pcolormesh = self._add_pcolormesh(local_ax, x=self.lon_edge, y=self.lat_edge,transform=self.transform_crs, *args, **self.aes_dict["pcolormesh_kwargs"])
             if colorbar:
                 cbar = self._add_colorbar(p_pcolormesh, orientation='horizontal')
                 self._add_colorbar_label(cbar, **self.aes_dict['colorbar_label_kwargs'])    
@@ -178,7 +183,7 @@ class Visualisation:
     def _plot_cross_section(self, x="lat_edge", y="zt_edge",
                             pcolormesh=True, contour=False, colorbar=True,
                             contourf=False,
-                            outline=True, facecolor=True, borderline=True,
+                            outline=False, facecolor=True, borderline=True,
                             *args, **kwargs):
         """
         Examples
@@ -354,87 +359,194 @@ class Visualisation:
         cbar.outline.set_edgecolor('black')
         cbar.outline.set_linewidth(0.5)
 
-        
-    def plot_quiver(x,y):
+
+class ScatterVis:
+
+    def __init__(self, df):
+        self.df = df
+
+    def _init_fig(self, *args, **kwargs):
+        return plt.subplots(dpi=300, *args, **kwargs)
+
+    def plot_map(
+            self,
+            ax = None,
+            interpolate=None,
+            log=False,
+            land_mask=True,
+            *args,
+            **kwargs,
+    ):
+        """plot map based on dataframe with latitude/longitude
+        using cartopy as engine
+
+        :param df: pandas dataframe
+        :param var: variable (column) in dataframe to plot
+        :param x: coordinate attribute, default "Longitude"
+        :param y: coordinate attribute, default "Latitude"
+        :param interpolate: whether interpolate scatter data
+
+        :returns: a map
+        """
+        if not ax:
+            fig, ax = self._init_fig(subplot_kw={'projection': ccrs.EckertIV()})
+
+        if land_mask:
+            ax.set_global()
+            # plot land and coastline, zorder is the drawing order, smaller -> backer layer
+            ax.add_feature(cfeature.LAND.with_scale('110m'), zorder=2, facecolor="#B1B2B4")
+            ax.add_feature(cfeature.COASTLINE.with_scale('110m'), zorder=3)
+
+        if log:
+            self.df[self.var] = efficient_log(self.df[self.var])
+
+        if self.df[self.var].dtype != float:
+            self.df[self.var] = self.df[self.var].astype(float)
+
+        if interpolate:        
+            subdf = self.df[[self.lon, self.lat, self.var]]
+            subdf = subdf.dropna().astype('float64').to_numpy()
+            lat = subdf[:,0]
+            lon = subdf[:,1]
+            values = subdf[:,2]
+            
+            # construct meshgrid
+            min_lat=round(min(lat))
+            max_lat=round(max(lat))
+            min_lon=round(min(lon))
+            max_lon=round(max(lon))
+
+            # every 1x1 pixel
+            # equivalent to
+            # grid_lat, grid_lon = np.mgrid[min_lat:max_lat:nlat*1j, min_lon:max_lon:nlon*1j]
+            grid_lat, grid_lon = np.meshgrid(np.linspace(min_lat, max_lat, max_lat-min_lat),
+                                            np.linspace(min_lon, max_lon, max_lon-min_lon))
+            
+            # interpolate and return data in 2D array
+            match interpolate:
+                case 'natural_neighbor':
+                    grid_values = natural_neighbor_to_grid(lat, lon, values, grid_lat, grid_lon)
+                case 'inverse_distance':
+                    grid_values = inverse_distance_to_grid(lat, lon, values, grid_lat,grid_lon,r=3, min_neighbors=0.5)
+                case 'linear':
+                    grid_values = griddata((lat, lon), values, (grid_lat, grid_lon), method='linear')
+                case 'nearest':
+                    points = subdf[:,1:3]
+                    grid_values = griddata((lat, lon), values, (grid_lat, grid_lon), method='nearest')
+                case 'cubic':
+                    points = subdf[:,1:3]
+                    grid_values = griddata((lat, lon), values, (grid_lat, grid_lon), method='cubic')
+                case _:
+                    raise ValueError(f"Interpolation method {interpolate} not supported")
+
+            # plot
+            p = ax.pcolormesh(grid_lat, grid_lon,
+                            grid_values,
+                            transform=ccrs.PlateCarree(),
+                            zorder=1,
+                            *args,
+                            **kwargs)
+        else:
+            p = ax.scatter(
+                x=self.df[self.lon],
+                y=self.df[self.lat],
+                c=self.df[self.var],
+                transform=ccrs.PlateCarree(),
+                *args,
+                **kwargs,
+            )
+
+        return p
+
+    def plot_transect(self):
         pass
 
     
+    def add_bathy(self, longitude):
+        pass
 
-def community_palette(cmap_name, N=256, reverse=False, alpha=None):
-    """
-    community-driven colormaps with multiple sources
 
-    :param cmap_name: colormap name, can be found in avail_palette()
-    :type cmap_name: str
-
-    :returns: colormap
-
-    XML data: https://sciviscolor.org/colormaps/
-    txt data: from original packages
-    """
-
-    if cmap_name not in avail_palette():
-        raise ValueError(f"{cmap_name} not found, accepted values are {avail_palette()}")
     
-    data_dir = pathlib.Path(__file__).parent.parent
+class CommunityPalette:
 
-    file_path = None
-    file_ext = None
-    colors = []
-    c = None
+    def __init__():
+        pass
+    
+    def get_palette(self, cmap_name, N=256, reverse=False, alpha=None):
+        """
+        community-driven colormaps with multiple sources
 
-    # Search for the directory based on list comprehension
-    file_path = [f for f in data_dir.glob("**/*") if cmap_name in str(f)]
-    if len(file_path) > 1:
-        raise ValueError("Multiple colormaps found")
-    else:
-        file_path = file_path[0]
-        file_ext = file_path.suffix    
+        :param cmap_name: colormap name, can be found in avail_palette()
+        :type cmap_name: str
 
-    if file_ext == ".txt":
-        colors = pd.read_csv(file_path, header=None).values.tolist()
-        colors = [colors[i][0] for i in range(len(colors))]
-        c = ListedColormap(colors, name=cmap_name)
-    elif file_ext == ".xml":
-        tree = ET.parse(file_path)
-        root = tree.getroot()
-        positions = []
+        :returns: colormap
 
-        # Extract color points and their positions from the XML
-        for point in root.findall('.//Point'):
-            r = float(point.get('r'))
-            g = float(point.get('g'))
-            b = float(point.get('b'))
-            colors.append((r, g, b))
-            positions.append(float(point.get('x')))
+        XML data: https://sciviscolor.org/colormaps/
+        txt data: from original packages
+        """
 
-        c = ListedColormap(colors, name=cmap_name)
+        if cmap_name not in self.avail_palette():
+            raise ValueError(f"{cmap_name} not found, accepted values are {self.avail_palette()}")
 
-    # Optionally add transparency
-    if alpha is not None:
+        data_dir = pathlib.Path(__file__).parent.parent
+
+        file_path = None
+        file_ext = None
+        colors = []
+        c = None
+
+        # Search for the directory based on list comprehension
+        file_path = [f for f in data_dir.glob("**/*") if cmap_name in str(f)]
+        if len(file_path) > 1:
+            raise ValueError("Multiple colormaps found")
+        else:
+            file_path = file_path[0]
+            file_ext = file_path.suffix    
+
         if file_ext == ".txt":
-            rgb_array = np.array([hex_to_rgb(i) for i in colors])
-            rgb_array[:, -1] = alpha
-            c = ListedColormap(rgb_array, N=N)
+            colors = pd.read_csv(file_path, header=None).values.tolist()
+            colors = [colors[i][0] for i in range(len(colors))]
+            c = ListedColormap(colors, name=cmap_name)
         elif file_ext == ".xml":
-            # Assuming alpha is to be applied uniformly to all colors in the XML-based colormap
-            rgba_colors = [(color[0], color[1], color[2], alpha) for color in colors]
-            c = ListedColormap(rgba_colors, name=cmap_name)
+            tree = ET.parse(file_path)
+            root = tree.getroot()
+            positions = []
 
-    if reverse and c is not None:
-        return c.reversed()
+            # Extract color points and their positions from the XML
+            for point in root.findall('.//Point'):
+                r = float(point.get('r'))
+                g = float(point.get('g'))
+                b = float(point.get('b'))
+                colors.append((r, g, b))
+                positions.append(float(point.get('x')))
 
-    ## if _r exsit in the string, reverse the colormap
-    if "_r" in cmap_name and c is not None:
-        return c.reversed()
-    
-    if c is None:
-        raise ValueError("Colormap could not be created")
+            c = ListedColormap(colors, name=cmap_name)
 
-    return c
+        # Optionally add transparency
+        if alpha is not None:
+            if file_ext == ".txt":
+                rgb_array = np.array([hex_to_rgb(i) for i in colors])
+                rgb_array[:, -1] = alpha
+                c = ListedColormap(rgb_array, N=N)
+            elif file_ext == ".xml":
+                # Assuming alpha is to be applied uniformly to all colors in the XML-based colormap
+                rgba_colors = [(color[0], color[1], color[2], alpha) for color in colors]
+                c = ListedColormap(rgba_colors, name=cmap_name)
 
-def avail_palette():
-    """return a list of colormap names"""
-    data_dir = pathlib.Path(__file__).parent.parent
+        if reverse and c is not None:
+            return c.reversed()
 
-    return [f.stem for f in data_dir.glob("data/colormaps/*") if f.suffix in [".txt", ".xml"]]
+        ## if _r exsit in the string, reverse the colormap
+        if "_r" in cmap_name and c is not None:
+            return c.reversed()
+
+        if c is None:
+            raise ValueError("Colormap could not be created")
+
+        return c
+
+    def avail_palettes(self):
+        """return a list of colormap names"""
+        data_dir = pathlib.Path(__file__).parent.parent
+
+        return [f.stem for f in data_dir.glob("data/colormaps/*") if f.suffix in [".txt", ".xml"]]

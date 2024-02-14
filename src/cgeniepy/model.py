@@ -10,7 +10,7 @@ import numpy as np
 
 from .utils import file_exists
 from .chem import Chemistry
-from .array import Array
+from .array import GriddedData
 
 
 class GenieModel(object):
@@ -162,7 +162,7 @@ class GenieModel(object):
             array.name = "ensemble_variable"
 
         ## initialise GenieArray
-        target_data = Array()
+        target_data = GriddedData()
         target_data.array = array
         try:
             c = Chemistry()
@@ -266,7 +266,7 @@ class GenieModel(object):
             print("grid_mask not found!")
 
 
-    def grid_catogry(self):
+    def grid_category(self):
         """an alogirthm to define surface grid catogories depending on the land-sea mask
         0: coastal sea
         1: land
@@ -313,6 +313,3 @@ class GenieModel(object):
         B = GenieModel(model2compare)
         diff = self.get_var(var) / B.get_var(var)
         return diff
-    
-    def _run_method(self, method: str, *args, **kwargs):
-        return getattr(self, method)(*args, **kwargs)
