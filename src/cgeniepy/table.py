@@ -234,4 +234,6 @@ class ScatterData(ScatterVis):
 
         return df_genie_wide
         
-        
+    def drop_na(self):
+        "drop rows with NA values"
+        self.df = self.df.dropna()
