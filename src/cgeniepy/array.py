@@ -300,7 +300,7 @@ class GriddedData(ArrayVis):
         else:
             match geo_ndim:
                 case 3:
-                    z, lon, lat = point
+                    zt, lon, lat = point
                     kwargs = {'lat': lat, 'lon':lon, 'zt': zt, 'method': 'nearest'}
                 case 2:
                     lon, lat = point
