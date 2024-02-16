@@ -160,11 +160,9 @@ plot_colormaps(cmaps_list)
 
 - [ ] Publish the first stable version
 - [ ] plot.py 3D facet subplots
-- [ ] plot.py scatter data overlay
-- [ ] ignore NAs when searching grid 
-- [ ] use lat/lon/zt from GENIE output
-- [ ] Move the computation functions in ecology.py and foram.py to array.py
 - [ ] Show one colorbar in transect plot
+- [X] ignore NAs when searching grid 
+- [X] use lat/lon/zt from GENIE output
 - [X] Documentation Webiste
 - [X] figsize influences colorbar length
 - [x] create a simple logo
