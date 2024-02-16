@@ -25,7 +25,7 @@ class ArrayVis:
         self.array = array
 
         if hasattr(self.array, "units"):
-            self.units = Chemistry().format_base_unit(self.array.units)
+            self.units = Chemistry().format_unit(self.array.units)
         else:
             self.units = None
 
