@@ -14,7 +14,7 @@ import mpl_toolkits.axisartist.floating_axes as fa
 import mpl_toolkits.axisartist.grid_finder as gf
 
 from .utils import efficient_log
-
+from .chem import Chemistry
 
 class ArrayVis:
 
@@ -25,7 +25,7 @@ class ArrayVis:
         self.array = array
 
         if hasattr(self.array, "units"):
-            self.units = self.array.units
+            self.units = Chemistry().format_base_unit(self.array.units)
         else:
             self.units = None
 
@@ -475,13 +475,19 @@ class ScatterVis:
     ):
         if not ax:
             fig, ax = self._init_fig()
+
+        if self.df[self.var].dtype != float:
+            self.df[self.var] = self.df[self.var].astype(float)
+            
         p = ax.scatter(
-            x=self.df[self.lon],
+            x=self.df[self.lat],
             y=self.df[self.depth],
             c=self.df[self.var],
             *args,
             **kwargs,
         )
+
+        
 
         if bathy_lon:
             data_dir = pathlib.Path(__file__).parent.parent
@@ -502,8 +508,6 @@ class ScatterVis:
 
 
 class CommunityPalette:
-    def __init__(self):
-        pass
 
     def get_palette(self, cmap_name, N=256, reverse=False, alpha=None):
         """
@@ -518,7 +522,7 @@ class CommunityPalette:
         txt data: from original packages
         """
 
-        if cmap_name not in self.avail_palette():
+        if cmap_name not in self.avail_palettes():
             raise ValueError(
                 f"{cmap_name} not found, accepted values are {self.avail_palette()}"
             )
