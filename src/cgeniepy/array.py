@@ -45,12 +45,28 @@ class GriddedData(ArrayVis):
         return self
 
     def sel(self, *args, **kwargs):
-        "a wrapper to xarray `sel` method"
-        try:
-            self.array = self.array.sel(*args, **kwargs)
-            return self
-        except:
-            print("This array instance does not contain xarray.DataArray")
+        """a wrapper to xarray `sel` method
+
+        -----------
+        Examples:
+        -----------
+        >>> model = GenieModel(path)
+        >>> var = model.get_var(target_var)
+        >>> var.search_grid(lon=XX, lat=XX, zt=XX, method='nearest')
+        
+        ## for loop over a data frame (df) with longitude, latitude, depth columns
+        >>> modelvar = []
+        >>> for i in range(len(df)):
+        >>>     lat = df.latitude.iloc[i][0]
+        >>>     lon = df.longitude[i].iloc[0]
+        >>>     zt = df.depth[i].iloc[0]
+        >>>     kwargs = {'lat': lat, 'lon':lon, 'zt': zt, 'method': 'nearest'}
+        >>>     var = var.sel(**kwargs).values
+        >>>     modelvar.append(var)        
+        """
+        
+        self.array = self.array.sel(*args, **kwargs)
+        return self
 
 
     def isel(self, *args, **kwargs):
@@ -213,7 +229,7 @@ class GriddedData(ArrayVis):
         data = self.array
         mask = gp.GENIE_grid_mask(base=base, basin=basin, subbasin=subbasin, invert=True)
 
-        if self.array.ndim > 2:
+        if self.array.geo_ndim > 2:
             mask = np.broadcast_to(mask, (16, 36, 36))
 
         mask_data = np.ma.array(data, mask=mask)
@@ -223,29 +239,75 @@ class GriddedData(ArrayVis):
 
         return self
 
-    def search_grid(self, *args, **kwargs):
+    def ocn_only_data(self, index=False, center_position=None):
+        """
+        remove the NA grid (land in cGENIE definition)
+
+        :param index: return GeoIndex or value
+        :param center_position: a list/tuple of target position to reduce the output size
+        """
+
+        if center_position:
+            lat, lon = center_position
+            tolerance = 20 #20 degree
+            reduced_array = self.array.sel(lon=slice(lon - 20, lon + 20),
+                                           lat=slice(lat - 20, lat + 20))
+            
+            stacked_data = reduced_array.stack(x=self.array.dims)
+        else:
+            stacked_data = self.array.stack(x=self.array.dims)
+            
+        stacked_ocn_mask =~np.isnan(stacked_data)
+        ocn_only_data = stacked_data[stacked_ocn_mask]
+        
+        if index:
+            return ocn_only_data.x.values
+        else:            
+            return ocn_only_data
+        
+
+    def search_grid(self, point, ignore_na=False, to_genielon=False):
         """
         search the nearest grid point to the given coordinates
         
-        -----------
-        Examples:
-        -----------
-        >>> model = GenieModel(path)
-        >>> var = model.get_var(target_var)
-        >>> var.search_grid(lon=XX, lat=XX, zt=XX, method='nearest')
-        
-        ## for loop over a data frame (df) with longitude, latitude, depth columns
-        >>> modelvar = []
-        >>> for i in range(len(df)):
-        >>>     lat = df.latitude.iloc[i][0]
-        >>>     lon = df.longitude[i].iloc[0]
-        >>>     zt = df.depth[i].iloc[0]
-        >>>     kwargs = {'lat': lat, 'lon':lon, 'zt': zt, 'method': 'nearest'}
-        >>>     var = var.search_grid(**kwargs).values
-        >>>     modelvar.append(var)
+        :param point: a list/tuple of coordinate values
+        :param ignore_na: whether only check ocean data (which ignore the NA grids)
+        :param to_genielon: whether convert the input longitude to genie longitude, input point must be list if True       
         """
-        return self.array.sel(*args, **kwargs)
+        ## ignore the first dimension (which is time)        
+        geo_ndim = self.array.ndim - 1
+        
+        if len(point) != geo_ndim:
+            raise ValueError("Input point has incompatiable coordinate")        
+        
+        if ignore_na:
+            
+            match geo_ndim:
+                case 3:
+                    ## point: (zt, lat, lon); Index: (time, zt, lat, lon)
+                    if to_genielon: point[2] = GridOperation().lon_g2n(point[2])
+                    index_pool = self.ocn_only_data(index=True, center_position=point[1:3])
+                    distances = np.array([GridOperation().geo_dis3d(point, pt[1:4]) for pt in index_pool])
+                case 2:
+                    ## point: (lat, lon); Index: (time, lat, lon)                    
+                    if to_genielon: point[1] = GridOperation().lon_g2n(point[1])
+                    index_pool = self.ocn_only_data(index=True, center_position=point[0:2])                    
+                    distances = np.array([GridOperation().geo_dis2d(point, pt[1:3]) for pt in index_pool])
 
+            idx_min = np.argmin(distances)
+            nearest_value = self.ocn_only_data(index=False).values[idx_min]
+            return nearest_value
+        else:
+            match geo_ndim:
+                case 3:
+                    z, lon, lat = point
+                    kwargs = {'lat': lat, 'lon':lon, 'zt': zt, 'method': 'nearest'}
+                case 2:
+                    lon, lat = point
+                    kwargs = {'lat': lat, 'lon':lon, 'method': 'nearest'}
+            return self.array.sel(**kwargs).values.item()
+
+        
     def select_bbox(self, lon_min=-255, lon_max=95, lat_min=0, lat_max=90):
         """
         default longitude is unassigned of cGENIE grids

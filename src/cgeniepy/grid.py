@@ -17,6 +17,8 @@ import matplotlib.pyplot as plt
 
 
 class GridOperation:
+
+    
     def lon_n2g(self, x):
         """
         Change parts of observational latitude [100, 180] to GENIE longitude [-260, -180]
@@ -144,8 +146,67 @@ class GridOperation:
 
         return x
 
+    def haversine_distance(self, lon1, lat1, lon2, lat2):
+        """
+        Calculate the Haversine distance between two points.
+
+        :param lat1: latitude of point 1
+        :param lon1: longitude of point 1
+        :param lat2: latitude of point 2
+        :param lon2: longitude of point 2
+        
+        :returns: distance in km
+        """
+        # Convert latitude and longitude from degrees to radians
+        lat1, lon1, lat2, lon2 = np.radians([lat1, lon1, lat2, lon2])
+
+        # Haversine formula
+        dlon = lon2 - lon1
+        dlat = lat2 - lat1
+        a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2) ** 2
+        c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
+
+        # Radius of the Earth in kilometers
+        earth_radius = 6371.0
+        distance = earth_radius * c
+
+        return distance
+
+    def geo_dis3d(self, point1, point2):
+        """
+        include the vertical distance
+
+        :param point1: tuple/list of coordinates (z, lon, lat) or (lon, lat)
+        :param point2: tuple/list of coordinates (z, lon, lat) or (lon, lat)
+        :returns: distance in km
+        """
+        if len(point1) != 3 or len(point2) != 3:
+            raise ValueError("Incompatible coordinates between two points")
+        
+        z1, lon1, lat1 = point1
+        z2, lon2, lat2 = point2
+        hor_dis = self.haversine_distance(lon1, lat1, lon2, lat2)
+        ver_dis = abs(z1 - z2)/1000
+        return np.sqrt(hor_dis**2 + ver_dis**2)
+
+    def geo_dis2d(self, point1, point2):
+        """
+        include the vertical distance
+
+        :param point1: tuple/list of coordinates (z, lon, lat) or (lon, lat)
+        :param point2: tuple/list of coordinates (z, lon, lat) or (lon, lat)
+        :returns: distance in km
+        """
+        if len(point1) != 2 or len(point2) != 2:
+            raise ValueError("Incompatible coordinates between two points")
+        
+        lon1, lat1 = point1
+        lon2, lat2 = point2
+        return self.haversine_distance(lon1, lat1, lon2, lat2)
+
 
 class Interporaltor:
+    
     def __init__(self, dims, coordinates, values, grid_number=200, method="r-linear"):
         """
         initialize regridder
