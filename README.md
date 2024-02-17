@@ -168,6 +168,7 @@ plot_colormaps(cmaps_list)
 - [ ] Taylor Diagram
 - [ ] ODIV interpolation
 - [ ] Unit support
+- [ ] Gridded observational data support
 
 ## Killer Features
 [X] Model-data comparison
