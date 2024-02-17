@@ -52,7 +52,7 @@ class GenieModel(object):
                 self.gemflag = [gemflag]
 
         self.model_path = model_path
-        self.nc_vardict = self._ncvar_dict()
+        self.ncvar_dict = self._ncvar_dict()
 
     def _model_ncpath(self, gem="ecogem", dim="2d"):
         """
@@ -119,7 +119,7 @@ class GenieModel(object):
         if more than one model satisfies the condition,
         return all model's NetCDF paths
         """
-        for path, value_list in self.ncvar_dict().items():
+        for path, value_list in self.ncvar_dict.items():
             if var in value_list:
                 return path
         raise ValueError(f"variable {var} not found in the ncvar_dict")
