@@ -146,7 +146,7 @@ class GridOperation:
 
         return x
 
-    def haversine_distance(self, lon1, lat1, lon2, lat2):
+    def haversine_distance(self, lat1, lon1, lat2, lon2):
         """
         Calculate the Haversine distance between two points.
 
@@ -176,16 +176,16 @@ class GridOperation:
         """
         include the vertical distance
 
-        :param point1: tuple/list of coordinates (z, lon, lat) or (lon, lat)
-        :param point2: tuple/list of coordinates (z, lon, lat) or (lon, lat)
+        :param point1: tuple/list of coordinates (z, lat, lon) or (lat, lon)
+        :param point2: tuple/list of coordinates (z, lat, lon) or (lat, lon)
         :returns: distance in km
         """
         if len(point1) != 3 or len(point2) != 3:
             raise ValueError("Incompatible coordinates between two points")
         
-        z1, lon1, lat1 = point1
-        z2, lon2, lat2 = point2
-        hor_dis = self.haversine_distance(lon1, lat1, lon2, lat2)
+        z1, lat1, lon1 = point1
+        z2, lat2, lon2 = point2
+        hor_dis = self.haversine_distance(lat1, lon1, lat2, lon2)
         ver_dis = abs(z1 - z2)/1000
         return np.sqrt(hor_dis**2 + ver_dis**2)
 
@@ -200,9 +200,9 @@ class GridOperation:
         if len(point1) != 2 or len(point2) != 2:
             raise ValueError("Incompatible coordinates between two points")
         
-        lon1, lat1 = point1
-        lon2, lat2 = point2
-        return self.haversine_distance(lon1, lat1, lon2, lat2)
+        lat1, lon1 = point1
+        lat2, lon2 = point2
+        return self.haversine_distance(lat1, lon1, lat2, lon2)
 
 
 class Interporaltor:
