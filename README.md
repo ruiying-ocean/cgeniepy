@@ -158,20 +158,14 @@ plot_colormaps(cmaps_list)
 
 ## Project Roadmap 🚩
 
-- [X] ignore NAs when searching grid 
-- [X] use lat/lon/zt from GENIE output
-- [X] Documentation Webiste
-- [X] figsize influences colorbar length
-- [x] create a simple logo
-- [X] allow reading an ensemble of models (netcdf & timeseries)
-- [X] formatting the ugly unit string
+- [ ] In/out place calculation
+- [ ] Finalise the doc website
+- [ ] Publish the first stable version on PyPI (17 August 2024)
+- [ ] Write a paper on arixv
 - [ ] Add global inventory function
 - [ ] plot.py 3D facet subplots
 - [ ] Show one colorbar in transect plot
-- [ ] In/out place calculation
 - [ ] Taylor Diagram
-- [ ] Publish the first stable version (6 months after 0.10.1)
-- [ ] Write a paper on arixv
 - [ ] ODIV interpolation
 - [ ] Unit support
 
