@@ -44,7 +44,7 @@ class GenieModel(object):
 
         if not gemflag:
             print(">>> No gemflag is provided, use default gemflags: [biogem, ecogem]")
-            self.gemflag = ["biogem", "ecogem"]
+            self.gemflag = ["biogem"]
         else:
             self.gemflag = gemflag
             ## if gemflag is a string, convert it to a list
@@ -52,6 +52,7 @@ class GenieModel(object):
                 self.gemflag = [gemflag]
 
         self.model_path = model_path
+        self.nc_vardict = self._ncvar_dict()
 
     def _model_ncpath(self, gem="ecogem", dim="2d"):
         """
@@ -77,7 +78,7 @@ class GenieModel(object):
             nc_paths = tuple(nc_paths)
             return nc_paths
 
-    def ncvar_dict(self) -> dict:
+    def _ncvar_dict(self) -> dict:
         """
         Return all available variables and related biogem/ecogem (2d or 3d)
         NetCDF path for each model
