@@ -18,9 +18,9 @@
 .. _sphx_glr_auto_examples_plot_sst_map.py:
 
 
-====================================
-Plot 2D map from the model output
-====================================
+=========================================
+Plot 2D global map from the model output
+=========================================
 
 I plot the sea surface temperature
 
@@ -62,7 +62,7 @@ I plot the sea surface temperature
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 2.043 seconds)
+   **Total running time of the script:** (0 minutes 3.422 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_sst_map.py:

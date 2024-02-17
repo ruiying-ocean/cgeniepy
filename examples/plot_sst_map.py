@@ -1,7 +1,7 @@
 """
-====================================
-Plot 2D map from the model output
-====================================
+=========================================
+Plot 2D global map from the model output
+=========================================
 
 I plot the sea surface temperature
 """
