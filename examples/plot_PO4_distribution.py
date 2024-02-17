@@ -19,7 +19,7 @@ basins = ['Atlantic', 'Pacific', 'Indian']
 for i in range(3):
 	basin_data = model.get_var('ocn_PO4').isel(time=-1).mask_basin(base='worjh2',basin=basins[i], subbasin='')
 	basin_data.array.values = basin_data.array.values * 1E6
-	basin_data.mean(dim='lon').plot(ax=axs[i], contour=True)
+	basin_data.mean(dim='lon').interpolate().plot(ax=axs[i], contour=True)
 	axs[i].title.set_text(basins[i])
 
 plt.show()        
