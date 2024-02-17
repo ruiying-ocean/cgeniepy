@@ -5,12 +5,14 @@ Installation
 
 Install Python
 --------------
-This is a Python package, so you need to install Python. As the most popular programming language, I assume most people can find out how to install Python by just googling it. Visiting the `Python official website <https://www.python.org/downloads/>`_ should be enough to download the latest Python (> 3.10). Make sure it is included in the shell environment (which means you can type :code:`python` in your terminal without triggering a error).
+This is a Python package, so you need to have Python in your computer. As the most popular programming language, I assume most people can find out how to install Python by simply googling it. Visiting the `Python official website <https://www.python.org/downloads/>`_ should be enough to download the latest Python (> 3.10). Make sure it is included in the shell environment (which means you can type :code:`python` in your terminal without triggering a error).
 
 Use pip
 ----------------
 
-`pip` is an official package-management system in Python ecosystem. Once you have download Python, you can use `pip` to download millions of open-source packages. Usually, you just need to type three things to install one package:
+`pip` is an official package-management system in Python ecosystem. Once you have download Python, you can use `pip` to download millions of open-source packages. Usually, you just need to type three words to install one package:
+
+Open *terminal* (MacOS, GNU/Linux) or `cmd` (Win) and type:
 
 .. code-block:: console
 
