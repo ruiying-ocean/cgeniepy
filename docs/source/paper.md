@@ -25,7 +25,11 @@ Earth System Models are powerful tools for understanding the various components 
 
 # Statement of need
 
-`Gala` is an Astropy-affiliated Python package for galactic dynamics. Python
+`cgeniepy` is an Python package for reading, analysing, and visualising the cGENIE model output. Whilst the model is widely used in international paleoceanography and paleoclimatology communities, the analysis of the model output has no consistent package support. Python is a open source popular programming languages in the scientific community, 
+
+The `cgeniepy` package aims to provide a set of convenient tools to streamline the analysis process and to make it more user-friendly. The package is designed to be flexible and to match the increasing research demands.
+
+Python
 enables wrapping low-level languages (e.g., C) for speed without losing
 flexibility or ease-of-use in the user-interface. The API for `Gala` was
 designed to provide a class-based and user-friendly interface to fast (C or
