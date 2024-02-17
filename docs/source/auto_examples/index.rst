@@ -31,6 +31,23 @@ Below is a gallery of examples
 
 .. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to read in and plot time series data">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_timeseries_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_timeseries.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Plot Time Series</div>
+    </div>
+
+
+.. raw:: html
+
     <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to plot the PO4 distribution in each basin.">
 
 .. only:: html
@@ -48,6 +65,23 @@ Below is a gallery of examples
 
 .. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows the available color palettes in the cgeniepy package">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_additional_cmap_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_additional_cmap.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Additional cmap</div>
+    </div>
+
+
+.. raw:: html
+
     </div>
 
 
@@ -55,7 +89,9 @@ Below is a gallery of examples
    :hidden:
 
    /auto_examples/plot_sst_map
+   /auto_examples/plot_timeseries
    /auto_examples/plot_PO4_distribution
+   /auto_examples/plot_additional_cmap
 
 
 .. only:: html

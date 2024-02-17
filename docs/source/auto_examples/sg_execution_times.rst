@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:02.043** total execution time for 2 files **from auto_examples**:
+**00:00.631** total execution time for 4 files **from auto_examples**:
 
 .. container::
 
@@ -32,9 +32,15 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_plot_sst_map.py` (``plot_sst_map.py``)
-     - 00:02.043
+   * - :ref:`sphx_glr_auto_examples_plot_additional_cmap.py` (``plot_additional_cmap.py``)
+     - 00:00.631
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_PO4_distribution.py` (``plot_PO4_distribution.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_sst_map.py` (``plot_sst_map.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_timeseries.py` (``plot_timeseries.py``)
      - 00:00.000
      - 0.0
