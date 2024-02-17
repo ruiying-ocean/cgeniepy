@@ -148,22 +148,22 @@ class GridOperation:
 
     def haversine_distance(self, lat1, lon1, lat2, lon2):
         """
-        Calculate the Haversine distance between two points.
+        Calculate the Haversine distance between corresponding pairs of points.
 
-        :param lat1: latitude of point 1
-        :param lon1: longitude of point 1
-        :param lat2: latitude of point 2
-        :param lon2: longitude of point 2
+        :param lat1: Array of latitudes for points 1
+        :param lon1: Array of longitudes for points 1
+        :param lat2: Array of latitudes for points 2
+        :param lon2: Array of longitudes for points 2
         
-        :returns: distance in km
+        :returns: Array of distances between corresponding pairs of points
         """
         # Convert latitude and longitude from degrees to radians
-        lat1, lon1, lat2, lon2 = np.radians([lat1, lon1, lat2, lon2])
+        lat1_rad, lon1_rad, lat2_rad, lon2_rad = np.radians(lat1), np.radians(lon1), np.radians(lat2), np.radians(lon2)
 
         # Haversine formula
-        dlon = lon2 - lon1
-        dlat = lat2 - lat1
-        a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2) ** 2
+        dlon = lon2_rad - lon1_rad
+        dlat = lat2_rad - lat1_rad
+        a = np.sin(dlat / 2) ** 2 + np.cos(lat1_rad) * np.cos(lat2_rad) * np.sin(dlon / 2) ** 2
         c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
 
         # Radius of the Earth in kilometers
@@ -172,38 +172,31 @@ class GridOperation:
 
         return distance
 
-    def geo_dis3d(self, point1, point2):
+    def geo_dis3d(self, point1, points2):
         """
-        include the vertical distance
+        Calculate the 3D geographical distance between point1 and multiple points2.
 
-        :param point1: tuple/list of coordinates (z, lat, lon) or (lat, lon)
-        :param point2: tuple/list of coordinates (z, lat, lon) or (lat, lon)
-        :returns: distance in km
+        :param point1: Tuple/list of coordinates (z, lat, lon) or (lat, lon)
+        :param points2: Array of shape (n, 3) containing coordinates (z, lat, lon) of points
+        :returns: Array of distances between point1 and each point in points2
         """
-        if len(point1) != 3 or len(point2) != 3:
-            raise ValueError("Incompatible coordinates between two points")
-        
         z1, lat1, lon1 = point1
-        z2, lat2, lon2 = point2
+        z2, lat2, lon2 = points2[:, 0], points2[:, 1], points2[:, 2]
         hor_dis = self.haversine_distance(lat1, lon1, lat2, lon2)
-        ver_dis = abs(z1 - z2)/1000
+        ver_dis = np.abs(z1 - z2) / 1000  # Convert meters to kilometers
         return np.sqrt(hor_dis**2 + ver_dis**2)
 
-    def geo_dis2d(self, point1, point2):
+    def geo_dis2d(self, point1, points2):
         """
-        include the vertical distance
+        Calculate the 2D geographical distance between point1 and multiple points2.
 
-        :param point1: tuple/list of coordinates (z, lon, lat) or (lon, lat)
-        :param point2: tuple/list of coordinates (z, lon, lat) or (lon, lat)
-        :returns: distance in km
+        :param point1: Tuple/list of coordinates (z, lon, lat) or (lon, lat)
+        :param points2: Array of shape (n, 3) containing coordinates (z, lon, lat) of points
+        :returns: Array of distances between point1 and each point in points2
         """
-        if len(point1) != 2 or len(point2) != 2:
-            raise ValueError("Incompatible coordinates between two points")
-        
-        lat1, lon1 = point1
-        lat2, lon2 = point2
+        lat1, lon1 = point1[0], point1[1]
+        lat2, lon2 = points2[:, 0], points2[:, 1]
         return self.haversine_distance(lat1, lon1, lat2, lon2)
-
 
 class Interporaltor:
     

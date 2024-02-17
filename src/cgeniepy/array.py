@@ -251,7 +251,7 @@ class GriddedData(ArrayVis):
         ocn_only_data = stacked_data[stacked_ocn_mask]
         
         if index:
-            return ocn_only_data.x.values
+            return np.stack(ocn_only_data.x.values)
         else:            
             return ocn_only_data
         
@@ -271,18 +271,16 @@ class GriddedData(ArrayVis):
             raise ValueError("Input point has incompatiable coordinate")        
         
         if ignore_na:
-            
+            index_pool = self.ocn_only_data(index=True)            
             match geo_ndim:
                 case 3:
                     ## point: (zt, lat, lon); Index: (time, zt, lat, lon)
                     if to_genielon: point[2] = GridOperation().lon_g2n(point[2])
-                    index_pool = self.ocn_only_data(index=True)                    
-                    distances = np.array([GridOperation().geo_dis3d(point, pt[1:4]) for pt in index_pool])
+                    distances = GridOperation().geo_dis3d(point, index_pool[:, 1:4])
                 case 2:
                     ## point: (lat, lon); Index: (time, lat, lon)
                     if to_genielon: point[1] = GridOperation().lon_g2n(point[1])
-                    index_pool = self.ocn_only_data(index=True)
-                    distances = np.array([GridOperation().geo_dis2d(point, pt[1:3]) for pt in index_pool])
+                    distances = GridOperation().geo_dis2d(point, index_pool[:, 1:3])
 
             idx_min = np.argmin(distances)
             nearest_value = self.ocn_only_data(index=False).values[idx_min]
