@@ -27,6 +27,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'sphinx_gallery.gen_gallery',
+    "sphinx_design",    
 ]
 
 source_suffix = {
