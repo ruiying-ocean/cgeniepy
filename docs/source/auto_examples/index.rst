@@ -48,7 +48,7 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to customise the 2D map including the projection, the color map">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to customise the 2D map including the projection, the color map, which i...">
 
 .. only:: html
 

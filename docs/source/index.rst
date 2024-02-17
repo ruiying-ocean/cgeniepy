@@ -49,10 +49,9 @@ Get started
    
 .. toctree::
    :hidden:
-   :maxdepth: 1
-	      
+   :maxdepth: 1	      
 
-    guide
+   guide
    
 .. toctree::
    :hidden:
