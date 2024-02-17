@@ -17,7 +17,7 @@ cGENIE is an Earth System Model that simulate the climate and element cycle of E
 
 How was this package created?
 ------------------------------
-I use cGENIE for my PhD research and I kept writing analysing codes in Python to achieve ideas in my mind. For example, I want to plot the data in a different projection. I want to achieve some clean syntax using method chaining (e.g., :code:`data.do_a().do_b().do_c()`). I also want to make all my codes sustianble, reproducible, and performs quickly. Finally, I feel it good to package my codes to the cGENIE community.
+I use cGENIE for my PhD research and I kept writing analysing codes in Python to implement ideas in my mind. For example, I want to plot the data in a different projection. I want to achieve some clean syntax using method chaining (e.g., :code:`data.do_a().do_b().do_c()`). I also want to make all my codes sustainable, reproducible, without losing performance. Finally, these codes become a package and I think it fun to share with the cGENIE community.
 
 
 What does this package provide?
