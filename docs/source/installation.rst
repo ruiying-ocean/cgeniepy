@@ -43,8 +43,8 @@ cgeniepy is not a standalone software. It is built on other excellent packages (
 
 This also touches the most famous Python data science-related packages:
 
-**xarray**: N-D labeled arrays and datasets in Python, I use it to handle the NetCDF data.
-**matplotlib**: A comprehensive library for creating static, animated, and interactive visualizations in Python. This is the plotting engine in cgeniepy.
-**numpy**: The fundamental package for scientific computing with Python. 
-**pandas**: A fast, powerful, flexible and easy to use open source data analysis and data manipulation library built on top of Python. It is the core of cgeniepy.ScatterData and used to deal with the cGENIE timeseries output.
-**scipy**: A Python-based ecosystem of open-source software for mathematics, science, and engineering.
+- **xarray**: N-D labeled arrays and datasets in Python, I use it to handle the NetCDF data.
+- **matplotlib**: A comprehensive library for creating static, animated, and interactive visualizations in Python. This is the plotting engine in cgeniepy.
+- **numpy**: The fundamental package for scientific computing with Python. 
+- **pandas**: A fast, powerful, flexible and easy to use open source data analysis and data manipulation library built on top of Python. It is the core of cgeniepy.ScatterData and used to deal with the cGENIE timeseries output.
+- **scipy**: A Python-based ecosystem of open-source software for mathematics, science, and engineering.
