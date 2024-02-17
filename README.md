@@ -158,9 +158,6 @@ plot_colormaps(cmaps_list)
 
 ## Project Roadmap 🚩
 
-- [ ] Publish the first stable version
-- [ ] plot.py 3D facet subplots
-- [ ] Show one colorbar in transect plot
 - [X] ignore NAs when searching grid 
 - [X] use lat/lon/zt from GENIE output
 - [X] Documentation Webiste
@@ -168,8 +165,15 @@ plot_colormaps(cmaps_list)
 - [x] create a simple logo
 - [X] allow reading an ensemble of models (netcdf & timeseries)
 - [X] formatting the ugly unit string
-- [ ] observation.py including plot scatter
 - [ ] Add global inventory function
+- [ ] plot.py 3D facet subplots
+- [ ] Show one colorbar in transect plot
+- [ ] In/out place calculation
+- [ ] Taylor Diagram
+- [ ] Publish the first stable version (6 months after 0.10.1)
+- [ ] Write a paper on arixv
+- [ ] ODIV interpolation
+- [ ] Unit support
 
 ## Killer Features
 [X] Model-data comparison

@@ -155,6 +155,10 @@ class ArrayComp:
         crmse = sigma1**2 + sigma2**2 - 2 * sigma1 * sigma2 * corr
 
         return crmse
+
+    def taylor_diagram(self):
+        pass
+ 
     
 class DataFrameComp(ArrayComp):
 

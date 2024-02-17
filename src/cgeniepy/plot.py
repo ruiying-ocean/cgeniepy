@@ -485,9 +485,7 @@ class ScatterVis:
             c=self.df[self.var],
             *args,
             **kwargs,
-        )
-
-        
+        )        
 
         if bathy_lon:
             data_dir = pathlib.Path(__file__).parent.parent
