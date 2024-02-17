@@ -18,5 +18,5 @@ Firstly import the package
 
 .. code_block:: Python
 
-   $ from cgeniepy.model import ModelOutput
+   $ from cgeniepy.model import GenieModel
    

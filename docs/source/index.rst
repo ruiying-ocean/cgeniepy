@@ -3,9 +3,6 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-cgeniepy
-====================================
-
 **cgeniepy** is a Python library for facilitating analysing cGENIE model output. It aims to provide an alternative to the existing `MATLAB library <https://github.com/derpycode/muffinplot>`_.
 
 
@@ -14,6 +11,18 @@ cgeniepy
    This project is under active development.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   content
+   about
+   
+.. toctree::
+   :maxdepth: 1
+
+   installation
+
+.. toctree::
+   :maxdepth: 1
+
+   usage
+	      
+
