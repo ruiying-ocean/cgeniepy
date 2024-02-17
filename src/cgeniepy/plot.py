@@ -307,7 +307,7 @@ class ArrayVis:
         ## reverse y axis
         local_ax.set_ylim(local_ax.get_ylim()[::-1])
         local_ax.set_ylabel(
-            "Depth (km)",
+            "Depth (m)",
             fontsize=self.aes_dict["general_kwargs"]["fontsize"],
             font=self.aes_dict["general_kwargs"]["font"],
         )
