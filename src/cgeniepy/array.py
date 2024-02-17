@@ -229,7 +229,7 @@ class GriddedData(ArrayVis):
         data = self.array
         mask = gp.GENIE_grid_mask(base=base, basin=basin, subbasin=subbasin, invert=True)
 
-        if self.array.geo_ndim > 2:
+        if self.array.ndim > 2:
             mask = np.broadcast_to(mask, (16, 36, 36))
 
         mask_data = np.ma.array(data, mask=mask)
