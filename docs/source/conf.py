@@ -26,10 +26,16 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
+    'sphinx_gallery.gen_gallery',
 ]
 
 source_suffix = {
     '.rst': 'restructuredtext',
+}
+
+sphinx_gallery_conf = {
+     'examples_dirs': '../../examples',   # path to your example scripts
+     'gallery_dirs': 'auto_examples',  # path to where to save gallery generated output
 }
 
 templates_path = ['_templates']
@@ -49,5 +55,6 @@ html_theme_options = {
     "navbar_align": "left",
     "logo": {
         "text": "cgeniepy",
-    },    
+    },
+    "navbar_center": ["navbar-nav"],    
 }
