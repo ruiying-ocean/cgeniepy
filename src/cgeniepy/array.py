@@ -239,24 +239,14 @@ class GriddedData(ArrayVis):
 
         return self
 
-    def ocn_only_data(self, index=False, center_position=None):
+    def ocn_only_data(self, index=False):
         """
         remove the NA grid (land in cGENIE definition)
 
         :param index: return GeoIndex or value
-        :param center_position: a list/tuple of target position to reduce the output size
         """
 
-        if center_position:
-            lat, lon = center_position
-            tolerance = 20 #20 degree
-            reduced_array = self.array.sel(lon=slice(lon - 20, lon + 20),
-                                           lat=slice(lat - 20, lat + 20))
-            
-            stacked_data = reduced_array.stack(x=self.array.dims)
-        else:
-            stacked_data = self.array.stack(x=self.array.dims)
-            
+        stacked_data = self.array.stack(x=self.array.dims)            
         stacked_ocn_mask =~np.isnan(stacked_data)
         ocn_only_data = stacked_data[stacked_ocn_mask]
         
@@ -286,12 +276,12 @@ class GriddedData(ArrayVis):
                 case 3:
                     ## point: (zt, lat, lon); Index: (time, zt, lat, lon)
                     if to_genielon: point[2] = GridOperation().lon_g2n(point[2])
-                    index_pool = self.ocn_only_data(index=True, center_position=point[1:3])
+                    index_pool = self.ocn_only_data(index=True)                    
                     distances = np.array([GridOperation().geo_dis3d(point, pt[1:4]) for pt in index_pool])
                 case 2:
-                    ## point: (lat, lon); Index: (time, lat, lon)                    
+                    ## point: (lat, lon); Index: (time, lat, lon)
                     if to_genielon: point[1] = GridOperation().lon_g2n(point[1])
-                    index_pool = self.ocn_only_data(index=True, center_position=point[0:2])                    
+                    index_pool = self.ocn_only_data(index=True)
                     distances = np.array([GridOperation().geo_dis2d(point, pt[1:3]) for pt in index_pool])
 
             idx_min = np.argmin(distances)
