@@ -1,5 +1,5 @@
-Usage
-=====
+Read in data
+============
 
 Download model output
 ---------------------

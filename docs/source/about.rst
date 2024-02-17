@@ -4,7 +4,11 @@ About
 What is this package (cgeniepy)?
 --------------------------------
 
-This package provides a handful of tools in Python for dealing with the cGENIE model outputs. It is not a full implementation of the cGENIE model itself, which means one must run the model before using this package.
+This package provides a handful of tools in Python for dealing with the cGENIE model outputs, similar to the existing `MATLAB scripts <https://github.com/derpycode/muffinplot>`_.
+
+.. note::
+
+   This project is under active development.
 
 What is cGENIE?
 ----------------
