@@ -43,7 +43,7 @@ class GenieModel(object):
                 raise ValueError(f"{model_path} is not a valid directory")
 
         if not gemflag:
-            print(">>> No gemflag is provided, use default gemflags: [biogem, ecogem]")
+            print(">>> No gemflag is provided, use default gemflags: [biogem]")
             self.gemflag = ["biogem"]
         else:
             self.gemflag = gemflag
