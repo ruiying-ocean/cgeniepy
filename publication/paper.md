@@ -75,6 +75,6 @@ atlantic_zonal_mean_po4.interpolate().plot(contour=True, colorbar=True)
 A moduel `cgeniepy.skill` is provided to quantify the model-data comparison. It provides several common skill scores (e.g., the root mean square error, the correlation coefficient, the M-score) to quantify the model performance. In common practice, one could use the `search_grid` method to find the nearest valid value to the observational data, and then intialise a `DataFrameComp` object to calculate the skill scores. Alternatively, one can regrid the observational data (e.g., the World Ocean Atlas data) to the cGENIE model grid and call the `ArrayComp` object to calculate the skill scores. 
 
 # Acknowledgements
-R.Y. acknowledge the funding from China Scholarship Council (202006380070). R.Y. als thanks Shao Jun for his suggestion on the package.
+R.Y. acknowledge the funding from China Scholarship Council (202006380070). R.Y. also thanks Shao Jun for his suggestions on the package.
 
 # References
