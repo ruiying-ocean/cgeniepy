@@ -10,8 +10,14 @@ tags:
 authors:
   - name: Rui Ying
     orcid: 0000-0001-5811-2388
-    affiliation: School of Earth Sciences, University of Bristol, UK
-  
+    corresponding: true
+    email: rui.ying@bristol.ac.uk
+    affiliation: 1
+
+affiliations:
+ - name: School of Earth Sciences, University of Bristol, UK
+   index: 1  
+
 date: 17 Feburary 2024
 bibliography: paper.bib
 ---
