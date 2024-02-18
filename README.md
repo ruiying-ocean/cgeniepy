@@ -160,8 +160,8 @@ plot_colormaps(cmaps_list)
 
 - [ ] In/out place calculation
 - [ ] Finalise the doc website
+- [ ] Finalise the API references
 - [ ] Publish the first stable version on PyPI (17 August 2024)
-- [ ] Write a paper on arixv
 - [ ] Add global inventory function
 - [ ] plot.py 3D facet subplots
 - [ ] Show one colorbar in transect plot
