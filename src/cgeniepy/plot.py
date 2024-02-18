@@ -342,7 +342,7 @@ class ArrayVis:
         return ax.contourf(x, y, self.array, *args, **kwargs)
 
     def _add_contour_label(self, ax, cs, *args, **kwargs):
-        ax.clabel(cs, cs.levels[::3], *args, **kwargs)
+        ax.clabel(cs, cs.levels[::2], *args, **kwargs)
 
     def _add_gridline(self, ax, *args, **kwargs):
         ax.gridlines(*args, **kwargs)
