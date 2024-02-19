@@ -7,6 +7,8 @@
 ⚠ `cgeniepy` is still in alpha phase and under active changes.
 
 [![Documentation Status](https://readthedocs.org/projects/cgeniepy/badge/?version=latest)](https://cgeniepy.readthedocs.io/en/latest/?badge=latest)
+![PyPI](https://img.shields.io/pypi/v/PACKAGE?label=pypi%20cgeniepy)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/cgeniepy)
 
 ## Installation
 
