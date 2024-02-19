@@ -13,7 +13,7 @@
 1. Install from [testpypi](https://test.pypi.org/project/cgeniepy/).
 
 ```bash
-python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.10.1
+python3 -m pip install cgeniepy
 ```
 
 2. Install from GitHub:
@@ -22,68 +22,6 @@ python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy==0.10.1
 python3 -m pip install git+https://github.com/ruiying-ocean/cgeniepy.git@master
 ```
 
-## Quickstart
-### 0. initialise a model instance
-```python
-from cgeniepy.model import GenieModel
-
-## single model
-model = GenieModel('path_a')
-
-## model ensemble
-multi_dirs = ['/path_a/', '/path_b/']
-model = GenieModel(path_to_model_output)
-```
-
-
-### 1. Read data
-+ netCDF (*.nc)
-+ time series (*.res)
-
-```python
-## time slice data
-model.get_var("XXXXX").array
-
-## timeseries data
-model.get_ts("biogem_series_ocn_temp.res")
-```
-
-### 2. Data analysis
-+ Data subsetting and statistics
-+ Model performance
-+ Unit-changing operation (e.g., rate to magnitude)
-
-```python
-## get zonal average SST of the last model year
-zonal_sst = model.get_var("ocn_sur_temp").isel(time=-1).mean(dim='lat')
-
-## North Pacific SST
-npac_sst = model.get_var("ocn_sur_temp").select_basin(47).isel(time=-1)
-```
-
-### 3. Visualisation
-+ 1D line (time series, zonal average)
-+ 2D map (including various projections like polar map)
-+ 2D cross section
-+ 3D (facet)
-+ Add a layer of observational data
-
-```python
-## simply call `plot` after accessing the data
-
-## map
-model.get_var("ocn_sur_temp").isel(time=-1).plot()
-```
-
-### 4. Others
-+ ECOGEM shortcuts
-
-```python
-from cgeniepy.ecology import EcoModel
-model = EcoModel(path_to_model_path)
-## get all phytoplankton carbon biomass and plot as map
-model.get_pft("Phyto", "Biomass", "C").isel(time=-1).plot()
-```
 
 ## Project Roadmap 🚩
 
@@ -100,10 +38,6 @@ model.get_pft("Phyto", "Biomass", "C").isel(time=-1).plot()
 - [ ] observation.py including plot scatter
 - [ ] Add global inventory function
 
-## Killer Features
-[X] Model-data comparison
-[X] Model ensemble support
-[X] Search the nearest *valid* grid point
 
 ## Citation
 
