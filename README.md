@@ -2,13 +2,15 @@
   <img src="logo.png"/>
 </p>
 
+[![Documentation Status](https://readthedocs.org/projects/cgeniepy/badge/?version=latest)](https://cgeniepy.readthedocs.io/en/latest/?badge=latest)
+![PyPI](https://img.shields.io/pypi/v/PACKAGE?label=pypi%20cgeniepy)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/cgeniepy)
+
 `cgeniepy` is an Python package to analyse the output of [cGENIE Earth System Model](https://www.seao2.info/mymuffin.html). It aims to provide a set of convenient tools for the post-simulation analysis, including analysing the model output, plot publication-quality figures, and conducting model-data comparison.
 
 ⚠ `cgeniepy` is still in alpha phase and under active changes.
 
-[![Documentation Status](https://readthedocs.org/projects/cgeniepy/badge/?version=latest)](https://cgeniepy.readthedocs.io/en/latest/?badge=latest)
-![PyPI](https://img.shields.io/pypi/v/PACKAGE?label=pypi%20cgeniepy)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/cgeniepy)
+
 
 ## Installation
 
