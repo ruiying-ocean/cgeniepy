@@ -27,6 +27,9 @@ python3 -m pip install cgeniepy
 python3 -m pip install git+https://github.com/ruiying-ocean/cgeniepy.git@master
 ```
 
+## How to use
+
+[Here is the documentation with examples](https://cgeniepy.readthedocs.io/en/latest/)
 
 ## Project Roadmap 🚩
 
