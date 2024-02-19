@@ -6,6 +6,8 @@
 
 ⚠ `cgeniepy` is still in alpha phase and under active changes.
 
+[![Documentation Status](https://readthedocs.org/projects/cgeniepy/badge/?version=latest)](https://cgeniepy.readthedocs.io/en/latest/?badge=latest)
+
 ## Installation
 
 1. Install from [testpypi](https://test.pypi.org/project/cgeniepy/).
@@ -82,79 +84,6 @@ model = EcoModel(path_to_model_path)
 ## get all phytoplankton carbon biomass and plot as map
 model.get_pft("Phyto", "Biomass", "C").isel(time=-1).plot()
 ```
-
-## Gallery
-
-### A global biomass map of modelled picophytoplankton (0.6 μm) 
-
-```python
-## initialise a EcoModel instance before running this
-
-model.get_pft(1, "Biomass", "C").isel(time=-1).plot(contour=True)
-```
-
-
-![map](example_map.png)
-
-### A global distribution of basin-level nutrient (PO4) 
-
-```python
-## initialise a GenieModel instance before running this
-
-import matplotlib.pyplot as plt
-
-fig, axs=plt.subplots(nrows=1, ncols=3, figsize=(15, 3), tight_layout=True)        
-
-basins = ['Atlantic', 'Pacific', 'Indian']
-
-for i in range(3):
-	basin_data = model.get_var('ocn_PO4').isel(time=-1).mask_basin(base='worjh2',basin=basins[i], subbasin='')
-	basin_data.array.values = basin_data.array.values * 1E6
-	basin_data.mean(dim='lon').plot(ax=axs[i], contour=True)
-	axs[i].title.set_text(basins[i])
-```
-
-![modern_po4](example_transection.png)
-
-
-### Additional Colour Palettes
-
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-from cgeniepy.plot import community_palette, avail_palette
-
-def plot_colormaps(cmaps):
-    ncols = 4
-    nrows = int(np.ceil(len(cmaps) / ncols))
-    fig, axes = plt.subplots(nrows, ncols, figsize=(15, nrows))
-
-    for i, cmap_name in enumerate(cmaps):
-        row = i // ncols
-        col = i % ncols
-        ax = axes[row, col] if nrows > 1 else axes[col]
-
-        # Create a gradient image using the colormap
-        gradient = np.linspace(0, 1, 256).reshape(1, -1)
-        ax.imshow(gradient, aspect='auto', cmap=community_palette(cmap_name))
-        ax.set_title(cmap_name, fontsize=14, fontweight='bold')
-        ax.axis('off')
-
-    ## remove the unused axes
-    for i in range(len(cmaps), ncols * nrows):
-        row = i // ncols
-        col = i % ncols
-        fig.delaxes(axes[row, col])
-        
-    plt.tight_layout()
-
-# List of colormaps from cgeniepy
-cmaps_list = avail_palette()
-plot_colormaps(cmaps_list)
-```
-
-![color_map](community_palette.png)
-
 
 ## Project Roadmap 🚩
 
