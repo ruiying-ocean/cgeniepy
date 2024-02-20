@@ -49,15 +49,7 @@ python3 -m pip install git+https://github.com/ruiying-ocean/cgeniepy.git@master
 
 ## Citation
 
-```latex
-@software{cgeniepy,
-  author = {Rui Ying},
-  title = {A Python interface to analyse and visualise cGENIE model output},
-  url = {https://github.com/ruiying-ocean/cgeniepy/},
-  version = {0.10.1},
-  date = {2024-02-17},
-}
-```
+Rui Ying. cgeniepy: A Python package for analysing cGENIE Earth System Model output, 20 February 2024, PREPRINT (Version 1) available at Research Square [https://doi.org/10.21203/rs.3.rs-3967633/v1]
 
 ## Logo
 
