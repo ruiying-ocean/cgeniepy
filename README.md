@@ -56,7 +56,8 @@ Rui Ying. cgeniepy: A Python package for analysing cGENIE Earth System Model out
 Logo is designed by me using free **righteous** font.
 
 ## Alternative
-Alex Phol's [genie_basicdiags](https://github.com/alexpohl/genie_basicdiags/)
+* Prof. Andy Ridgwell's [muffinplot](https://github.com/derpycode/muffinplot)
+* Dr. Alex Phol's [genie_basicdiags](https://github.com/alexpohl/genie_basicdiags/)
 
 ## Raise a bug
 
