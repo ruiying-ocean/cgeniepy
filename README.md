@@ -31,22 +31,6 @@ python3 -m pip install git+https://github.com/ruiying-ocean/cgeniepy.git@master
 
 [Here is the documentation with examples](https://cgeniepy.readthedocs.io/en/latest/)
 
-## Project Roadmap 🚩
-
-- [ ] Publish the first stable version
-- [ ] plot.py 3D facet subplots
-- [ ] Show one colorbar in transect plot
-- [X] ignore NAs when searching grid 
-- [X] use lat/lon/zt from GENIE output
-- [X] Documentation Webiste
-- [X] figsize influences colorbar length
-- [x] create a simple logo
-- [X] allow reading an ensemble of models (netcdf & timeseries)
-- [X] formatting the ugly unit string
-- [ ] observation.py including plot scatter
-- [ ] Add global inventory function
-
-
 ## Citation
 
 Rui Ying. cgeniepy: A Python package for analysing cGENIE Earth System Model output, 20 February 2024, PREPRINT (Version 1) available at Research Square [https://doi.org/10.21203/rs.3.rs-3967633/v1]
