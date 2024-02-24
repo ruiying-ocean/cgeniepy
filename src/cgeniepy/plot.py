@@ -27,12 +27,12 @@ class ArrayVis:
         if hasattr(self.array, "units"):
             self.units = Chemistry().format_unit(self.array.units)
         else:
-            self.units = None
+            self.units = ""
 
         if hasattr(self.array, "long_name"):
             self.long_name = self.array.long_name
         else:
-            self.long_name = None
+            self.long_name = ""
 
         ## aesthetic parameters
         self.aes_dict = {
@@ -96,14 +96,9 @@ class ArrayVis:
         ## get the only dimension as x
         dim = self.array[self.array.dims[0]]
 
-        if not "swap_xy" in kwargs:
-            local_ax.set_xlabel(dim.name)
-            local_ax.set_ylabel(f"{self.array.long_name} ({self.array.units})")
-            p = local_ax.plot(dim, self.array, *args, **kwargs)
-        else:
-            local_ax.set_xlabel(f"{self.array.long_name} ({self.array.units})")
-            local_ax.set_ylabel(dim.name)
-            p = local_ax.plot(self.array, dim, *args, **kwargs)
+        # local_ax.set_xlabel(dim.name)
+        # local_ax.set_ylabel(f"{self.array.long_name} ({self.array.units})")
+        p = local_ax.plot(dim, self.array, *args, **kwargs)
 
         return p
 
@@ -220,7 +215,14 @@ class ArrayVis:
                 **self.aes_dict["contourf_kwargs"],
             )
 
-        return local_ax
+        if pcolormesh:
+            return p_pcolormesh
+        elif contour:
+            return p_contour
+        elif contourf:
+            return p_contourf
+        else:
+            return local_ax
 
     def _plot_transect(
         self,
@@ -325,7 +327,15 @@ class ArrayVis:
             labelfontfamily=self.aes_dict["general_kwargs"]["font"],
         )
 
-        return local_ax
+        if pcolormesh:
+            return p_pcolormesh
+        elif contour:
+            return p_contour
+        elif contourf:
+            return p_contourf
+        else:
+            return local_ax
+
 
     ## ------- Below is implementations -------------------------
 
