@@ -161,10 +161,7 @@ class GriddedData(ArrayVis):
 
 
     def sum(self, *args, **kwargs):
-        ## restore units
-        units = self.array.units
         self.array = self.array.sum(*args, **kwargs)
-        self.array.units = units
         return self        
 
 
@@ -265,28 +262,28 @@ class GriddedData(ArrayVis):
         :param to_genielon: whether convert the input longitude to genie longitude, input point must be list if True       
         """
         ## ignore the first dimension (which is time)        
-        geo_ndim = self.array.ndim - 1
+        ndim = self.array.ndim
         
-        if len(point) != geo_ndim:
+        if len(point) != ndim:
             raise ValueError("Input point has incompatiable coordinate")        
         
         if ignore_na:
             index_pool = self.ocn_only_data(index=True)            
-            match geo_ndim:
+            match ndim:
                 case 3:
-                    ## point: (zt, lat, lon); Index: (time, zt, lat, lon)
+                    ## point: (zt, lat, lon); Index: (zt, lat, lon)
                     if to_genielon: point[2] = GridOperation().lon_g2n(point[2])
-                    distances = GridOperation().geo_dis3d(point, index_pool[:, 1:4])
+                    distances = GridOperation().geo_dis3d(point, index_pool[:, 0:4])
                 case 2:
-                    ## point: (lat, lon); Index: (time, lat, lon)
+                    ## point: (lat, lon); Index: (lat, lon)
                     if to_genielon: point[1] = GridOperation().lon_g2n(point[1])
-                    distances = GridOperation().geo_dis2d(point, index_pool[:, 1:3])
+                    distances = GridOperation().geo_dis2d(point, index_pool[:, 0:3])
 
             idx_min = np.argmin(distances)
             nearest_value = self.ocn_only_data(index=False).values[idx_min]
             return nearest_value
         else:
-            match geo_ndim:
+            match ndim:
                 case 3:
                     zt, lat, lon = point
                     kwargs = {'lat': lat, 'lon':lon, 'zt': zt, 'method': 'nearest'}

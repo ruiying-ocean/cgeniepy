@@ -25,7 +25,7 @@ class EcoModel(GenieModel):
 
         ## get the list of plankton variables
         ecogem2d_path = self._model_ncpath('ecogem', '2d')            
-        self.eco_varlist = self.ncvar_dict()[ecogem2d_path]
+        self.eco_varlist = self.ncvar_dict[ecogem2d_path]
         
         pattern = r'eco2D_Plankton_C_\d+'
         plank_vars = [var for var in self.eco_varlist if re.match(pattern, var)]
