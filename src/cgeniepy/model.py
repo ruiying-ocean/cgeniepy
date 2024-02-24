@@ -277,7 +277,7 @@ class GenieModel(object):
         2: open ocean
         """
 
-        is_sea = np.isnan(self.grid_mask())
+        is_sea = np.isnan(self.grid_mask_2d())
         land_around = binary_dilation(is_sea)
         grid_catogories = xr.where(land_around, np.logical_and(land_around, is_sea), 2)
 
@@ -288,13 +288,35 @@ class GenieModel(object):
         ## read grid_area from biogem
         print("grid area returned in the unit of 'm2'")
         return self.get_var("grid_area")
-
+    
+    def grid_mask(self):
+        return self.get_var("grid_mask")
+    
+    def grid_mask_3d(self):
+        return self.get_var("grid_mask_3d")
+    
+    def grid_topo(self):
+        return self.get_var("grid_topo")
+    
+    def grid_zt_edges(self):
+        return self.get_var("zt_edges")
+    
+    def grid_lat_edges(self):
+        return self.get_var("lat_edges")
+    
+    def grid_lon_edges(self):
+        return self.get_var("lon_edges")
+    
+    def grid_zt_depths(self):
+        return self.get_var("grid_dD")
+    
     def grid_volume(self):
         "grid volume array (3d) in m3"
-        grid_volume = self.grid_area()  ## m2
-        depth = self.get_var("zt")  ## m
+        grid_area = self.grid_area()  ## m2
+        depth = self.grid_zt_depths() ## m
+        ocn_mask = self.grid_mask_3d()
         try:
-            grid_volume = grid_volume * depth
+            grid_volume = grid_area * ocn_mask * depth
             grid_volume.array.attrs["units"] = "m$^{3}$"
             grid_volume.array.attrs["long_name"] = "grid volume"
             print("grid volume calculated in the unit of 'm3'")
