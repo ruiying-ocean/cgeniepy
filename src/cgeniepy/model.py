@@ -316,7 +316,7 @@ class GenieModel(object):
         depth = self.grid_zt_depths() ## m
         ocn_mask = self.grid_mask_3d()
         try:
-            grid_volume = grid_area * ocn_mask * depth
+            grid_volume = depth * grid_area * ocn_mask 
             grid_volume.array.attrs["units"] = "m$^{3}$"
             grid_volume.array.attrs["long_name"] = "grid volume"
             print("grid volume calculated in the unit of 'm3'")

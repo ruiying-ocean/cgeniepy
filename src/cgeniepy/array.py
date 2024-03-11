@@ -309,3 +309,10 @@ class GriddedData(ArrayVis):
                     lon=lon[(lon >= lon_min) & (lon <= lon_max)],
                 )
             ]
+    
+    def weighted_average(self, weights, *args, **kwargs):
+        """
+        compute the weighted average of the array (e.g., ocean volume)
+        """
+        array_ma = self.array.to_masked_array()
+        return np.ma.average(array_ma, weights=weights, *args, **kwargs)
