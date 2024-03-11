@@ -277,7 +277,7 @@ class GenieModel(object):
         2: open ocean
         """
 
-        is_sea = np.isnan(self.grid_mask_2d())
+        is_sea = np.isnan(self.grid_mask())
         land_around = binary_dilation(is_sea)
         grid_catogories = xr.where(land_around, np.logical_and(land_around, is_sea), 2)
 
@@ -288,9 +288,6 @@ class GenieModel(object):
         ## read grid_area from biogem
         print("grid area returned in the unit of 'm2'")
         return self.get_var("grid_area")
-    
-    def grid_mask(self):
-        return self.get_var("grid_mask")
     
     def grid_mask_3d(self):
         return self.get_var("grid_mask_3d")

@@ -31,6 +31,23 @@ Below is a gallery of examples
 
 .. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to plot the PO4 distribution in each basin.">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_coastal_data_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_coastal_data.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Plot coastal only data</div>
+    </div>
+
+
+.. raw:: html
+
     <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to calculate weighted or unweighted average of a variable">
 
 .. only:: html
@@ -123,6 +140,7 @@ Below is a gallery of examples
    :hidden:
 
    /auto_examples/plot_sst_map
+   /auto_examples/plot_coastal_data
    /auto_examples/calculate_average
    /auto_examples/plot_timeseries
    /auto_examples/plot_logo

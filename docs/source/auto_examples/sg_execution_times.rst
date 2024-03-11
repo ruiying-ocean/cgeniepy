@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:01.874** total execution time for 5 files **from auto_examples**:
+**00:01.481** total execution time for 7 files **from auto_examples**:
 
 .. container::
 
@@ -32,13 +32,19 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_plot_logo.py` (``plot_logo.py``)
-     - 00:01.874
+   * - :ref:`sphx_glr_auto_examples_plot_coastal_data.py` (``plot_coastal_data.py``)
+     - 00:01.481
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_calculate_average.py` (``calculate_average.py``)
+     - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_PO4_distribution.py` (``plot_PO4_distribution.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_additional_cmap.py` (``plot_additional_cmap.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_logo.py` (``plot_logo.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_sst_map.py` (``plot_sst_map.py``)
