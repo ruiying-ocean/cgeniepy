@@ -7,7 +7,7 @@
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/cgeniepy)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-`cgeniepy` is an Python package to analyse the output of [cGENIE Earth System Model](https://www.seao2.info/mymuffin.html). It aims to provide a set of convenient tools for the post-simulation analysis, including analysing the model output, plot publication-quality figures, and conducting model-data comparison.
+`cgeniepy` is a Python package to analyse the output of [cGENIE Earth System Model](https://www.seao2.info/mymuffin.html). It aims to provide a set of convenient tools for the post-simulation work, including analysing the model output, plotting publication-quality figures, and conducting model-data comparison.
 
 ⚠ `cgeniepy` is still in alpha phase and under active changes.
 
@@ -31,39 +31,18 @@ python3 -m pip install git+https://github.com/ruiying-ocean/cgeniepy.git@master
 
 [Here is the documentation with examples](https://cgeniepy.readthedocs.io/en/latest/)
 
-## Project Roadmap 🚩
-
-- [ ] In/out place calculation
-- [ ] Finalise the doc website
-- [ ] Finalise the API references
-- [ ] Publish the first stable version on PyPI (17 August 2024)
-- [ ] Add global inventory function
-- [ ] plot.py 3D facet subplots
-- [ ] Show one colorbar in transect plot
-- [ ] Taylor Diagram
-- [ ] ODIV interpolation
-- [ ] Unit support
-- [ ] Gridded observational data support
-
 
 ## Citation
 
-```latex
-@software{cgeniepy,
-  author = {Rui Ying},
-  title = {A Python interface to analyse and visualise cGENIE model output},
-  url = {https://github.com/ruiying-ocean/cgeniepy/},
-  version = {0.10.1},
-  date = {2024-02-17},
-}
-```
+Rui Ying. cgeniepy: A Python package for analysing cGENIE Earth System Model output, 20 February 2024, PREPRINT (Version 1) available at Research Square [https://doi.org/10.21203/rs.3.rs-3967633/v1]
 
 ## Logo
 
 Logo is designed by me using free **righteous** font.
 
 ## Alternative
-Alex Phol's [genie_basicdiags](https://github.com/alexpohl/genie_basicdiags/)
+* Prof. Andy Ridgwell's [muffinplot](https://github.com/derpycode/muffinplot)
+* Dr. Alex Phol's [genie_basicdiags](https://github.com/alexpohl/genie_basicdiags/)
 
 ## Raise a bug
 
