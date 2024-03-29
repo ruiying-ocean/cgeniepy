@@ -1,6 +1,7 @@
 from os.path import join
 from typing import Union, List, Tuple
 from pathlib import Path
+import re
 
 import pandas as pd
 from netCDF4 import Dataset
@@ -133,6 +134,7 @@ class GenieModel(object):
         else:
             datasets = [xr.open_dataset(file) for file in nc_path]
             combined_ds = xr.concat(datasets, "model")
+            combined_ds.coords["model"] = self.model_path
             return combined_ds
 
     def get_var(self, var: Union[str, List, Tuple], unit=None):
@@ -258,6 +260,60 @@ class GenieModel(object):
             all_df = pd.concat(df_list, axis=0)
 
             return all_df
+        
+    def get_diag_avg(self, filename):
+        "print out the summary of a diagnostic file"
+        f = join(self.model_path, "biogem", filename)
+        with open(f, 'r') as f:
+            text = f.read()
+
+        # Split data by lines, remove empty lines
+        lines = [line.strip() for line in text.splitlines() if line.strip()]
+
+        # Initialize an empty dictionary to store all data
+        variable = []
+        value1 = []
+        value2 = []
+
+        # Loop through each line
+        for line in lines:
+        # Split line by separator (colon)
+            try:
+                key, value = line.split(':', 1)
+            except ValueError:  # Ignore lines without a colon separator
+                continue
+
+            # Remove leading/trailing whitespaces from key and value
+            key = key.strip()
+            value = value.strip()
+
+            if '<->' in value:
+                v1 = value.split('<->')[0].strip()
+                v2 = value.split('<->')[1].strip()
+            else:
+                v1 = value
+                v2 = None
+
+            key = re.sub(r"\s*\.+$", "", key)
+
+            variable.append(key)
+            value1.append(v1)
+            value2.append(v2)
+    
+        
+        ## get the model year and make it a separate column
+        year = value1[0]
+
+        ## convert data to data frame
+        df = pd.DataFrame({'year': year,
+                           'variable': variable, 
+                           'value1': value1, 
+                           'value2': value2})
+        
+        ## remove the duplicated first row
+        df = df.iloc[1:]
+
+        return df
 
     def grid_mask(self):
         """
