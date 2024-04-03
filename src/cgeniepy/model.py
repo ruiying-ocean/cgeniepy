@@ -201,14 +201,14 @@ class GenieModel(object):
 
         return tsvar_list
 
-    def get_ts(self, filename: str):
+    def get_ts(self, var: str):
         """
         read in time series output of GENIE
 
         :param filename: the name of the time series file
         :return: a pandas DataFrame
         """
-
+        filename = f"biogem_series_{var}.res"
         if not self.is_ensemble:
             f = join(self.model_path, "biogem", filename)
             if not file_exists(f):
