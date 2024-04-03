@@ -73,6 +73,7 @@ class ArrayVis:
         each plotting function will seek for the corresponding kwargs
         in self.aes_dict
         """
+        plt.rcParams['font.family'] = 'sans-serif'
 
         if self.array.ndim == 1:
             return self._plot_1d(*args, **kwargs)
