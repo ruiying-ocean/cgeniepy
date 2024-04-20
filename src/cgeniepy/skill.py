@@ -1,6 +1,5 @@
 import numpy as np
 from scipy.spatial import distance
-#from .grid import mask_Arctic_Med
 import matplotlib.pyplot as plt
 
 class ArrayComp:

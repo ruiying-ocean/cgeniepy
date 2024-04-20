@@ -1,5 +1,6 @@
 import pathlib
 import xml.etree.ElementTree as ET
+from cgeniepy.grid import GridOperation
 
 import numpy as np
 import pandas as pd
@@ -14,26 +15,15 @@ import mpl_toolkits.axisartist.floating_axes as fa
 import mpl_toolkits.axisartist.grid_finder as gf
 
 from .utils import efficient_log
-from .chem import Chemistry
 
-class ArrayVis:
+class GriddedDataVis:
 
     transform_crs = ccrs.PlateCarree()  # do not change
 
-    def __init__(self, array):
-
-        self.array = array
-
-        if hasattr(self.array, "units"):
-            self.units = Chemistry().format_unit(self.array.units)
-        else:
-            self.units = ""
-
-        if hasattr(self.array, "long_name"):
-            self.long_name = self.array.long_name
-        else:
-            self.long_name = ""
-
+    def __init__(self, data, attrs):
+        self.data = data
+        self.attrs = attrs
+        
         ## aesthetic parameters
         self.aes_dict = {
             ## x,ylabel
@@ -41,7 +31,7 @@ class ArrayVis:
             "facecolor_kwargs": {"c": "silver"},
             "borderline_kwargs": {"c": "black", "linewidth": 0.5},
             "outline_kwargs": {"colors": "black", "linewidth": 0.5},
-            "gridline_kwargs": {"colors": "gray", "linewidth": 0.5},
+            "gridline_kwargs": {"color": "black", "linewidth": 0.5, "linestyle": "dashed", "draw_labels": False},
             "pcolormesh_kwargs": {"shading": "auto", "cmap": plt.get_cmap("viridis")},
             "contour_kwargs": {
                 "linewidths": 0.6,
@@ -56,11 +46,11 @@ class ArrayVis:
             },
             "contourf_kwargs": {"levels": 20},
             "colorbar_label_kwargs": {
-                "label": f"{self.long_name}\n({self.units})",
+                "label": f"{self.attrs['long_name']}\n({self.attrs['units']})",
                 "size": 10,
                 "labelpad": 10,
             },
-            "colorbar_kwargs": {"fraction": 0.046, "pad": 0.04},
+            "colorbar_kwargs": {"fraction": 0.046, "pad": 0.03},
         }
 
     def plot(self, *args, **kwargs):
@@ -75,14 +65,14 @@ class ArrayVis:
         """
         plt.rcParams['font.family'] = 'sans-serif'
 
-        if self.array.ndim == 1:
+        if self.data.ndim == 1:
             return self._plot_1d(*args, **kwargs)
-        elif self.array.ndim == 2:
+        elif self.data.ndim == 2:
             return self._plot_2d(*args, **kwargs)
-        elif self.array.ndim == 3:
+        elif self.data.ndim == 3:
             return self._plot_3d(*args, **kwargs)
         else:
-            raise ValueError(f"{self.ndim} dimensions not supported")
+            raise ValueError(f"{self.data.ndim} dimensions not supported")
 
     def _plot_1d(self, *args, **kwargs):
         """
@@ -95,33 +85,69 @@ class ArrayVis:
             local_ax = kwargs.pop("ax")
 
         ## get the only dimension as x
-        dim = self.array[self.array.dims[0]]
+        dim = self.data[self.data.dims[0]]
 
         # local_ax.set_xlabel(dim.name)
         # local_ax.set_ylabel(f"{self.array.long_name} ({self.array.units})")
-        p = local_ax.plot(dim, self.array, *args, **kwargs)
+        p = local_ax.plot(dim, self.data, *args, **kwargs)
 
         return p
 
     def _plot_2d(self, *arg, **kwargs):
         "plot 2D data, e.g., map, trasect"
         ## if lon, lat then plot map
-        ## if lon, zt then plot transect
-        ## if lat, zt then plot transect
-        dims = self.array.dims
-        if "lon" in dims and "lat" in dims:
+        ## if zt or depth then plot transec   
+
+        has_lat, has_lon, has_depth, has_time = GridOperation().check_dimension(self.data.dims)
+        if has_lat and has_lon:
             return self._plot_map(*arg, **kwargs)
-        elif "zt" in dims and "lon" in dims:
-            return self._plot_transect(*arg, **kwargs)
-        elif "zt" in dims and "lat" in dims:
+        elif has_depth:
             return self._plot_transect(*arg, **kwargs)
         else:
-            raise ValueError(f"{dims} not supported")
+            raise ValueError("2D plotting not supported")
 
     def _plot_3d(self, *args, **kwargs):
         "plot 3D data = plot mutiple 2D plots"
-        print("3D plot not supported yet")
-        pass
+        has_lat, has_lon, has_depth, has_time = GridOperation().check_dimension(self.data.dims)
+        
+        if has_time:
+            time_order = GridOperation().dim_order(self.data.dims)[0]
+            time_name = self.data.dims[time_order]
+            time_arr = self.data[time_name]
+
+            # Determine the optimal number of columns and rows for subplots
+            num_plots = len(time_arr)
+            ncols = min(num_plots, 4)  # Maximum of 4 columns
+            nrows = (num_plots + ncols - 1) // ncols  # Calculate the required number of rows
+
+            # Create a figure and axis objects
+            fig, axs = plt.subplots(nrows=nrows, ncols=ncols, figsize=(6 * ncols, 3 * nrows), squeeze=False)
+
+            # Flatten the axes array for easier iteration
+            axs = axs.flatten()
+
+            # Create a common colorbar
+            vmin = np.min([self.data.isel(time=i).values.min() for i in range(num_plots)])
+            vmax = np.max([self.data.isel(time=i).values.max() for i in range(num_plots)])
+
+
+            # Plot the data for each time step
+            for i, ax in enumerate(axs):
+                if i < num_plots:
+                    im = self.data.isel(time=i).plot(ax=ax,add_colorbar=False)
+
+                # Hide unused axes
+                if i >= num_plots:
+                    ax.set_visible(False)
+
+            # Add a common colorbar to the figure
+            plt.colorbar(im, ax=axs.tolist(), orientation='horizontal', label=f"{self.attrs['long_name']} ({self.attrs['units']})", fraction=0.046, pad=0.05)
+
+            # Adjust spacing between subplots
+            fig.subplots_adjust(hspace=0.5, wspace=0.5)
+        else:
+            raise ValueError("Not support 3D plot iterating over other dimension than time")
+    
 
     def _plot_map(
         self,
@@ -137,11 +163,15 @@ class ArrayVis:
         **kwargs,
     ):
 
-        x_name = self.array.dims[1]  ## lon
-        y_name = self.array.dims[0]  ## lat
+        dim_order = GridOperation().dim_order(self.data.dims)
+        lat_order = dim_order[0] ## in the case of 2D, lat is the first dimension
+        lon_order = dim_order[1] ## in the case of 2D, lon is the second dimension
 
-        x_arr = self.array[x_name]
-        y_arr = self.array[y_name]
+        x_name = self.data.dims[lon_order]  ## lon
+        y_name = self.data.dims[lat_order]  ## lat
+
+        x_arr = self.data[x_name]
+        y_arr = self.data[y_name]
 
         x_edge = np.linspace(-260, 100, x_arr.size + 1)
         y_edge = np.rad2deg(np.arcsin(np.linspace(-1, 1, y_arr.size + 1)))
@@ -259,11 +289,15 @@ class ArrayVis:
         outline_kwargs = {'outline_color': 'red', 'outline_width': .5}
         """
 
-        x_name = self.array.dims[1]  ## lat
-        y_name = self.array.dims[0]  ## zt
+        dim_order = GridOperation().dim_order(self.data.dims)
+        zt_order = dim_order[0] ## in the case of 2D, zt is the first dimension
+        lat_order = dim_order[1] ## in the case of 2D, lat is the second dimension
+        
+        x_name = self.data.dims[lat_order]  ## lat
+        y_name = self.data.dims[zt_order]  ## zt
 
-        x_arr = self.array[x_name]
-        y_arr = self.array[y_name]
+        x_arr = self.data[x_name]
+        y_arr = self.data[y_name]
 
         if "ax" not in kwargs:
             fig, local_ax = self._init_fig(figsize=(6, 3))
@@ -310,12 +344,12 @@ class ArrayVis:
         ## reverse y axis
         local_ax.set_ylim(local_ax.get_ylim()[::-1])
         local_ax.set_ylabel(
-            "Depth (m)",
+            y_name,
             fontsize=self.aes_dict["general_kwargs"]["fontsize"],
             font=self.aes_dict["general_kwargs"]["font"],
         )
         local_ax.set_xlabel(
-            x.split("_")[0],
+            x_name,
             fontsize=self.aes_dict["general_kwargs"]["fontsize"],
             font=self.aes_dict["general_kwargs"]["font"],
         )
@@ -324,6 +358,7 @@ class ArrayVis:
         local_ax.tick_params(
             axis="both",
             which="major",
+            direction="in",
             labelsize=self.aes_dict["general_kwargs"]["fontsize"],
             labelfontfamily=self.aes_dict["general_kwargs"]["font"],
         )
@@ -344,13 +379,13 @@ class ArrayVis:
         return plt.subplots(dpi=120, *args, **kwargs)
 
     def _add_pcolormesh(self, ax, x, y, *args, **kwargs):
-        return ax.pcolormesh(x, y, self.array, *args, **kwargs)
+        return ax.pcolormesh(x, y, self.data, *args, **kwargs)
 
     def _add_contour(self, ax, x, y, *args, **kwargs):
-        return ax.contour(x, y, self.array, *args, **kwargs)
+        return ax.contour(x, y, self.data, *args, **kwargs)
 
     def _add_contourf(self, ax, x, y, *args, **kwargs):
-        return ax.contourf(x, y, self.array, *args, **kwargs)
+        return ax.contourf(x, y, self.data, *args, **kwargs)
 
     def _add_contour_label(self, ax, cs, *args, **kwargs):
         ax.clabel(cs, cs.levels[::2], *args, **kwargs)
@@ -376,7 +411,7 @@ class ArrayVis:
         """
         draw outlines for the NA grids
         """
-        mask_array = np.where(~np.isnan(self.array), 1, 0)
+        mask_array = np.where(~np.isnan(self.data), 1, 0)
 
         Ny_edge = len(y)
         Nx_edge = len(x)
@@ -421,17 +456,39 @@ class ArrayVis:
         cbar.outline.set_linewidth(0.5)
 
 
-class ScatterVis:
-    "Visualisation object based on dataframe"
+class ScatterDataVis:
+    "Visualisation object based on ScatterData object"
 
-    def __init__(self, df):
-        self.df = df
+    def __init__(self, data, var, dims):
+        self.data = data
+        self.var = var
+        self.dims = dims
+        self.ndim = len(dims)
 
     def _init_fig(self, *args, **kwargs):
         return plt.subplots(dpi=120, *args, **kwargs)
 
-    def plot_map(
+    def plot(self, plotting_dim, *args, **kwargs):
+        """
+        visualise the data based on the dimension of the data
+        """
+        plt.rcParams['font.family'] = 'sans-serif'
+
+        match len(plotting_dim):
+            case 1:
+                return self._plot_1d(*args, **kwargs)
+            case 2:
+                if "lon" in plotting_dim and "lat" in plotting_dim:
+                    return self._plot_map(dims=plotting_dim,*args, **kwargs)
+                elif "lon" in plotting_dim and "depth" in plotting_dim:
+                    return self._plot_transect(*args, **kwargs)
+            case _:
+                raise ValueError(f"{plotting_dim} not supported")
+
+
+    def _plot_map(
         self,
+        dims,
         ax=None,
         log=False,
         land_mask=True,
@@ -441,8 +498,6 @@ class ScatterVis:
         """plot map based on dataframe with latitude/longitude
         using cartopy as engine
 
-        :param df: pandas dataframe
-        :param var: variable (column) in dataframe to plot
         :param x: coordinate attribute, default "Longitude"
         :param y: coordinate attribute, default "Latitude"
         :param interpolate: whether interpolate scatter data
@@ -461,15 +516,15 @@ class ScatterVis:
             ax.add_feature(cfeature.COASTLINE.with_scale("110m"), zorder=3)
 
         if log:
-            self.df[self.var] = efficient_log(self.df[self.var])
+            self.data[self.var] = efficient_log(self.data[self.var])
 
-        if self.df[self.var].dtype != float:
-            self.df[self.var] = self.df[self.var].astype(float)
+        if self.data[self.var].dtype != float:
+            self.data[self.var] = self.data[self.var].astype(float)
 
         p = ax.scatter(
-            x=self.df[self.lon],
-            y=self.df[self.lat],
-            c=self.df[self.var],
+            x=self.data[dims[0]],
+            y=self.data[dims[1]],
+            c=self.data[self.var],
             transform=ccrs.PlateCarree(),
             *args,
             **kwargs,
@@ -477,7 +532,7 @@ class ScatterVis:
 
         return p
 
-    def plot_transect(
+    def _plot_transect(
         self,
         ax=None,
         bathy_lon=None,
@@ -487,13 +542,13 @@ class ScatterVis:
         if not ax:
             fig, ax = self._init_fig()
 
-        if self.df[self.var].dtype != float:
-            self.df[self.var] = self.df[self.var].astype(float)
+        if self.data[self.var].dtype != float:
+            self.data[self.var] = self.data[self.var].astype(float)
             
         p = ax.scatter(
-            x=self.df[self.lat],
-            y=self.df[self.depth],
-            c=self.df[self.var],
+            x=self.data[self.lat],
+            y=self.data[self.depth],
+            c=self.data[self.var],
             *args,
             **kwargs,
         )        
@@ -503,9 +558,9 @@ class ScatterVis:
             bathy = xr.open_dataset(data_dir / "data/GEBCO2002_bathy.nc")
 
             ## get the lat range
-            min_lat = self.df[self.lat].min()
-            max_lat = self.df[self.lat].max()
-            min_depth = self.df[self.depth].min()
+            min_lat = self.data[self.lat].min()
+            max_lat = self.data[self.lat].max()
+            min_depth = self.data[self.depth].min()
 
             up = bathy.z.sel(lon=slice(*bathy_lon)).mean(dim="lon")
             # up = up.sel(lat=slice(min_lat, max_lat))

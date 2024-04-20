@@ -3,7 +3,6 @@ import numpy as np
 import re
 
 from .model import GenieModel
-#from .data import foram_groups
 
 class EcoModel(GenieModel):
     """
@@ -144,17 +143,3 @@ class EcoModel(GenieModel):
             fullstring = f"eco2D_{prefix}_{element}_Total"
         
         return self.get_var(fullstring)
-
-    def get_foram(self, foram_type, *args, **kwargs):
-
-        "a more specific version of get_pft, to select foram"
-        
-        ## convert foram type to pft index
-        if isinstance(foram_type, (list, tuple)):
-            self.pft_index = [foram_groups().get(foram)[0] for foram in foram_type]
-        else:
-            self.pft_index = foram_groups()[foram_type][0]
-
-        return self.get_pft(self.pft_index, *args, **kwargs)
-
-    ## [ ] Add support for relative abundance calculation

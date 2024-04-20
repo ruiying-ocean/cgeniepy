@@ -221,8 +221,11 @@ class Chemistry:
         if 'o/oo' in input_str:
             input_str = input_str.replace('o/oo', '‰')
             
-        if 'degree' in input_str:
-            input_str = input_str.replace('degree', '°')
+        if 'degrees' in input_str:
+            input_str = input_str.replace('degrees', '°')
+
+        if 'degC' in input_str:
+            input_str = input_str.replace('degC', '°C')            
 
         ## when exponent is negative  (e.g., m-2, m-3)
         if '-' in input_str:
@@ -277,6 +280,10 @@ class Chemistry:
         """
         if input == 'n/a':
             return None
+
+        if '{' in input or '}' in input:
+            return input
+        
         unit_list = input.split(" ")
         unit_list = [self.format_base_unit(i, *args, **kwargs) for i in unit_list]
 

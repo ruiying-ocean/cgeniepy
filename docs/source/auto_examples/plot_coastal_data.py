@@ -21,4 +21,4 @@ sst = pi_model.get_var('ocn_sur_temp').isel(time=-1)
 gc = pi_model.grid_category()
 
 ## coastal region
-xr.where(gc == 0, sst.array.values, np.nan).plot()
+xr.where(gc == 0, sst.data.values, np.nan).plot()

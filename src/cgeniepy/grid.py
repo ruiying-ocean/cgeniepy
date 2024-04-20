@@ -198,6 +198,62 @@ class GridOperation:
         lat2, lon2 = points2[:, 0], points2[:, 1]
         return self.haversine_distance(lat1, lon1, lat2, lon2)
 
+    def check_dimension(self,input):
+        # Convert tuple elements to lowercase
+        input_lower = tuple(element.lower() for element in input)
+
+        # Initialize flags for presence of each element
+        has_lat = False
+        has_lon = False
+        has_depth = False
+        has_time = False
+
+        lat_candidates = ['lat', 'latitude', 'y']
+        lon_candidates = ['lon', 'longitude', 'x']
+        depth_candidates = ['depth', 'z', 'z_t', 'level', 'nlevel', 'lvl','lev', 'depth_1']
+        time_candidates = ['time', 't', 'age', 'date', 'year']
+
+        # Check for presence of each element
+        for element in input_lower:
+            if element in lat_candidates:
+                has_lat = True
+            if element in lon_candidates:
+                has_lon = True
+            if element in depth_candidates:
+                has_depth = True
+            if element in time_candidates:
+                has_time = True
+
+        return has_lat, has_lon, has_depth, has_time
+
+    def dim_order(self,input):
+        """
+        Determine the order of dimensions in the input data array
+
+        return: tuple of index in the input data
+
+        Example: input = ('lat', 'lon', 'depth')
+                 return: (2, 0, 1) (always follow time, depth, lat, lon)
+        """
+        order = []
+        input_lower = tuple(element.lower() for element in input)
+
+        dim_candidates = [
+            ['time', 't', 'age', 'date', 'year'],
+            ['depth', 'z', 'z_t', 'level', 'nlevel', 'lvl', 'lev', 'depth_1'],
+            ['lat', 'latitude', 'y'],
+            ['lon', 'longitude', 'x']
+        ]
+
+        for candidates in dim_candidates:
+            for candidate in candidates:
+                if candidate in input_lower:
+                    order.append(input_lower.index(candidate))
+                    break
+
+        return tuple(order)
+        
+
 class Interporaltor:
     
     def __init__(self, dims, coordinates, values, grid_number=200, method="r-linear"):

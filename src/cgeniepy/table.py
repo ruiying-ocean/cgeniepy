@@ -7,34 +7,57 @@ from io import StringIO
 
 from cgeniepy.grid import Interporaltor
 
-from .skill import DataFrameComp
-from .plot import ScatterVis
+from .plot import ScatterDataVis
 from .array import GriddedData
 
-class ScatterData(ScatterVis):
+class ScatterData:
     """ScatterData is a class to store non-gridded data, often seen in the observations
     """
 
-    def __init__(self, path: str, *args, **kwargs):
+    def __init__(self, input, var_col, dim_col=None, *args, **kwargs):
         """
         Initialize a ScatterData object.
 
         Parameters:
-        path (str): The path to the file or the data.
+        input: The input to the file or the data.
         coord_cols (dict): A dictionary specifying the coordinate columns.
-
-        *args: Additional positional arguments to be passed to pd.read_csv().
-        **kwargs: Additional keyword arguments to be passed to pd.read_csv().
         """
-        if path.endswith(".tab"):
-            data = self.parse_tab_file(path)
-            self.df= pd.read_csv(StringIO(data), *args, **kwargs)
-        elif path.endswith("xlsx"):
-            self.df = pd.read_excel(path, *args, **kwargs)                
-        else:
-            self.df = pd.read_csv(path, *args, **kwargs)
+        ## if already a dataframe
+        if isinstance(input, pd.DataFrame):
+            self.data = input
 
-        self.dims = []
+        ## if a file path then read the file into a dataframe
+        if isinstance(input, str):
+            if input.endswith(".tab"):
+                data = self.parse_tab_file(input)
+                self.data= pd.read_csv(StringIO(data), *args, **kwargs)
+            elif input.endswith("xlsx"):
+                self.data = pd.read_excel(input, *args, **kwargs)                
+            else:
+                self.data = pd.read_csv(input, *args, **kwargs)
+
+        self.var = var_col
+
+        ## if provided coordinate column names
+        if not dim_col:
+            self.dims = []
+            for col in self.data.columns:
+                if 'lon' or 'longitude' in col.lower():
+                    self.lon = self.data[col]
+                    self.dims.append(col)
+                if 'lat' or 'latitude' in col.lower():
+                    self.lat = self.data[col]
+                    self.dims.append(col)
+                if 'depth' in col.lower():
+                    self.depth = self.data[col]
+                    self.dims.append(col)                    
+        else:
+            self.dims = dim_col
+
+        ## check the datatype of the coordinate columns
+        for col in self.dims:
+            if self.data[col].dtype != 'float64':
+                self.data[col] = self.data[col].astype('float64')
 
 
     def parse_tab_file(self, filename, begin_cmt = '/*', end_cmt = '*/'):
@@ -62,33 +85,8 @@ class ScatterData(ScatterVis):
         data = '\n'.join(lines)
         return data
 
-    def specify_cols(self, dim_cols: dict, var_col: str):
-        "assign coordinate and variable columns"
-        self._check_cols(list(dim_cols.values()) + [var_col])
-        
-        ## if all the cols are given in name
-        if 'lon' in dim_cols:
-            self.lon = dim_cols['lon']
-            self.dims.append(self.lon)
-        if 'lat' in dim_cols:
-            self.lat = dim_cols['lat']
-            self.dims.append(self.lat)
-        if 'age' in dim_cols:
-            self.age = dim_cols['age']
-            self.dims.append(self.age)
-        if 'depth' in dim_cols:
-            self.depth = dim_cols['depth']
-            self.dims.append(self.depth)
-            
-        self.var = var_col
-
-        ## check the datatype of the coordinate columns
-        for col in self.dims:
-            if self.df[col].dtype != 'float64':
-                self.df[col] = self.df[col].astype('float64')
-
     def __getitem__(self, item):
-        return self.df[item]
+        return self.data[item]
     
     def _check_cols(self, cols):
         """
@@ -101,7 +99,7 @@ class ScatterData(ScatterVis):
             ValueError: If any of the columns are not found in the dataframe.
         """
         for col in cols:
-            if col not in self.df.columns:
+            if col not in self.data.columns:
                 raise ValueError(f"{col} not found in the dataframe")
 
     def detect_basin(self):
@@ -117,29 +115,13 @@ class ScatterData(ScatterVis):
         file_path = pathlib.Path(__file__).parent.parent / "data/oceans/oceans.shp"
         oceans = gpd.read_file(file_path)
         
-        self.df['basin'] = self.df.apply(lambda row: detect_basin(row[self.lon], row[self.lat]), axis=1)
+        self.data['basin'] = self.data.apply(lambda row: detect_basin(row[self.lon], row[self.lat]), axis=1)
         print("basin column added to the dataframe!")
-
-    def lookup_model(self, gridded_data, new_col='model_var'):
-        ## find the nearest model value given the coordinate columns
-        modelvar = []
-        for i in range(len(self.df)):
-            lat = self.df[self.lat].iloc[i]
-            lon = self.df[self.lon].iloc[i]
-            kwargs = {'lat': lat, 'lon':lon, 'method': 'nearest'}
-            var = gridded_data.search_grid(**kwargs).values
-            modelvar.append(var)
-        self.df[new_col] = modelvar
-        print("model column added to the dataframe!")
-
-        ## create a model-data comparison object
-        comp = DataFrameComp(self.df, new_col, self.var)
-        return comp
 
     def to_xarray(self):
         "convert to xarray dataset"
         ## set the coordinate using the data from self.coordinates         
-        return self.df.set_index(self.dims, inplace=False).to_xarray()
+        return self.data.set_index(self.dims, inplace=False).to_xarray()
 
     def to_gridded(self):
         "convert to gridded data"
@@ -148,12 +130,11 @@ class ScatterData(ScatterVis):
 
     def interpolate(self):
         ## a tuple of coordinate arrays
-        coords =  tuple([self.df[dim].values for dim in self.dims])
+        coords =  tuple([self.data[dim].values for dim in self.dims])
         ## array values
-        values = self.df[self.var].values
+        values = self.data[self.var].values
         dims = self.dims
         return Interporaltor(dims, coords, values, 200, 'ir-linear')
-
 
     def to_genie(
         self,
@@ -177,7 +158,7 @@ class ScatterData(ScatterVis):
         For example, covert any data < 0.03 to 0. Work same to high_threshold/new_high_bound.
         """
 
-        df = self.df.copy()
+        df = self.data.copy()
 
         # subset
         df = df[["Longitude", "Latitude", "Observation"]]
@@ -236,4 +217,9 @@ class ScatterData(ScatterVis):
         
     def drop_na(self):
         "drop rows with NA values"
-        self.df = self.df.dropna()
+        self.data = self.data.dropna()
+
+
+    def plot(self, *args, **kwargs):
+        "plot the data"
+        ScatterDataVis(self.data, self.var, self.dims).plot(*args, **kwargs)

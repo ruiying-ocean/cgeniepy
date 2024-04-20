@@ -2,6 +2,7 @@ from os.path import join
 from typing import Union, List, Tuple
 from pathlib import Path
 import re
+import warnings
 
 import pandas as pd
 from netCDF4 import Dataset
@@ -44,7 +45,7 @@ class GenieModel(object):
                 raise ValueError(f"{model_path} is not a valid directory")
 
         if not gemflag:
-            print(">>> No gemflag is provided, use default gemflags: [biogem]")
+            warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
             self.gemflag = ["biogem"]
         else:
             self.gemflag = gemflag
@@ -137,7 +138,7 @@ class GenieModel(object):
             combined_ds.coords["model"] = self.model_path
             return combined_ds
 
-    def get_var(self, var: Union[str, List, Tuple], unit=None):
+    def get_var(self, var: Union[str, List, Tuple], attrs=None, mutable=True):
         """
         Get the data of target variable.
         A list of variables is supported as well.
@@ -165,21 +166,12 @@ class GenieModel(object):
             array = xr.concat(array_container, "variable")
             array.name = "ensemble_variable"
 
-        ## initialise GenieArray
-        target_data = GriddedData(array)
-        try:
-            c = Chemistry()
-            target_data.array.attrs["units"] = c.format_unit(
-                target_data.array.attrs["units"]
-            )
-        except KeyError:
-            print("Unit not found in cGENIE output, please check the FORTRAN code!")
-
-        ## add unit if provided
-        if not unit:
-            target_data.array.attrs["units"] = unit
-
-        return target_data
+        ## initialise GriddedData object
+        if not attrs:
+            return GriddedData(array, mutable=mutable, attrs=array.attrs)
+        else:
+            return GriddedData(array, mutable=mutable, attrs=attrs)
+            
 
     def tsvar_list(self):
         """list all files biogem timeseries files
@@ -208,8 +200,9 @@ class GenieModel(object):
         :param filename: the name of the time series file
         :return: a pandas DataFrame
         """
-        filename = f"biogem_series_{var}.res"
+
         if not self.is_ensemble:
+            filename = f"biogem_series_{var}.res"            
             f = join(self.model_path, "biogem", filename)
             if not file_exists(f):
                 raise ValueError(f"{f} does not exist")
@@ -236,6 +229,7 @@ class GenieModel(object):
 
             for path in self.model_path:
                 ## do the same thing as above
+                filename = f"biogem_series_{var}.res"
                 f = join(path, "biogem", filename)
                 if not file_exists(f):
                     raise ValueError(f"{f} does not exist")
@@ -321,7 +315,7 @@ class GenieModel(object):
         either calculated from existing data or using biogem.grid_mask
         """
         try:
-            grid_mask = self.get_var("grid_mask").array
+            grid_mask = self.get_var("grid_mask").data
             return grid_mask
         except ValueError:
             print("grid_mask not found!")
@@ -370,8 +364,8 @@ class GenieModel(object):
         ocn_mask = self.grid_mask_3d()
         try:
             grid_volume = depth * grid_area * ocn_mask 
-            grid_volume.array.attrs["units"] = "m$^{3}$"
-            grid_volume.array.attrs["long_name"] = "grid volume"
+            grid_volume.data.attrs["units"] = "m$^{3}$"
+            grid_volume.data.attrs["long_name"] = "grid volume"
             print("grid volume calculated in the unit of 'm3'")
         except ValueError:
             print(
