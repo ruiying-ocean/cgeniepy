@@ -169,7 +169,11 @@ class GriddedDataVis:
         x_arr = self.data[x_name]
         y_arr = self.data[y_name]
 
-        x_edge = np.linspace(-260, 100, x_arr.size + 1)
+        x_min = x_arr.min()
+        x_max = x_arr.max()
+        x_res = x_arr[1] - x_arr[0]
+        x_edge = np.linspace(x_min-x_res, x_max+x_res, x_arr.size + 1)
+
         y_edge = np.rad2deg(np.arcsin(np.linspace(-1, 1, y_arr.size + 1)))
 
         if "ax" not in kwargs:
