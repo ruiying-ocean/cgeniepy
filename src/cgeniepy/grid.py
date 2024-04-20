@@ -21,11 +21,8 @@ class GridOperation:
     
     def lon_n2g(self, x):
         """
-        Change parts of observational latitude [100, 180] to GENIE longitude [-260, -180]
-        Note it isn't axisymmetric!
+        Change normal longitude to GENIE longitude
         """
-        # TBD: add value range checker
-
         if x > 100 and x < 180:
             return x - 360
         else:
@@ -33,29 +30,60 @@ class GridOperation:
 
     def lon_g2n(self, x):
         """
-        Change parts of observational latitude [100, 180] to GENIE longitude [-260, -180]
-        CANNOT simply use +80, or -80! It isn't axisymmetric!
+        Change GENIE longitude to normal longitude
         """
-        # TBD: add value range checker
 
         if x < -180:
             return x + 360
         else:
             return x
 
-    def normalise_obs_lon(self, data: xr.Dataset) -> xr.Dataset:
+    def lon_e2n(self, x):
+        """
+        Change eastern longitude to normal longitude
+        """
+        if x > 180:
+            return x - 360
+        else:
+            return x
+
+    def lon_n2e(self, x):
+        """
+        normal longitude (-180, 180) to longitude east(0,360)
+        """
+        if x < 0:
+            return 360 + x
+        else:
+            return x
+
+    def apply_n2g(self, data: xr.Dataset, longitude="lon") -> xr.Dataset:
         return data.assign_coords(
-            {"lon": list(map(self.lon_n2g, data.lon.values))}
+            {longitude: list(map(self.lon_n2g, data[longitude].values))}
         ).sortby("lon")
 
-    def normalise_GENIE_lon(self, data: xr.Dataset) -> xr.Dataset:
+    def apply_g2n(self, data: xr.Dataset, longitude="lon") -> xr.Dataset:
         """
-        Change parts of observational latitude [100, 180] to GENIE longitude [-260, -180]
+        Change GENIE longitude to normal longitude
         """
-        ## if hasattr(data, "assign_coords"):
         return data.assign_coords(
-            {"lon": list(map(self.lon_g2n, data.lon.values))}
-        ).sortby("lon")
+            {longitude: list(map(self.lon_g2n, data[longitude].values))}
+        ).sortby(longitude)
+
+    def apply_e2n(self, data: xr.Dataset, longitude="lon") -> xr.Dataset:
+        """
+        Change eastern longitude to normal longitude
+        """
+        return data.assign_coords(
+            {longitude: list(map(self.lon_e2n, data[longitude].values))}
+        ).sortby(longitude)
+
+    def apply_n2e(self, data: xr.Dataset, longitude="lon") -> xr.Dataset:
+        """
+        Change normal longitude to eastern longitude
+        """
+        return data.assign_coords(
+            {longitude: list(map(self.lon_n2e, data[longitude].values))}
+        ).sortby(longitude)
 
     def mask_Arctic_Med(self, array, policy="na"):
         """

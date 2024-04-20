@@ -126,11 +126,6 @@ class GriddedDataVis:
             # Flatten the axes array for easier iteration
             axs = axs.flatten()
 
-            # Create a common colorbar
-            vmin = np.min([self.data.isel(time=i).values.min() for i in range(num_plots)])
-            vmax = np.max([self.data.isel(time=i).values.max() for i in range(num_plots)])
-
-
             # Plot the data for each time step
             for i, ax in enumerate(axs):
                 if i < num_plots:

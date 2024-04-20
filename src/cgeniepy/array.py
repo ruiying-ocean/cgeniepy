@@ -93,7 +93,7 @@ class GriddedData():
         else:
             return GriddedData(self.data.isel(*args, **kwargs), mutable=False, attrs=self.attrs)
     
-    def normalise_longitude(self):
+    def normalise_longitude(self, method='g2n', *args, **kwargs):
         """Normalise GENIE's longitude (eastern degree) to normal longitude (-180, 180)
 
         -----------
@@ -104,11 +104,23 @@ class GriddedData():
         >>> Model.get_var('abc').normalise_longitude()
         """
         gp = GridOperation()
+
+        match method:
+            case 'g2n':
+                output = gp.apply_g2n(self.data, *args, **kwargs)
+            case 'n2g':
+                output = gp.apply_n2g(self.data, *args, **kwargs)
+            case 'e2n':
+                output = gp.apply_e2n(self.data, *args, **kwargs)
+            case 'n2e':
+                output = gp.apply_n2e(self.data, *args, **kwargs)
+
         if self.mutable:
-            self.data = gp.normalise_GENIE_lon(self.data)
-            return self
+            self.data = output
+            return self        
         else:
-            return GriddedData(gp.normalise_GENIE_lon(self.data), mutable=False, attrs=self.attrs)
+             return GriddedData(output, mutable=False, attrs=self.attrs)
+                    
 
     def __add__(self, other):
         """Allow GriddedData to be added by a number or another GriddedData
