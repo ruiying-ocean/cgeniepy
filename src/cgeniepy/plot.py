@@ -154,7 +154,7 @@ class GriddedDataVis:
         facecolor=True,
         borderline=True,
         gridline=False,
-        landmask=False,
+        cfeature=None,
         *args,
         **kwargs,
     ):
@@ -246,8 +246,8 @@ class GriddedDataVis:
                 **self.aes_dict["contourf_kwargs"],
             )
 
-        if landmask:
-            self._add_landmask(local_ax)
+        if cfeature:
+            self._add_cfeature(local_ax, cfeature)
 
         if pcolormesh:
             return p_pcolormesh
@@ -458,9 +458,13 @@ class GriddedDataVis:
         cbar.outline.set_edgecolor("black")
         cbar.outline.set_linewidth(0.5)
 
-    def _add_landmask(self, ax):
+    def _add_cfeature(self, ax, feature_name):
         """add natural earth mask"""
-        ax.add_feature(cfeature.LAND.with_scale("110m"), zorder=10, facecolor="silver")
+
+        feature = cfeature.NaturalEarthFeature('physical', feature_name, '110m',
+                                        edgecolor='black', facecolor='silver')
+        ## use ax's transform
+        ax.add_feature(feature, zorder=10)
 
 
 class ScatterDataVis:
