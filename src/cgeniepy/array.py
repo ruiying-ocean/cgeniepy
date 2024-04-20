@@ -353,9 +353,14 @@ class GriddedData():
             kwargs = dict(zip(self.data.dims, point), method='nearest')
             return self.data.sel(**kwargs).values.item()
 
+    def to_GriddedDataVis(self):
+        """
+        convert GriddedData to GriddedDataVis
+        """
+        return GriddedDataVis(self.data, self.attrs)
 
     def plot(self, *args, **kwargs):
         """
         plot the data using GriddedDataVis
         """
-        return GriddedDataVis(self.data, self.attrs).plot(*args, **kwargs)
+        return self.to_GriddedDataVis().plot(*args, **kwargs)
