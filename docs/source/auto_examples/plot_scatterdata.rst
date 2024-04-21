@@ -19,10 +19,10 @@
 
 
 =========================================
-Plot the ScatterData
+Plot the 1D ScatterData
 =========================================
 
-This example shows how to plot the ScatterData object. I use a data file from the EDC ice core (https://doi.pangaea.de/10.1594/PANGAEA.472488) as an example.
+This example shows how to plot the 1D ScatterData object. I use a data file from the EDC ice core (https://doi.pangaea.de/10.1594/PANGAEA.472488) as an example.
 
 .. GENERATED FROM PYTHON SOURCE LINES 8-13
 
@@ -39,7 +39,7 @@ This example shows how to plot the ScatterData object. I use a data file from th
  .. code-block:: none
 
 
-    <matplotlib.collections.PathCollection object at 0x17979ff10>
+    <matplotlib.collections.PathCollection object at 0x1264661d0>
 
 
 
@@ -58,7 +58,7 @@ This example shows how to plot the ScatterData object. I use a data file from th
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.957 seconds)
+   **Total running time of the script:** (0 minutes 1.047 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_scatterdata.py:
