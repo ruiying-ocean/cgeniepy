@@ -26,8 +26,8 @@ The model also support multiple experiment directory. The only change is to use 
 This list can be create by yourself, or use Python's Pathlib module.
 
 .. code-block:: python
-    # Model ensemble
-    
+
+    # Model ensemble    
     model_dir = ['/path_a/', '/path_b/']
     
     models = GenieModel(model_dir)

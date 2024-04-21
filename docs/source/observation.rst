@@ -1,3 +1,0 @@
-Observational data
-=====================
-

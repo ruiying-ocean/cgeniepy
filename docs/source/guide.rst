@@ -14,4 +14,4 @@ Usage
 .. toctree::
    :maxdepth: 1
 
-   observation
+   computation
