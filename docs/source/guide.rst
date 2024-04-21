@@ -4,8 +4,13 @@ Usage
 .. toctree::
    :maxdepth: 1
 
-   readin
+   initialisation
 
+.. toctree::
+   :maxdepth: 1
+
+   get_variable
+   
 .. toctree::
    :maxdepth: 1
 

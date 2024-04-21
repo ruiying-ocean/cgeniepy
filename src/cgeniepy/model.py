@@ -55,6 +55,7 @@ class GenieModel(object):
 
         self.model_path = model_path
         self.ncvar_dict = self._ncvar_dict()
+        self.tsvar_list = self.tsvar_list()
 
     def _model_ncpath(self, gem="ecogem", dim="2d"):
         """
