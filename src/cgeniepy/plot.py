@@ -16,13 +16,14 @@ import mpl_toolkits.axisartist.grid_finder as gf
 
 from .utils import efficient_log
 
+
 class GriddedDataVis:
 
     transform_crs = ccrs.PlateCarree()  # do not change
 
-    def __init__(self, data, attrs):
-        self.data = data
-        self.attrs = attrs
+    def __init__(self, gd):
+        self.data = gd.data
+        self.attrs = gd.attrs
         
         ## aesthetic parameters
         self.aes_dict = {
@@ -470,36 +471,59 @@ class GriddedDataVis:
 class ScatterDataVis:
     "Visualisation object based on ScatterData object"
 
-    def __init__(self, data, var, dims):
-        self.data = data
-        self.var = var
-        self.dims = dims
-        self.ndim = len(dims)
+    def __init__(self, sd):
+        self.data = sd.data.reset_index(inplace=False)
+        self.index = sd.index
+
+        gp = GridOperation()
+        gp.set_coordinates(obj=self, index=self.index)
 
     def _init_fig(self, *args, **kwargs):
-        return plt.subplots(dpi=120, *args, **kwargs)
+        return plt.subplots(*args, **kwargs)
 
-    def plot(self, plotting_dim, *args, **kwargs):
+    def plot(self, var, *args, **kwargs):
         """
         visualise the data based on the dimension of the data
         """
         plt.rcParams['font.family'] = 'sans-serif'
 
-        match len(plotting_dim):
+        match len(self.index):
             case 1:
-                return self._plot_1d(*args, **kwargs)
+                return self._plot_1d(var=var, *args, **kwargs)
             case 2:
-                if "lon" in plotting_dim and "lat" in plotting_dim:
-                    return self._plot_map(dims=plotting_dim,*args, **kwargs)
-                elif "lon" in plotting_dim and "depth" in plotting_dim:
-                    return self._plot_transect(*args, **kwargs)
+                if hasattr(self, 'lat') and hasattr(self, 'lon'):
+                    return self._plot_map(var=var, *args, **kwargs)
+                elif hasattr(self, 'depth') and hasattr(self, 'lat'):
+                    return self._plot_transect(var=var,*args, **kwargs)
+                else:
+                    raise ValueError("self.dim must be lat/lon or depth not real column name")
             case _:
-                raise ValueError(f"{plotting_dim} not supported")
+                raise ValueError("Not supported 3D and higher dimensions")
+
+    def _plot_1d(self,var, *args, **kwargs):
+        """
+        plot 1D data, e.g., zonal_average, time series
+        dim: time/lon/lat
+        """
+        if "ax" not in kwargs:
+            fig, local_ax = self._init_fig()
+        else:
+            local_ax = kwargs.pop("ax")
+
+        ## get the only dimension as x
+        x = self.data[self.index[0]]
+        y = self.data[var]
+
+        p = local_ax.scatter(x,y, *args, **kwargs)
+        local_ax.set_xlabel(self.index[0])
+        local_ax.set_ylabel(var)
+
+        return p
 
 
     def _plot_map(
         self,
-        dims,
+        var,
         ax=None,
         log=False,
         land_mask=True,
@@ -515,6 +539,7 @@ class ScatterDataVis:
 
         :returns: a map
         """
+
         if not ax:
             fig, ax = self._init_fig(subplot_kw={"projection": ccrs.EckertIV()})
 
@@ -527,15 +552,15 @@ class ScatterDataVis:
             ax.add_feature(cfeature.COASTLINE.with_scale("110m"), zorder=3)
 
         if log:
-            self.data[self.var] = efficient_log(self.data[self.var])
+            self.data[var] = efficient_log(self.data[var])
 
-        if self.data[self.var].dtype != float:
-            self.data[self.var] = self.data[self.var].astype(float)
+        if self.data[var].dtype != float:
+           self.data[var] = self.data[var].astype(float)
 
         p = ax.scatter(
-            x=self.data[dims[0]],
-            y=self.data[dims[1]],
-            c=self.data[self.var],
+            self.data[self.lon],
+            self.data[self.lat],
+            c=self.data[var],
             transform=ccrs.PlateCarree(),
             *args,
             **kwargs,
@@ -545,21 +570,25 @@ class ScatterDataVis:
 
     def _plot_transect(
         self,
+        var,
         ax=None,
         bathy_lon=None,
         *args,
         **kwargs,
     ):
+        """plot transect based on dataframe with depth/latitude
+        bathy_lon: longitude range for the bathymetry plot
+        """
         if not ax:
             fig, ax = self._init_fig()
 
-        if self.data[self.var].dtype != float:
-            self.data[self.var] = self.data[self.var].astype(float)
+        if self.data[var].dtype != float:
+            self.data[var] = self.data[var].astype(float)
             
         p = ax.scatter(
             x=self.data[self.lat],
             y=self.data[self.depth],
-            c=self.data[self.var],
+            c=self.data[var],
             *args,
             **kwargs,
         )        

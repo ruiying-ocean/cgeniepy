@@ -6,10 +6,11 @@ import regionmask
 from .grid import Interporaltor, GridOperation
 from .plot import GriddedDataVis
 from .chem import Chemistry
+import cgeniepy.table as ct
 from functools import cache
 
 
-class GriddedData():
+class GriddedData:
     """
     GriddedData is a class to store and compute GENIE netcdf data.
 
@@ -114,6 +115,8 @@ class GriddedData():
                 output = gp.apply_e2n(self.data, *args, **kwargs)
             case 'n2e':
                 output = gp.apply_n2e(self.data, *args, **kwargs)
+            case _:
+                raise ValueError("Invalid method")
 
         if self.mutable:
             self.data = output
@@ -357,10 +360,22 @@ class GriddedData():
         """
         convert GriddedData to GriddedDataVis
         """
-        return GriddedDataVis(self.data, self.attrs)
+        return GriddedDataVis(self)
 
     def plot(self, *args, **kwargs):
         """
         plot the data using GriddedDataVis
         """
         return self.to_GriddedDataVis().plot(*args, **kwargs)
+
+    def to_dataframe(self):
+        """
+        convert GriddedData to pandas.DataFrame
+        """
+        return self.data.to_dataframe()
+
+    def to_ScatterData(self):
+        """
+        convert GriddedData to ScatterData
+        """
+        return ct.ScatterData(self.to_dataframe())

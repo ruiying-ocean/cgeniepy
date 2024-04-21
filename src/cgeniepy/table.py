@@ -1,4 +1,5 @@
 import pathlib
+from cgeniepy.skill import DFComparison
 import geopandas as gpd
 from shapely.geometry import Point
 import pandas as pd
@@ -8,57 +9,45 @@ from io import StringIO
 from cgeniepy.grid import Interporaltor
 
 from .plot import ScatterDataVis
-from .array import GriddedData
+from .grid import GridOperation
+import cgeniepy.array as ca
+
 
 class ScatterData:
     """ScatterData is a class to store non-gridded data, often seen in the observations
     """
 
-    def __init__(self, input, var_col, dim_col=None, *args, **kwargs):
+    def __init__(self, data, *args, **kwargs):
         """
         Initialize a ScatterData object.
 
         Parameters:
-        input: The input to the file or the data.
+        data: The path to the file or the data.
         coord_cols (dict): A dictionary specifying the coordinate columns.
         """
         ## if already a dataframe
-        if isinstance(input, pd.DataFrame):
-            self.data = input
+        if isinstance(data, pd.DataFrame):
+            self.data = data
 
         ## if a file path then read the file into a dataframe
-        if isinstance(input, str):
-            if input.endswith(".tab"):
-                data = self.parse_tab_file(input)
+        if isinstance(data, str):
+            if data.endswith(".tab"):
+                data = self.parse_tab_file(data)
                 self.data= pd.read_csv(StringIO(data), *args, **kwargs)
-            elif input.endswith("xlsx"):
-                self.data = pd.read_excel(input, *args, **kwargs)                
+            elif data.endswith("xlsx"):
+                self.data = pd.read_excel(data, *args, **kwargs)                
             else:
-                self.data = pd.read_csv(input, *args, **kwargs)
+                self.data = pd.read_csv(data, *args, **kwargs)
 
-        self.var = var_col
+        ## if the index is already set in the data, then set the coordinates
+        if not isinstance(self.data.index, pd.core.indexes.range.RangeIndex):
+            self.index= list(self.data.index.names)
+            GridOperation().set_coordinates(obj=self, index=self.index)
 
-        ## if provided coordinate column names
-        if not dim_col:
-            self.dims = []
-            for col in self.data.columns:
-                if 'lon' or 'longitude' in col.lower():
-                    self.lon = self.data[col]
-                    self.dims.append(col)
-                if 'lat' or 'latitude' in col.lower():
-                    self.lat = self.data[col]
-                    self.dims.append(col)
-                if 'depth' in col.lower():
-                    self.depth = self.data[col]
-                    self.dims.append(col)                    
-        else:
-            self.dims = dim_col
-
-        ## check the datatype of the coordinate columns
-        for col in self.dims:
-            if self.data[col].dtype != 'float64':
-                self.data[col] = self.data[col].astype('float64')
-
+    def set_index(self, index):
+        "set the index of the dataframe"
+        self.data.set_index(index, inplace=True)
+        self.index= index
 
     def parse_tab_file(self, filename, begin_cmt = '/*', end_cmt = '*/'):
         """
@@ -105,7 +94,7 @@ class ScatterData:
     def detect_basin(self):
         "use point-in-polygon strategy to detect modern ocean basin according to lon/lat column"
         
-        def detect_basin(lon, lat):
+        def sub_detect_basin(lon, lat):
             p = Point(lon, lat)
             ocean_name = oceans[oceans.contains(p)].Oceans.values
             if ocean_name.size > 0:
@@ -115,26 +104,36 @@ class ScatterData:
         file_path = pathlib.Path(__file__).parent.parent / "data/oceans/oceans.shp"
         oceans = gpd.read_file(file_path)
         
-        self.data['basin'] = self.data.apply(lambda row: detect_basin(row[self.lon], row[self.lat]), axis=1)
-        print("basin column added to the dataframe!")
+        result = self.data.reset_index().apply(lambda row: sub_detect_basin(row[self.lon], row[self.lat]), axis=1)
+
+        ## add to self.data
+        tmp_data = self.data.reset_index()
+        tmp_data['basin'] = result
+        tmp_index = self.index
+        y = ScatterData(tmp_data)
+        y.set_index(tmp_index)
+        return y
+
 
     def to_xarray(self):
         "convert to xarray dataset"
         ## set the coordinate using the data from self.coordinates         
-        return self.data.set_index(self.dims, inplace=False).to_xarray()
+        return self.data.to_xarray()
 
-    def to_gridded(self):
+    def to_GriddedData(self, var):
         "convert to gridded data"
-        output = GriddedData(self.to_xarray()[self.var])
+        output = ca.GriddedData(self.to_xarray()[var])
         return output
 
-    def interpolate(self):
+    def interpolate(self, var):
         ## a tuple of coordinate arrays
-        coords =  tuple([self.data[dim].values for dim in self.dims])
+        coords =  tuple([self.data.reset_index(inplace=False)[dim].values for dim in self.index])
         ## array values
-        values = self.data[self.var].values
-        dims = self.dims
-        return Interporaltor(dims, coords, values, 200, 'ir-linear')
+        values = self.data[var].values
+        dims = self.index
+        output= Interporaltor(dims, coords, values, 200, 'ir-linear')
+        return output
+
 
     def to_genie(
         self,
@@ -215,11 +214,19 @@ class ScatterData:
 
         return df_genie_wide
         
-    def drop_na(self):
+    def drop_na(self, *args, **kwargs):
         "drop rows with NA values"
-        self.data = self.data.dropna()
+        self.data = self.data.dropna(*args, **kwargs)
 
+    def to_ScatterDataVis(self):
+        "convert to ScatterDataVis"
+        return ScatterDataVis(self)
 
-    def plot(self, *args, **kwargs):
+    def plot(self, var, *args, **kwargs):
         "plot the data"
-        ScatterDataVis(self.data, self.var, self.dims).plot(*args, **kwargs)
+        return self.to_ScatterDataVis().plot(var, *args, **kwargs)
+
+    def compare(self, var1, var2):
+        "compare two ScatterData objects"
+        return DFComparison(self.data, var1, var2)
+

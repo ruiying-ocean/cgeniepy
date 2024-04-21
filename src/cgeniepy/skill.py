@@ -2,7 +2,7 @@ import numpy as np
 from scipy.spatial import distance
 import matplotlib.pyplot as plt
 
-class ArrayComp:
+class ArrComparison:
     
     "quantitatively compare similarity metrics between two 2D arrays (model and observation)"
 
@@ -155,17 +155,6 @@ class ArrayComp:
 
         return crmse
 
-    def taylor_diagram(self):
-        pass
- 
-    
-class DataFrameComp(ArrayComp):
-
-    def __init__(self, df, model_col, observation_col):
-        self.model = df[model_col].to_numpy()
-        self.data = df[observation_col].to_numpy()
-        super().__init__(self.model, self.data)
-
     def plot(self):
         ## a x-y plot
         fig, ax = plt.subplots()
@@ -173,6 +162,14 @@ class DataFrameComp(ArrayComp):
         ax.set_xlabel("Model")
         ax.set_ylabel("Observation")
         ax.set_title("Model vs Observation")
+
+    
+class DFComparison(ArrComparison):
+
+    def __init__(self, df, model_col, observation_col):
+        self.model = df[model_col].to_numpy()
+        self.data = df[observation_col].to_numpy()
+        super().__init__(self.model, self.data)
 
  
 # class TaylorDiagram(object):

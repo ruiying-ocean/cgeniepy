@@ -119,9 +119,6 @@ class GridOperation:
         grid_mask_raw = np.loadtxt(file_path, dtype=int)
         grid_mask = np.flip(np.fliplr(grid_mask_raw))
 
-        if mask_Arc_Med:
-            grid_mask = mask_Arctic_Med(grid_mask, policy="zero")
-
         if invert:
             grid_mask = ~grid_mask + 2
 
@@ -238,7 +235,8 @@ class GridOperation:
 
         lat_candidates = ['lat', 'latitude', 'y']
         lon_candidates = ['lon', 'longitude', 'x']
-        depth_candidates = ['depth', 'z', 'z_t', 'level', 'nlevel', 'lvl','lev', 'depth_1']
+        depth_candidates = ['depth', 'z', 'z_t', 'level', 'nlevel', 'lvl','lev', 'depth_1',
+                            'elevation [m]']
         time_candidates = ['time', 't', 'age', 'date', 'year']
 
         # Check for presence of each element
@@ -268,7 +266,8 @@ class GridOperation:
 
         dim_candidates = [
             ['time', 't', 'age', 'date', 'year'],
-            ['depth', 'z', 'z_t', 'level', 'nlevel', 'lvl', 'lev', 'depth_1'],
+            ['depth', 'z', 'z_t', 'level', 'nlevel', 'lvl', 'lev', 'depth_1',
+                'elevation [m]'],
             ['lat', 'latitude', 'y'],
             ['lon', 'longitude', 'x']
         ]
@@ -280,7 +279,60 @@ class GridOperation:
                     break
 
         return tuple(order)
-        
+    
+    @staticmethod
+    def set_coordinates(obj, index):
+        obj.n_index = len(index)
+        gp = GridOperation()
+        has_lat, has_lon, has_depth, has_time = gp.check_dimension(index)
+        index_order = gp.dim_order(index)
+        match obj.n_index:
+            case 1:
+                if has_lat: obj.lat = index[0]
+                if has_lon: obj.lon = index[0]                
+                if has_depth: obj.depth = index[0]
+                if has_time: obj.time = index[0]
+            case 2:
+                if has_lat and has_lon:
+                    obj.lat = index[index_order[0]]
+                    obj.lon = index[index_order[1]]
+                if has_lat and has_depth:
+                    obj.depth = index[index_order[0]]
+                    obj.lat = index[index_order[1]]
+                if has_lat and has_time:
+                    obj.time = index[index_order[0]]
+                    obj.lat = index[index_order[1]]
+                if has_lon and has_depth:
+                    obj.depth = index[index_order[0]]
+                    obj.lon = index[index_order[1]]
+                if has_lon and has_time:
+                    obj.time = index[index_order[0]]
+                    obj.lon = index[index_order[1]]
+                if has_depth and has_time:
+                    obj.time = index[index_order[0]]
+                    obj.depth = index[index_order[1]]
+            case 3:
+                if not has_lat:
+                    obj.time = index[index_order[0]]
+                    obj.depth = index[index_order[1]]
+                    obj.time = index[index_order[0]]                                          
+                if not has_lon:
+                    obj.time = index[index_order[0]]
+                    obj.depth = index[index_order[1]]
+                    obj.lat = index[index_order[2]]
+                if not has_depth:
+                    obj.time = index[index_order[0]]
+                    obj.lat = index[index_order[1]]
+                    obj.lon = index[index_order[2]]
+                if not has_time:
+                    obj.lat = index[index_order[0]]
+                    obj.lon = index[index_order[1]]
+                    obj.depth = index[index_order[2]]
+            case 4:
+                    obj.time = index[index_order[0]]
+                    obj.depth = index[index_order[1]]
+                    obj.lat = index[index_order[2]]
+                    obj.lon = index[index_order[3]]             
 
 class Interporaltor:
     
