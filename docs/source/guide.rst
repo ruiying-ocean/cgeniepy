@@ -15,3 +15,8 @@ Usage
    :maxdepth: 1
 
    computation
+
+.. toctree::
+   :maxdepth: 1
+
+   visualisation
