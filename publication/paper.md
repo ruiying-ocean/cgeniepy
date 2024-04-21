@@ -33,7 +33,7 @@ However, despite the power of cGENIE, the analysis of the model output has no co
 
 # Features
 ## A general interface to the cGENIE model output
-The first-order class for the users is the `GenieModel` class, which can be initialised by the path to the cGENIE model output directory. The class provides a `get_var` method to access the  time-slice variable stored in the netCDF format, and the `get_ts` method to render the time-series data stored in the ascii-based table format.  Once being intialised, the class will automatically index the directory, which allows the users to access the target variable without specifying the exact path to the file. 
+The first-order class for the users is the `GenieModel` class, which can be initialised by the path to the cGENIE model output directory. The class provides a `get_var` method to access the  time-slice variable stored in the netCDF format, and the `get_ts` method to render the time-series data stored in the ascii-based table format.  Once being intialised, the class will automatically index the directory, which allows the users to access the target variable without specifying the exact path to the file. Finally, the class also supports the multiple model runs (i.e., model ensemble) and the multiple variable in a single model run. This could be useful to explore the results with different model parameterisations.
 
 ```python
 ## import the package
@@ -42,18 +42,18 @@ from cgeniepy.model import GenieModel
 ## initialise a model instance bu providing the path to the model output
 model = GenieModel("/Users/yingrui/Downloads/muffin.CBE.worlg4.BASESFeTDTL.SPIN")
 
-## get the variable
+## get the time-slice variable
 ocn_po4 = model.get_var("ocn_PO4")
+## get the time-series variable
+ocn_temp_ts = model.get_ts("ocn_temp")
 ```
+
+## Data structure
+The accessed data is stored in the `GriddedData` object, a customised data structure based on the `xarray.DataArray`. 
 
 Because the package does not assume any specific model configuration, all the operations are independent to the topographies. Like in the \autoref{fig1}, I read and plot the sea surface temperature (SST) in the modern (0 Ma) and PETM (Paleogene-Eocene Thermal Maximum, 55 Ma) model output, adapted from @ying2023b and @gutjahr2017 respectively. It shows the significant warming in the PETM event, as suggested by the recent data assimilation [@tierney2022], 
 
 ![The simulated sea surface temperature in the Modern (left) and Paleogene-Eocene Thermal Maximum event (right) visualised by *cgeniepy* package. \label{fig1}](fig1.png)
-
-Finally, the class supports the multiple model runs (i.e., model ensemble) and the multiple variable in a single model run. This could be useful to explore the results with different model parameterisations.
-
-## Analysis
-The `get_var` method reads in the netCDF data and returns a `GriddedData` object which is based on `xarray.DataArray`. The `get_ts` method reads in the table-like data and returns a `pandas.DataFrame` object. Therefore, the basic computation (addition, subtraction, multiplication and division), statistical analysis (mean, standard deviation, etc.), indexing based on coordinate values can be performed directly.
 
 Additional calculation methods are provided to enrich the functionalities of the package. For example, the `GriddedData` can be interpolated to finer grid using the `interpolate()` method (\autoref{fig2}). One can mask the ocean basin by using `mask_basin()` method. It also provides a feature to allow the users to find the nearest valid value to a given coordinate using the `search_grid()` method.All the calculation will update the array attribution of the `GriddedData` object, thus the users can easily chain the calculation by using the method chaining (i.e., `data.action_a().action_b()` is supported). Because the `GriddedData` is indenpendent to the cGENIE model, in principal the users can also use the package to analyse the other ocean data (e.g., the observational data from the World Ocean Atlas).
 
@@ -65,7 +65,6 @@ atlantic_po4 = ocn_po4.isel(time=-1).mask_basin(base='worjh2',basin='Atlantic', 
 atlantic_zonal_mean_po4 = atlantic_po4.mean(dim='lon')
 ```
 
-## Visualisation
 The `GriddedData` is a subclass of `ArrayVis` which provides the `plot` method to visualise the data. The plot will automatically select a method to visualise the data based on the dimension of the data. For example, it will plot a map for data with only latitude and longitude dimension and plot a transect plot for data with only depth and latitude dimension. It will also use the unit string and the variable name (if available) to label the axis and the color bar (\autoref{fig2}).
 
 ```python

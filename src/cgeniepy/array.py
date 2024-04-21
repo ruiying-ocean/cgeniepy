@@ -9,6 +9,8 @@ from .chem import Chemistry
 import cgeniepy.table as ct
 from functools import cache
 
+import warnings
+
 
 class GriddedData:
     """
@@ -116,7 +118,9 @@ class GriddedData:
             case 'n2e':
                 output = gp.apply_n2e(self.data, *args, **kwargs)
             case _:
-                raise ValueError("Invalid method")
+                ## No change
+                warnings.warn("No change applied because of invalid method")
+                output = self.data
 
         if self.mutable:
             self.data = output
@@ -249,13 +253,16 @@ class GriddedData:
         array_ma = self.data.to_masked_array()
         return np.ma.average(array_ma, weights=weights, *args, **kwargs)        
     
-    def sel_modern_basin(self, basin):
+    def sel_modern_basin(self, basin, norm_lon_method='g2n'):
         """
         select modern basin from regionmask.defined_regions.ar6.ocean
 
         The 58 defines marine regions from the sixth IPCC assessment report (AR6), Iturbide et al., (2020) ESSD
         
         https://regionmask.readthedocs.io/en/stable/_images/plotting_ar6_all.png
+
+        :param basin: the basin index (int) or basin abbrev name (str), or a list of basin index or basin name
+        :param norm_lon_method: normalise longitude method, default is 'g2n'
         
         --------------------------------
         47: North Pacific
@@ -266,18 +273,33 @@ class GriddedData:
         51: Equatorial Atlantic Ocean
         52: Southern Atlantic Ocean
 
+        53: North Indian Ocean
+        55: Equatorial Indian Ocean
+        56: South Indian Ocean
+
         57: Southern Ocean
+        46: Arctic Ocean
         --------------------------------        
         """
         ocean = regionmask.defined_regions.ar6.ocean
-        index = ocean.map_keys(basin)
-        mask = ocean.mask(self.normalise_longitude())        
+
+        target_ocean_index = ocean.map_keys(basin)
+        mask = ocean.mask(self.normalise_longitude(method=norm_lon_method)) ## an masked array target regions are the index, others are NA
+
+        if isinstance(target_ocean_index, list):
+            cond_lst = []
+            for i in target_ocean_index:
+                cond_lst.append(mask == i)
+            cond = np.logical_or.reduce(cond_lst)
+        else:
+            cond = mask == target_ocean_index
+
 
         if self.mutable:
-            self.data = self.normalise_longitude().data.where(mask == index)                    
+            self.data = self.normalise_longitude(method=norm_lon_method).data.where(cond)                    
             return self
         else:
-            return GriddedData(self.normalise_longitude().data.where(mask == index), mutable=False, attrs=self.attrs)
+            return GriddedData(self.normalise_longitude(method=norm_lon_method).data.where(cond), mutable=False, attrs=self.attrs)
 
 
     def mask_basin(self, base, basin, subbasin):
