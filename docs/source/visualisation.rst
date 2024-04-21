@@ -18,6 +18,17 @@ The plot method is designed to be modular. You can choose different element: con
     sst.plot(colorbar=True, outline=True)
 
 
+Customisation
+----------------
+I have to admit it is not very smart to do the customisation. Instead of like `matplotlib` which you can pass all the arguments to the plotting function, I store the parameters in a dictionary to help achieve the modular design. For example, if you want to change the color map of pcolormesh plot, do it like this:
+
+.. code-block:: python
+
+    p = sst.to_GriddedDataVis()
+    p["pcolormesh_kwargs"]["cmap"] = "Spectral_r"
+    p.plot()
+
+
 
 More Examples
 -----------

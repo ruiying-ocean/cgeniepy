@@ -18,6 +18,7 @@ Any basic computation can be done like a normal xarray DataArray object. For exa
 
 
 .. code-block:: python
+
     sst = model.get_var("ocn_sur_temp")
     sst + 273.15 ## -> convert to Kelvin
     sst.mean() ## -> calculate the mean value
@@ -32,9 +33,23 @@ The selection of data can be done by using the `sel` method or `isel` method. Th
 
 
 .. code-block:: python
+
     sst = model.get_var("ocn_sur_temp", mutable=False)
     sst.isel(time=-1) ## -> select the last time slice
     sst.sel(sst.data.lat > 0) ## -> select the data in the northern hemisphere
+
+
+Search the nearest point
+----------------------------
+It is useful to do the model-data comparison by finding the nearest point in the model output. The `search_point` method is designed to achieve this. By default, it uses xarray's `sel` method to find the nearest point. However, by passing the argument `ignore_na=True`, it will ignore the missing value in the data. This is my own implementation (inspired by the issue in xarray) based on geodistance calculation. But of course it is significantly slower than the xarray's method.
+
+The only input is the coordinate of the point you want to search in the order of data's dimension. For example, if the data is 3D (time, lat, lon), you need to pass the coordinate in the order of (time, lat, lon).
+
+.. code-block:: python
+    
+    sst = model.get_var("ocn_sur_temp")
+    point = (0, 50) ## lat, lon
+    sst.search_point(point)
 
 
 Mask data
@@ -43,6 +58,7 @@ Similar to the selection of data by coordinate (time, lat, long etc), you can ma
 
 
 .. code-block:: python
+
     sst = model.get_var("ocn_sur_temp", mutable=False)
     sst.mask_basin(base="worjh2", basin='Atlantic') ## -> mask the other oceans except Atlantic basin
 
@@ -51,6 +67,7 @@ The other way is to use `sel_modern_basin` method. As the name suggests, it only
 
 
 .. code-block:: python
+
     sst = model.get_var("ocn_sur_temp", mutable=False)
     sst.sel_modern_basin('NPO') ## -> select the North Pacific Ocean
 
@@ -61,6 +78,7 @@ All the methods can be done in a chain. For example, you can select the data, ca
 
 
 .. code-block:: python
+
     sst = model.get_var("ocn_sur_temp")
     sst.sel_modern_basin('NPO').mean() ## -> select the data in the northern hemisphere, calculate the mean value
 
