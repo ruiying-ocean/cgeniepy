@@ -4,6 +4,6 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cgeniepy"
-version = "0.12.0"
+version = "0.12.1"
 description = "A Python package to read, analyse and visualise cGENIE Earth System Model output"
 license = {text = "GPL-3.0-only"}
