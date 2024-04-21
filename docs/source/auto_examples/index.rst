@@ -133,6 +133,23 @@ Below is a gallery of examples
 
 .. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to plot multiple variables from a GenieModel object. I use a modern mode...">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_multiple_vars_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_multiple_vars.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Plot multiple variables</div>
+    </div>
+
+
+.. raw:: html
+
     <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to customise the 2D map including the projection, the color map, which i...">
 
 .. only:: html
@@ -231,6 +248,7 @@ Below is a gallery of examples
    /auto_examples/plot_scatter_map
    /auto_examples/plot_coastal_data
    /auto_examples/plot_timeseries
+   /auto_examples/plot_multiple_vars
    /auto_examples/plot_logo
    /auto_examples/plot_PO4_distribution
    /auto_examples/plot_d13C_comp
