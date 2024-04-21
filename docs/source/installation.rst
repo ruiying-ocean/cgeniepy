@@ -50,3 +50,12 @@ This also touches the most famous Python data science-related packages:
 - **numpy**: The fundamental package for scientific computing with Python. 
 - **pandas**: A fast, powerful, flexible and easy to use open source data analysis and data manipulation library built on top of Python. It is the core of cgeniepy.ScatterData and used to deal with the cGENIE timeseries output.
 - **scipy**: A Python-based ecosystem of open-source software for mathematics, science, and engineering.
+
+
+(Optional) Verify the installation
+-------------------------------------
+One can use pytest to do the unit test. If you have pytest installed, you can run the following command to test the installation:
+
+.. code-block:: console
+
+       $ pytest --pyargs cgeniepy
