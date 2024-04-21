@@ -15,7 +15,7 @@ def create_testdata():
                          attrs={'long_name':'random data', 'units':'uniteless'})   
     return GriddedData(xdata,False, attrs=xdata.attrs)
 
-@image_comparison(baseline_images=['test_line'], remove_text=True,
+@image_comparison(baseline_images=['test_map'], remove_text=True,
                   extensions=['png'], style='mpl20')
 def test_map():
     data = create_testdata()
@@ -23,6 +23,8 @@ def test_map():
     data.plot(ax=ax)
     return fig
 
+@image_comparison(baseline_images=['test_line'], remove_text=True,
+                  extensions=['png'], style='mpl20')
 def test_line():
     data = create_testdata()
     fig, ax = plt.subplots()
