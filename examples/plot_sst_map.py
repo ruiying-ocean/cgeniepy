@@ -3,7 +3,7 @@
 Plot 2D global map from the model output
 =========================================
 
-I plot the sea surface temperature
+Here use the sea surface temperature as an example to plot the 2D global map from the model output.
 """
 
 from cgeniepy.model import GenieModel

@@ -14,6 +14,23 @@ Below is a gallery of examples
 
 .. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to plot the ScatterData object. I use a data file from the EDC ice core ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_scatterdata_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_scatterdata.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Plot the ScatterData</div>
+    </div>
+
+
+.. raw:: html
+
     <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to use the ArrComparison class to compare two arrays and plot the compar...">
 
 .. only:: html
@@ -31,7 +48,7 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="I plot the sea surface temperature">
+    <div class="sphx-glr-thumbcontainer" tooltip="Here use the sea surface temperature as an example to plot the 2D global map from the model out...">
 
 .. only:: html
 
@@ -43,6 +60,23 @@ Below is a gallery of examples
 .. raw:: html
 
       <div class="sphx-glr-thumbnail-title">Plot 2D global map from the model output</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Plot the model variable for a spficic basin, here we use sea surface temperature in the Pacific...">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_pac_sst_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_pac_sst.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Plot basin-specific data</div>
     </div>
 
 
@@ -156,8 +190,10 @@ Below is a gallery of examples
 .. toctree::
    :hidden:
 
+   /auto_examples/plot_scatterdata
    /auto_examples/plot_arrcomparison
    /auto_examples/plot_sst_map
+   /auto_examples/plot_pac_sst
    /auto_examples/plot_coastal_data
    /auto_examples/plot_timeseries
    /auto_examples/plot_logo

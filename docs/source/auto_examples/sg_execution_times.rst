@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:05.071** total execution time for 8 files **from auto_examples**:
+**00:00.957** total execution time for 10 files **from auto_examples**:
 
 .. container::
 
@@ -32,11 +32,8 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_plot_other_models.py` (``plot_other_models.py``)
-     - 00:05.071
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_calculate_average.py` (``calculate_average.py``)
-     - 00:00.000
+   * - :ref:`sphx_glr_auto_examples_plot_scatterdata.py` (``plot_scatterdata.py``)
+     - 00:00.957
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_PO4_distribution.py` (``plot_PO4_distribution.py``)
      - 00:00.000
@@ -44,10 +41,19 @@ Computation times
    * - :ref:`sphx_glr_auto_examples_plot_additional_cmap.py` (``plot_additional_cmap.py``)
      - 00:00.000
      - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_arrcomparison.py` (``plot_arrcomparison.py``)
+     - 00:00.000
+     - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_coastal_data.py` (``plot_coastal_data.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_logo.py` (``plot_logo.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_other_models.py` (``plot_other_models.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_pac_sst.py` (``plot_pac_sst.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_sst_map.py` (``plot_sst_map.py``)
