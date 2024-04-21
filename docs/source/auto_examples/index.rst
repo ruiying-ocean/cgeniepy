@@ -14,6 +14,23 @@ Below is a gallery of examples
 
 .. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to use the ArrComparison class to compare two arrays and plot the compar...">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_arrcomparison_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_arrcomparison.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Plot Comparison Between Arrays</div>
+    </div>
+
+
+.. raw:: html
+
     <div class="sphx-glr-thumbcontainer" tooltip="I plot the sea surface temperature">
 
 .. only:: html
@@ -156,6 +173,7 @@ Below is a gallery of examples
 .. toctree::
    :hidden:
 
+   /auto_examples/plot_arrcomparison
    /auto_examples/plot_sst_map
    /auto_examples/plot_coastal_data
    /auto_examples/calculate_average
