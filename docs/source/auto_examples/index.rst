@@ -65,23 +65,6 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to calculate weighted or unweighted average of a variable">
-
-.. only:: html
-
-  .. image:: /auto_examples/images/thumb/sphx_glr_calculate_average_thumb.png
-    :alt:
-
-  :ref:`sphx_glr_auto_examples_calculate_average.py`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">Calculate average</div>
-    </div>
-
-
-.. raw:: html
-
     <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to read in and plot time series data">
 
 .. only:: html
@@ -176,7 +159,6 @@ Below is a gallery of examples
    /auto_examples/plot_arrcomparison
    /auto_examples/plot_sst_map
    /auto_examples/plot_coastal_data
-   /auto_examples/calculate_average
    /auto_examples/plot_timeseries
    /auto_examples/plot_logo
    /auto_examples/plot_PO4_distribution

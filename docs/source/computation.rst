@@ -26,6 +26,19 @@ Any basic computation can be done like a normal xarray DataArray object. For exa
     sst.min() ## -> calculate the minimum value
     sst.sd() ## -> calculate the standard deviation
 
+Weighted mean
+-----------------------
+
+.. code-block:: python
+    model = GenieModel("xxx", gemflag='biogem')
+
+    o2 = model.get_var('ocn_O2').isel(time=-1) ##mol/kg
+    ocn_vol = model.grid_volume().isel(time=-1) ##m3
+
+    print("average of o2 weighted by ocean grid volume", o2.weighted_mean(ocn_vol.data.values))
+
+    ## unweighted average of o2
+    print("unweighted average of o2", o2.data.mean().values)
 
 Selecting data
 -----------------------
