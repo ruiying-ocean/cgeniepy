@@ -237,7 +237,7 @@ class GridOperation:
         lon_candidates = ['lon', 'longitude', 'x']
         depth_candidates = ['depth', 'z', 'z_t', 'level', 'nlevel', 'lvl','lev', 'depth_1',
                             'elevation [m]', 'zt']
-        time_candidates = ['time', 't', 'age', 'date', 'year']
+        time_candidates = ['time', 't', 'age', 'date', 'year', 'age [ka]', 'age [ka bp]'],
 
         # Check for presence of each element
         for element in input_lower:
@@ -265,7 +265,7 @@ class GridOperation:
         input_lower = tuple(element.lower() for element in input)
 
         dim_candidates = [
-            ['time', 't', 'age', 'date', 'year'],
+            ['time', 't', 'age', 'date', 'year', 'age [ka]', 'age [ka bp]'],
             ['depth', 'z', 'z_t', 'level', 'nlevel', 'lvl', 'lev', 'depth_1',
                 'elevation [m]','zt'],
             ['lat', 'latitude', 'y'],

@@ -487,6 +487,9 @@ class ScatterDataVis:
         """
         plt.rcParams['font.family'] = 'sans-serif'
 
+        if isinstance(self.index, str):
+            self.index = [self.index]
+
         match len(self.index):
             case 1:
                 return self._plot_1d(var=var, *args, **kwargs)

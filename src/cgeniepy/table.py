@@ -48,6 +48,7 @@ class ScatterData:
         "set the index of the dataframe"
         self.data.set_index(index, inplace=True)
         self.index= index
+        GridOperation().set_coordinates(obj=self, index=self.index)
 
     def parse_tab_file(self, filename, begin_cmt = '/*', end_cmt = '*/'):
         """

@@ -4,6 +4,7 @@ import xarray as xr
 import cartopy.crs as ccrs
 from matplotlib.testing.decorators import image_comparison
 import matplotlib.pyplot as plt
+from cgeniepy.table import ScatterData
 
 
 def create_testdata():
@@ -29,4 +30,13 @@ def test_line():
     data = create_testdata()
     fig, ax = plt.subplots()
     data.mean(dim='lon').plot(ax=ax)
+    return fig
+
+@image_comparison(baseline_images=['test_scatterdatavis'], remove_text=True,
+                  extensions=['png'], style='mpl20')
+def test_scatterdatavis():
+    data= ScatterData("test/EDC_CO2.tab", sep='\t')
+    data.set_index('Age [ka BP]')
+    fig, ax = plt.subplots()
+    data.plot(var='CO2 [ppmv]', ax=ax)
     return fig
