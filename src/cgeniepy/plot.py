@@ -530,6 +530,7 @@ class ScatterDataVis:
         ax=None,
         log=False,
         land_mask=True,
+        colorbar=True,
         *args,
         **kwargs,
     ):
@@ -568,6 +569,11 @@ class ScatterDataVis:
             *args,
             **kwargs,
         )
+
+        if colorbar:
+            cbar = plt.colorbar(p, ax=ax, orientation="horizontal")
+            cbar.ax.tick_params(axis="both", which="major", labelsize=8)
+            cbar.set_label(f"{var}")
 
         return p
 
