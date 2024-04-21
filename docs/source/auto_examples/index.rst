@@ -167,6 +167,23 @@ Below is a gallery of examples
 
 .. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="This example is a combination of ScatterData and GriddedData to search the nearest grid point f...">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_d13C_comp_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_d13C_comp.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Search the nearest grid point for a given location</div>
+    </div>
+
+
+.. raw:: html
+
     <div class="sphx-glr-thumbcontainer" tooltip="This example shows the available color palettes in the cgeniepy package">
 
 .. only:: html
@@ -216,6 +233,7 @@ Below is a gallery of examples
    /auto_examples/plot_timeseries
    /auto_examples/plot_logo
    /auto_examples/plot_PO4_distribution
+   /auto_examples/plot_d13C_comp
    /auto_examples/plot_additional_cmap
    /auto_examples/plot_other_models
 
