@@ -20,3 +20,8 @@ Usage
    :maxdepth: 1
 
    visualisation
+
+.. toctree::
+   :maxdepth: 1
+
+   model_skill
