@@ -36,10 +36,10 @@ This example shows how to calculate weighted or unweighted average of a variable
     o2 = pi_model.get_var('ocn_O2').isel(time=-1) ##mol/kg
     ocn_vol = pi_model.grid_volume().isel(time=-1) ##m3
 
-    print("average of o2 weighted by ocean grid volume", o2.weighted_average(ocn_vol.array.values))
+    print("average of o2 weighted by ocean grid volume", o2.weighted_mean(ocn_vol.data.values))
 
     ## unweighted average of o2
-    print("unweighted average of o2", o2.array.mean().values)
+    print("unweighted average of o2", o2.data.mean().values)
 
 
 .. _sphx_glr_download_auto_examples_calculate_average.py:

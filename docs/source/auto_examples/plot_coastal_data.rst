@@ -39,7 +39,7 @@ This example shows how to plot the PO4 distribution in each basin.
  .. code-block:: none
 
 
-    <matplotlib.collections.QuadMesh object at 0x17dca6e50>
+    <matplotlib.collections.QuadMesh object at 0x16e2c9650>
 
 
 
@@ -65,12 +65,12 @@ This example shows how to plot the PO4 distribution in each basin.
     gc = pi_model.grid_category()
 
     ## coastal region
-    xr.where(gc == 0, sst.array.values, np.nan).plot()
+    xr.where(gc == 0, sst.data.values, np.nan).plot()
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.481 seconds)
+   **Total running time of the script:** (0 minutes 5.255 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_coastal_data.py:

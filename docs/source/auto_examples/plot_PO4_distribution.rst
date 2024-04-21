@@ -38,7 +38,8 @@ This example shows how to plot the PO4 distribution in each basin.
 
  .. code-block:: none
 
-    >>> No gemflag is provided, use default gemflags: [biogem, ecogem]
+    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:48: UserWarning: No gemflag is provided, use default gemflags: [biogem]
+      warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
 
 
 
@@ -62,7 +63,7 @@ This example shows how to plot the PO4 distribution in each basin.
 
     for i in range(3):
     	basin_data = model.get_var('ocn_PO4').isel(time=-1).mask_basin(base='worjh2',basin=basins[i], subbasin='')
-    	basin_data.array.values = basin_data.array.values * 1E6
+    	basin_data.data.values = basin_data.data.values * 1E6
     	basin_data.mean(dim='lon').interpolate().plot(ax=axs[i], contour=True)
     	axs[i].title.set_text(basins[i])
 
@@ -71,7 +72,7 @@ This example shows how to plot the PO4 distribution in each basin.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.897 seconds)
+   **Total running time of the script:** (0 minutes 1.833 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_PO4_distribution.py:

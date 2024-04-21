@@ -133,6 +133,23 @@ Below is a gallery of examples
 
 .. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to use cgeniepy to plot gridded data from other models.">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_other_models_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_other_models.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Plot Other Models' output</div>
+    </div>
+
+
+.. raw:: html
+
     </div>
 
 
@@ -146,6 +163,7 @@ Below is a gallery of examples
    /auto_examples/plot_logo
    /auto_examples/plot_PO4_distribution
    /auto_examples/plot_additional_cmap
+   /auto_examples/plot_other_models
 
 
 .. only:: html

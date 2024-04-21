@@ -13,7 +13,7 @@ pi_model = GenieModel("/Users/yingrui/Science/lgm_bcp/model/muffin.CB.worlg4.BAS
 o2 = pi_model.get_var('ocn_O2').isel(time=-1) ##mol/kg
 ocn_vol = pi_model.grid_volume().isel(time=-1) ##m3
 
-print("average of o2 weighted by ocean grid volume", o2.weighted_average(ocn_vol.data.values))
+print("average of o2 weighted by ocean grid volume", o2.weighted_mean(ocn_vol.data.values))
 
 ## unweighted average of o2
 print("unweighted average of o2", o2.data.mean().values)

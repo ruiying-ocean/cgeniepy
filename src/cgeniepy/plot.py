@@ -293,7 +293,7 @@ class GriddedDataVis:
         outline_kwargs = {'outline_color': 'red', 'outline_width': .5}
         """
 
-        dim_order = GridOperation().dim_order(self.data.dims)
+        dim_order = GridOperation().dim_order(self.data.dims)        
         zt_order = dim_order[0] ## in the case of 2D, zt is the first dimension
         lat_order = dim_order[1] ## in the case of 2D, lat is the second dimension
         
