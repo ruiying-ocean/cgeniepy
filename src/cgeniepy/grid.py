@@ -222,8 +222,9 @@ class GridOperation:
         lat1, lon1 = point1[0], point1[1]
         lat2, lon2 = points2[:, 0], points2[:, 1]
         return self.haversine_distance(lat1, lon1, lat2, lon2)
-
-    def check_dimension(self,input):
+    
+    @staticmethod
+    def check_dimension(input):
         # Convert tuple elements to lowercase
         input_lower = tuple(element.lower() for element in input)
 
@@ -237,7 +238,7 @@ class GridOperation:
         lon_candidates = ['lon', 'longitude', 'x']
         depth_candidates = ['depth', 'z', 'z_t', 'level', 'nlevel', 'lvl','lev', 'depth_1',
                             'elevation [m]', 'zt']
-        time_candidates = ['time', 't', 'age', 'date', 'year', 'age [ka]', 'age [ka bp]'],
+        time_candidates = ['time', 't', 'age', 'date', 'year', 'age [ka]', 'age [ka bp]']
 
         # Check for presence of each element
         for element in input_lower:
