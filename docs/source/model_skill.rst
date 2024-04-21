@@ -8,6 +8,7 @@ The ArrComparison class is provided to compare the model and data when both are 
 
 .. code-block:: python
 
+    from cgeniepy.skill imoprt ArrComparison, DFComparison
     ac = ArrComparison(model_array, data_array)
     ac.mscore() ## M-score
     ac.rmse()  ## RMSE

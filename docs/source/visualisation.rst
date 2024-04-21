@@ -1,4 +1,4 @@
-visualisation of time-slice data
+Visualisation of time-slice data
 =====================================
 
 

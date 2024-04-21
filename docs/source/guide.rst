@@ -1,5 +1,5 @@
-Usage
-=====
+User Guide
+==============
 
 .. toctree::
    :maxdepth: 1
@@ -25,3 +25,8 @@ Usage
    :maxdepth: 1
 
    model_skill
+
+.. toctree::
+   :maxdepth: 1
+
+   scatter_data

@@ -1,5 +1,5 @@
-Initialise a model instance
-===========================
+Initialise a model experiment instance
+===========================================
 
 Download cGENIE output from cluster
 --------------------------------------
