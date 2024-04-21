@@ -6,6 +6,7 @@
 ## -- project path --
 import sys, os
 import datetime
+
 sys.path.insert(0, os.path.abspath('../src/cgeniepy/'))
 
 # -- Project information -----------------------------------------------------
@@ -27,12 +28,15 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'sphinx_gallery.gen_gallery',
-    "sphinx_design",    
+    "sphinx_design",
+    "autoapi.extension"
 ]
 
 source_suffix = {
     '.rst': 'restructuredtext',
 }
+
+autoapi_dirs = ['../../src/cgeniepy/']
 
 sphinx_gallery_conf = {
      'examples_dirs': '../../examples',   # path to your example scripts
