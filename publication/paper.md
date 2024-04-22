@@ -58,6 +58,6 @@ ocn_sst.isel(time=-1).plot()
 
 
 # Acknowledgements
-R.Y. acknowledge the funding from China Scholarship Council (202006380070). R.Y. also thanks Shao Jun for his suggestions on the package.
+R.Y. acknowledges the funding from China Scholarship Council (202006380070). R.Y. also thanks Shao Jun for his suggestions on the package.
 
 # References
