@@ -445,7 +445,12 @@ class Interporaltor:
         return interp_function
 
     def new_coordinate(self, n):
-        "create new coordinates for regridding"
+        """create new coordinates for regridding
+        
+        :param n: the resolution of the new grid
+
+        :returns: a list of new coordinates
+        """
         new_coords = []
         for coord_values in self.coords:
             min_val, max_val = np.min(coord_values), np.max(coord_values)
@@ -454,16 +459,25 @@ class Interporaltor:
         return new_coords
 
     def new_meshgrid(self, *args, **kwargs):
-        "regrid to finer dimensions"
+        """create meshgrid for regridding
+
+        :returns: numpy meshgrid
+        """
+
         return np.meshgrid(*args, **kwargs)
 
     def interpolate_data(self, *args, **kwargs):
-        "Use the interpolation function to get regridded values"
+        """Use the interpolation function to get regridded values
+
+        :returns: regridded data array
+        """
         return self.interp_function(*args, **kwargs)
 
     def to_xarray(self):
         """
-        convert numpy array to xr data array
+        Combine the regridded data with the new coordinates to create a xarray DataArray
+
+        :returns: xarray DataArray
         """
         return xr.DataArray(
             self.gridded_data, dims=self.dims, coords=self.gridded_coord
