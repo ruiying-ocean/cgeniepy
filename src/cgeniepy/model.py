@@ -11,7 +11,6 @@ from scipy.ndimage import binary_dilation
 import numpy as np
 
 from .utils import file_exists
-from .chem import Chemistry
 from .array import GriddedData
 
 

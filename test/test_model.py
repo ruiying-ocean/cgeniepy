@@ -1,7 +1,9 @@
 from cgeniepy.model import GenieModel
+from importlib.resources import files
 
 def test_model_getvar():
-    model = GenieModel("test/muffin.CBE.worlg4.BASESFeTDTL.SPIN", gemflag=['ecogem'])
+    model_path = str(files("data").joinpath("muffin.CBE.worlg4.BASESFeTDTL.SPIN"))
+    model = GenieModel(model_path, gemflag=['ecogem'])
     data= model.get_var('eco2D_Plankton_C_Total').isel(time=-1).mean().data.item()
     assert data  == 1.690475344657898
 

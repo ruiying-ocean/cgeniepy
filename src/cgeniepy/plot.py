@@ -1,6 +1,7 @@
 import pathlib
 import xml.etree.ElementTree as ET
 from cgeniepy.grid import GridOperation
+from importlib.resources import files
 
 import numpy as np
 import pandas as pd
@@ -9,10 +10,8 @@ import cartopy.feature as cfeature
 import xarray as xr
 
 import matplotlib.pyplot as plt
-from matplotlib.ticker import AutoMinorLocator
 from matplotlib.colors import ListedColormap, to_rgb as hex_to_rgb
-import mpl_toolkits.axisartist.floating_axes as fa
-import mpl_toolkits.axisartist.grid_finder as gf
+
 
 from .utils import efficient_log
 
@@ -610,8 +609,8 @@ class ScatterDataVis:
         )        
 
         if bathy_lon:
-            data_dir = pathlib.Path(__file__).parent.parent
-            bathy = xr.open_dataset(data_dir / "data/GEBCO2002_bathy.nc")
+            data_path = str(file('data').joinpath('GEBCO2002_bathy.nc'))
+            bathy = xr.open_dataset(data_path)
 
             ## get the lat range
             min_lat = self.data[self.lat].min()
@@ -649,7 +648,7 @@ class CommunityPalette:
                 f"{cmap_name} not found, accepted values are {self.avail_palette()}"
             )
 
-        data_dir = pathlib.Path(__file__).parent.parent
+        data_dir = files("data").joinpath("colormaps")
 
         file_path = None
         file_ext = None
@@ -710,10 +709,10 @@ class CommunityPalette:
 
     def avail_palettes(self):
         """return a list of colormap names"""
-        data_dir = pathlib.Path(__file__).parent.parent
+        data_dir = files("data").ojinpath("colormaps")
 
         return [
             f.stem
-            for f in data_dir.glob("data/colormaps/*")
+            for f in data_dir.glob("*")
             if f.suffix in [".txt", ".xml"]
         ]

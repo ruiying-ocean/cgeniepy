@@ -147,10 +147,9 @@ class GridOperation:
         :returns: GENIE grid array where continent/ice cap is 0 and ocean is 1, default is 'worjh2'
         """
 
-        file_path = (
-            pathlib.Path(__file__).parent.parent
-            / f"data/mask_{base}_{basin}{subbasin}.txt"
-        )
+        filename = f"mask_{base}_{basin}{subbasin}.txt"
+        file_path=str(file('data').join_path(filename))
+
         grid_mask_raw = np.loadtxt(file_path, dtype=int)
         grid_mask = np.flip(np.fliplr(grid_mask_raw))
 

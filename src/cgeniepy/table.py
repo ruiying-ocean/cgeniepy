@@ -1,4 +1,3 @@
-import pathlib
 from cgeniepy.skill import DFComparison
 import geopandas as gpd
 from shapely.geometry import Point
@@ -11,7 +10,8 @@ from cgeniepy.grid import Interporaltor
 from .plot import ScatterDataVis
 from .grid import GridOperation
 import cgeniepy.array as ca
-
+from importlib.resources import files
+    
 
 class ScatterData:
     """ScatterData is a class to store non-gridded data with columns of coordinates.
@@ -112,7 +112,8 @@ class ScatterData:
                 return ocean_name[0]
             else:
                 return ""
-        file_path = pathlib.Path(__file__).parent.parent / "data/oceans/oceans.shp"
+            
+        file_path = str(files("data").joinpath("oceans/oceans.shp"))
         oceans = gpd.read_file(file_path)
         
         result = self.data.reset_index().apply(lambda row: sub_detect_basin(row[self.lon], row[self.lat]), axis=1)

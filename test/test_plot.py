@@ -5,6 +5,7 @@ import cartopy.crs as ccrs
 from matplotlib.testing.decorators import image_comparison
 import matplotlib.pyplot as plt
 from cgeniepy.table import ScatterData
+from importlib.resources import files
 
 
 def create_testdata():
@@ -20,7 +21,7 @@ def create_testdata():
                   extensions=['png'], style='mpl20')
 def test_map():
     data = create_testdata()
-    fig, ax = plt.subplots(subplot_kw={'projection': ccrs.PlateCarree()})
+    fig, ax = plt.subplots(subplot_kw={'projection': ccrs.Mollweide()})
     data.plot(ax=ax)
     return fig
 
@@ -35,7 +36,8 @@ def test_line():
 @image_comparison(baseline_images=['test_scatterdatavis'], remove_text=True,
                   extensions=['png'], style='mpl20')
 def test_scatterdatavis():
-    data= ScatterData("test/EDC_CO2.tab", sep='\t')
+    file_path = str(files("data").joinpath("EDC_CO2.tab"))
+    data= ScatterData(file_path, sep='\t')
     data.set_index('Age [ka BP]')
     fig, ax = plt.subplots()
     data.plot(var='CO2 [ppmv]', ax=ax)
