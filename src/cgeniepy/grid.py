@@ -18,6 +18,8 @@ import matplotlib.pyplot as plt
 
 class GridOperation:
 
+    """A set of operations on grid/coordinate data
+    """
     
     def lon_n2g(self, x):
         """
@@ -301,7 +303,7 @@ class GridOperation:
         """
         Determine the order of dimensions in the input data array
 
-        return: tuple of index in the input data
+        :return: tuple of index in the input data
 
         Example
         -----------
@@ -388,6 +390,10 @@ class GridOperation:
                     obj.lon = index[index_order[3]]             
 
 class Interporaltor:
+
+    """A univeral ineteprolator for cgeniepy that
+    can be used to interpolate data for both regular and irregular grid
+    """
     
     def __init__(self, dims, coordinates, values, grid_number=200, method="r-linear"):
         """
