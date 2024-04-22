@@ -1,5 +1,3 @@
-import pathlib
-
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -23,12 +21,12 @@ class GridOperation:
     
     def lon_n2g(self, x):
         """
-        Change normal longitude to GENIE longitude
+        Change normal longitude (-180, 180) to GENIE longitude (-270, 90)
 
         :param x: normal longitude
         :return: GENIE longitude
         """
-        if x > 100 and x < 180:
+        if x > 90 and x < 180:
             return x - 360
         else:
             return x
@@ -236,7 +234,7 @@ class GridOperation:
         Calculate the 3D geographical distance between point1 and multiple points2.
 
         :param point1: Tuple/list of coordinates (z, lat, lon) or (lat, lon)
-        :param points2: Array of shape (n, 3) containing coordinates (z, lat, lon) of points
+        :param points2: Numpy Array of shape (n, 3) containing coordinates (z, lat, lon) of points
         :returns: Array of distances between point1 and each point in points2
         """
         z1, lat1, lon1 = point1

@@ -1,4 +1,3 @@
-import pathlib
 import xml.etree.ElementTree as ET
 from cgeniepy.grid import GridOperation
 from importlib.resources import files
@@ -709,7 +708,7 @@ class CommunityPalette:
 
     def avail_palettes(self):
         """return a list of colormap names"""
-        data_dir = files("data").ojinpath("colormaps")
+        data_dir = files("data").joinpath("colormaps")
 
         return [
             f.stem

@@ -8,7 +8,9 @@ def test_model_getvar():
     assert data  == 1.690475344657898
 
 def tets_model_ncvardict():
-    model = GenieModel("./muffin.CBE.worlg4.BASESFeTDTL.SPIN", gemflag=['ecogem'])
+    model_path = str(files("data").joinpath("muffin.CBE.worlg4.BASESFeTDTL.SPIN"))
+    model = GenieModel(model_path, gemflag=['ecogem'])
+
     data = model._ncvar_dict
     baseline = {'./muffin.CBE.worlg4.BASESFeTDTL.SPIN/ecogem/fields_ecogem_2d.nc': ['time',
     'year',
