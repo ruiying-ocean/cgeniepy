@@ -38,7 +38,8 @@ source_suffix = {
 
 ## AutoAPI
 autoapi_dirs = ['../../src/cgeniepy/']
-autoapi_options = ['members', 'show-inheritance', 'show-module-summary', 'special-members', 'imported-members']
+autoapi_options = ['members', 'undoc-members', 'show-inheritance',
+                   'show-module-summary', 'special-members', 'imported-members']
 
 sphinx_gallery_conf = {
      'examples_dirs': '../../examples',   # path to your example scripts

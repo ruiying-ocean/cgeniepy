@@ -84,16 +84,6 @@ class GriddedData:
         >>> model = GenieModel(path)
         >>> var = model.get_var(target_var)
         >>> var.search_grid(lon=XX, lat=XX, zt=XX, method='nearest')
-        
-        ## for loop over a data frame (df) with longitude, latitude, depth columns
-        >>> modelvar = []
-        >>> for i in range(len(df)):
-        >>>     lat = df.latitude.iloc[i][0]
-        >>>     lon = df.longitude[i].iloc[0]
-        >>>     zt = df.depth[i].iloc[0]
-        >>>     kwargs = {'lat': lat, 'lon':lon, 'zt': zt, 'method': 'nearest'}
-        >>>     var = var.sel(**kwargs).values
-        >>>     modelvar.append(var)        
         """
 
         if self.mutable:
@@ -412,7 +402,6 @@ class GriddedData:
         ----------------------
         >>> lat, lon, depth = 10, 20, 30
         >>> data.search_point((lat, lon, depth))
-
         """
         ## ignore the first dimension (which is time)        
         ndim = self.data.ndim
