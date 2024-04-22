@@ -22,6 +22,9 @@ class GridOperation:
     def lon_n2g(self, x):
         """
         Change normal longitude to GENIE longitude
+
+        :param x: normal longitude
+        :return: GENIE longitude
         """
         if x > 100 and x < 180:
             return x - 360
@@ -31,6 +34,9 @@ class GridOperation:
     def lon_g2n(self, x):
         """
         Change GENIE longitude to normal longitude
+
+        :param x: GENIE longitude
+        :return: normal longitude        
         """
 
         if x < -180:
@@ -39,17 +45,22 @@ class GridOperation:
             return x
 
     def lon_e2n(self, x):
+        """ Change eastern longitude to normal longitude
+
+        :param x: longitude in eastern degree
+        :return: normal longitude
         """
-        Change eastern longitude to normal longitude
-        """
+        
         if x > 180:
             return x - 360
         else:
             return x
 
     def lon_n2e(self, x):
-        """
-        normal longitude (-180, 180) to longitude east(0,360)
+        """normal longitude (-180, 180) to longitude east(0,360)
+
+        :param x: normal longitude
+        :return: longitude in eastern degree
         """
         if x < 0:
             return 360 + x
@@ -57,21 +68,36 @@ class GridOperation:
             return x
 
     def apply_n2g(self, data: xr.Dataset, longitude="lon") -> xr.Dataset:
+        """Apply longitude conversion method n2g for the input data (normal to GENIE)
+
+        :param data: input data
+        :param longitude: longitude coordinate name
+
+        :returns: xr.Dataset        
+        """
         return data.assign_coords(
             {longitude: list(map(self.lon_n2g, data[longitude].values))}
         ).sortby("lon")
 
     def apply_g2n(self, data: xr.Dataset, longitude="lon") -> xr.Dataset:
-        """
-        Change GENIE longitude to normal longitude
+        """Apply longitude conversion method g2n for the input data (GENIE to normal)
+
+        :param data: input data
+        :param longitude: longitude coordinate name
+
+        :returns: xr.Dataset        
         """
         return data.assign_coords(
             {longitude: list(map(self.lon_g2n, data[longitude].values))}
         ).sortby(longitude)
 
     def apply_e2n(self, data: xr.Dataset, longitude="lon") -> xr.Dataset:
-        """
-        Change eastern longitude to normal longitude
+        """Apply longitude conversion method e2n for the input data (eastern to normal)
+
+        :param data: input data
+        :param longitude: longitude coordinate name
+        
+        :returns: xr.Dataset        
         """
         return data.assign_coords(
             {longitude: list(map(self.lon_e2n, data[longitude].values))}
@@ -79,7 +105,12 @@ class GridOperation:
 
     def apply_n2e(self, data: xr.Dataset, longitude="lon") -> xr.Dataset:
         """
-        Change normal longitude to eastern longitude
+        Apply longitude conversion method n2e for the input data (normal to eastern)
+
+        :param data: input data
+        :param longitude: longitude coordinate name
+
+        :returns: xr.Dataset
         """
         return data.assign_coords(
             {longitude: list(map(self.lon_n2e, data[longitude].values))}
@@ -88,6 +119,8 @@ class GridOperation:
     def mask_Arctic_Med(self, array, policy="na"):
         """
         mask Arctic and Meditterean Sea in cGENIE modern continent configuration
+
+        :param array: 36x36 GENIE array
         """
         if policy == "na":
             array[34:36, :] = np.nan
@@ -225,6 +258,17 @@ class GridOperation:
     
     @staticmethod
     def check_dimension(input):
+        """check the presence of latitude, longitude, depth, and time in the input tuple
+
+        :param input: tuple of dimension names
+        :return: tuple of boolean values indicating the presence of latitude, longitude, depth, and time
+
+        Example
+        -----------
+        >>> input = ('lat', 'lon', 'depth', 'time')
+        >>> check_dimension(input)
+        (True, True, True, True)
+        """
         # Convert tuple elements to lowercase
         input_lower = tuple(element.lower() for element in input)
 
@@ -259,8 +303,11 @@ class GridOperation:
 
         return: tuple of index in the input data
 
-        Example: input = ('lat', 'lon', 'depth')
-                 return: (2, 0, 1) (always follow time, depth, lat, lon)
+        Example
+        -----------
+        >>> input = ('lat', 'lon', 'depth')
+        >>> dim_order(input) ## always follow time, depth, lat, lon
+        (2, 0, 1) 
         """
         order = []
         input_lower = tuple(element.lower() for element in input)
@@ -283,6 +330,11 @@ class GridOperation:
     
     @staticmethod
     def set_coordinates(obj, index):
+        """Set the coordinates of the input object based on the input index
+
+        :param obj: object to set coordinates
+        :param index: tuple of dimension names        
+        """
         obj.n_index = len(index)
         gp = GridOperation()
         has_lat, has_lon, has_depth, has_time = gp.check_dimension(index)

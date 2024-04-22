@@ -36,7 +36,9 @@ source_suffix = {
     '.rst': 'restructuredtext',
 }
 
+## AutoAPI
 autoapi_dirs = ['../../src/cgeniepy/']
+autoapi_options = ['members', 'show-inheritance', 'show-module-summary', 'special-members', 'imported-members']
 
 sphinx_gallery_conf = {
      'examples_dirs': '../../examples',   # path to your example scripts
@@ -47,6 +49,7 @@ templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 master_doc = "index"
+
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
