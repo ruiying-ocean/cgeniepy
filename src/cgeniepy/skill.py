@@ -166,6 +166,10 @@ class ArrComparison:
     
 class DFComparison(ArrComparison):
 
+    """
+    Quantitatively compare similarity metrics between two columns in a dataframe-like objects
+    """
+
     def __init__(self, df, model_col, observation_col):
         self.model = df[model_col].to_numpy()
         self.data = df[observation_col].to_numpy()

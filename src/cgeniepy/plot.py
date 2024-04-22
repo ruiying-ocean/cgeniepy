@@ -19,9 +19,16 @@ from .utils import efficient_log
 
 class GriddedDataVis:
 
+    """A class to visualise the GriddedData object"""
+
     transform_crs = ccrs.PlateCarree()  # do not change
 
     def __init__(self, gd):
+        """
+        initialise the GriddedDataVis object
+
+        :param gd: GriddedData object
+        """
         self.data = gd.data
         self.attrs = gd.attrs
         
@@ -621,6 +628,8 @@ class ScatterDataVis:
 
 
 class CommunityPalette:
+
+    """A class to handle community-driven colormaps"""
 
     def get_palette(self, cmap_name, N=256, reverse=False, alpha=None):
         """

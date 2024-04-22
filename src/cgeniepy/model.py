@@ -24,6 +24,8 @@ class GenieModel(object):
         """
         Initialise a GenieModel object with a path to cGENIE output directory
 
+        :param model_path: the path to the cGENIE output directory
+        :param gemflag: the cgenie component, default is ["biogem"]
         -------
         Example
         >>> from cgeniepy.model import GenieModel
@@ -121,6 +123,8 @@ class GenieModel(object):
 
         if more than one model satisfies the condition,
         return all model's NetCDF paths
+
+        :param var: the name of the target variable
         """
         for path, value_list in self.ncvar_dict.items():
             if var in value_list:
@@ -128,7 +132,10 @@ class GenieModel(object):
         raise ValueError(f"variable {var} not found in the ncvar_dict")
 
     def _open_nc(self, nc_path):
-        "Use xarray to open netcdf file"
+        """Use xarray to open netcdf file
+
+        :param nc_path: the path to the netcdf file
+        """
         ## if path is a list of paths
         if not isinstance(nc_path, (list, tuple)):
             ## `open_dataset` to lazy load the data
@@ -146,6 +153,12 @@ class GenieModel(object):
 
         :param var: the name of target variable
         :param unit: the unit of target variable, usually provided in the model output
+
+        Example
+        ----------
+        >>> from cgeniepy.model import GenieModel
+        >>> model = GenieModel("path_to_GENIE_output")
+        >>> po4 = model.get_var("ocn_PO4")
         """
         self.target_var = var
 
@@ -198,7 +211,7 @@ class GenieModel(object):
         """
         read in time series output of GENIE
 
-        :param filename: the name of the time series file
+        :param var: the name of the target variable
         :return: a pandas DataFrame
         """
 
@@ -257,7 +270,16 @@ class GenieModel(object):
             return all_df
         
     def get_diag_avg(self, filename):
-        "print out the summary of a diagnostic file"
+        """print out the summary of a diagnostic file
+
+        :param filename: the name of the diagnostic file
+
+        Example
+        ----------
+        >>> from cgeniepy.model import GenieModel
+        >>> model = GenieModel("path_to_GENIE_output")
+        >>> model.get_diag_avg("biogem_year_09999_500_diag_GLOBAL_AVERAGE.res")
+        """
         f = join(self.model_path, "biogem", filename)
         with open(f, 'r') as f:
             text = f.read()
@@ -335,31 +357,37 @@ class GenieModel(object):
         return grid_catogories
 
     def grid_area(self):
-        "grid area array in m2"
+        "return the grid area array in used in this model experiment, unit: m2"
         ## read grid_area from biogem
         print("grid area returned in the unit of 'm2'")
         return self.get_var("grid_area")
     
     def grid_mask_3d(self):
+        "return the 3d mask of the grid used in this model experiment"
         return self.get_var("grid_mask_3d")
     
     def grid_topo(self):
+        "return the topography of the grid used in this model experiment"
         return self.get_var("grid_topo")
     
     def grid_zt_edges(self):
+        "return the depth edges of the grid used in this model experiment"
         return self.get_var("zt_edges")
     
     def grid_lat_edges(self):
+        "return the latitude edges of the grid used in  this model experiment"
         return self.get_var("lat_edges")
     
     def grid_lon_edges(self):
+        "return the longitude edges of the grid used in  this model experiment"
         return self.get_var("lon_edges")
     
     def grid_zt_depths(self):
+        "return the depth of the grid used in this model experiment"
         return self.get_var("grid_dD")
     
     def grid_volume(self):
-        "grid volume array (3d) in m3"
+        "return the grid volume array (3d) in m3"
         grid_area = self.grid_area()  ## m2
         depth = self.grid_zt_depths() ## m
         ocn_mask = self.grid_mask_3d()

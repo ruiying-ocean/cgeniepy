@@ -1,7 +1,7 @@
 from re import findall
 class Chemistry:
 
-    def molar_mass(self, element):
+    def molar_mass(self, element: str):
         "get molar mass (g/mol) of chemistry elements"
         d = {
             "H": 1.00794,

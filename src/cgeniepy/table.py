@@ -14,7 +14,7 @@ import cgeniepy.array as ca
 
 
 class ScatterData:
-    """ScatterData is a class to store non-gridded data, often seen in the observations
+    """ScatterData is a class to store non-gridded data with columns of coordinates.
     """
 
     def __init__(self, data, *args, **kwargs):
@@ -45,16 +45,21 @@ class ScatterData:
             GridOperation().set_coordinates(obj=self, index=self.index)
 
     def set_index(self, index):
-        "set the index of the dataframe"
+        """Tell the object which columns are the coordinates.        
+        """
         self.data.set_index(index, inplace=True)
         self.index= index
         GridOperation().set_coordinates(obj=self, index=self.index)
 
     def parse_tab_file(self, filename, begin_cmt = '/*', end_cmt = '*/'):
         """
-        Read a tab-delimited file and return a pandas DataFrame
+        Read a tab-delimited file and return a pandas that is optimised for pangea-format data.
 
-        This function is optimised for pangea-format data.
+        :param filename: The name of the file to read.
+        :param begin_cmt: The string that marks the beginning of a comment.
+        :param end_cmt: The string that marks the end of a comment.
+
+        :return: A pandas dataframe.
         """
         lines = []
         in_comment = False
@@ -82,18 +87,23 @@ class ScatterData:
         """
         Check if the columns are present in the dataframe.
 
-        Args:
-            cols (list): List of column names to check.
+        :param cols: A list of columns to check.
 
-        Raises:
-            ValueError: If any of the columns are not found in the dataframe.
+        :raises: ValueError if a column is not found.
         """
         for col in cols:
             if col not in self.data.columns:
                 raise ValueError(f"{col} not found in the dataframe")
 
     def detect_basin(self):
-        "use point-in-polygon strategy to detect modern ocean basin according to lon/lat column"
+        """use point-in-polygon strategy to detect modern ocean basin according to lon/lat column
+
+        Example
+        ----------
+        >>> data = ScatterData(data)
+        >>> data.set_index(['lon', 'lat'])
+        >>> data.detect_basin()
+        """
         
         def sub_detect_basin(lon, lat):
             p = Point(lon, lat)

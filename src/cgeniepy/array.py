@@ -23,9 +23,16 @@ class GriddedData:
         """
         Initialise an instance of GriddedData
 
-        Parameters
-        ----------
-        array : xarray.DataArray
+        
+        :param array: a xarray.DataArray object
+        :param mutable: whether the data is mutable in place, default is False
+        :param attrs: a dictionary of attributes, default is empty
+
+        -----------
+        Example
+        -----------
+        data = xr.DataArray(np.random.randn(2, 3), dims=("x", "y"), coords={"x": [10, 20]}, attrs={"units": "unitless""})
+        dg = GriddedData(data, mutable=False)
         """
         
         # set data
@@ -42,8 +49,16 @@ class GriddedData:
         return self.data[item]
 
     def interpolate(self, *args, **kwargs):
-        """
-        Interpolate the GriddedData to a finer grid, mostly useful for GENIE plotting
+        """Interpolate the GriddedData to a finer grid, mostly useful for GENIE plotting
+
+        :returns: a GriddedData object with interpolated data
+        
+        ------------
+        Example
+        ------------
+        >>> model = GenieModel(path)
+        >>> var = model.get_var(target_var)
+        >>> var.interpolate(method='r-linear') ## regular linear interpolation        
         """
         
         coords = tuple([self.data[dim].values for dim in self.data.dims])
@@ -60,6 +75,8 @@ class GriddedData:
     def sel(self, *args, **kwargs):
         """select grid points based on the given coordinates
         a wrapper to xarray `sel` method
+
+        :returns: a GriddedData object with selected data
 
         -----------
         Examples:
@@ -89,6 +106,13 @@ class GriddedData:
     def isel(self, *args, **kwargs):
         """select grid points based on the given index
         a wrapper to xarray `isel` method
+
+        -----------
+        Examples:
+        -----------
+        >>> model = GenieModel(path)
+        >>> var = model.get_var(target_var)
+        >>> var.isel(lon=XX, lat=XX, zt=XX)
         """
         if self.mutable:
             self.data = self.data.isel(*args, **kwargs)
@@ -98,6 +122,12 @@ class GriddedData:
     
     def normalise_longitude(self, method='g2n', *args, **kwargs):
         """Normalise GENIE's longitude (eastern degree) to normal longitude (-180, 180)
+
+        :param method: normalise method, default is 'g2n' (GENIE to normal). A full list of methods are:
+            - 'g2n': GENIE to normal
+            - 'n2g': normal to GENIE
+            - 'e2n': eastern to normal
+            - 'n2e': normal to eastern
 
         -----------
         Example
@@ -187,11 +217,16 @@ class GriddedData:
 
 
     def max(self, *args, **kwargs):
+        """compute the maximum value of the array
+        """
+        
         self.data = self.data.max(*args, **kwargs)
         return self
 
 
     def min(self, *args, **kwargs):
+        """compute the minimal value of the array
+        """        
         if self.mutable:
             self.data = self.data.min(*args, **kwargs)
             return self
@@ -200,6 +235,9 @@ class GriddedData:
 
 
     def sum(self, *args, **kwargs):
+        """ compute the sum of the array
+        """
+        
         if self.mutable:
             self.data = self.data.sum(*args, **kwargs)
             return self
@@ -208,6 +246,9 @@ class GriddedData:
 
 
     def mean(self, *args, **kwargs):
+        """compute the mean of the array.
+        Note this is not weighted mean, for weighted mean, use `weighted_mean` method
+        """
         if self.mutable:
             self.data = self.data.mean(*args, **kwargs)
             return self
@@ -216,14 +257,17 @@ class GriddedData:
     
 
     def median(self, *args, **kwargs):
+        """compute the median of the array
+        """
+        
         if self.mutable:
             self.data = self.data.median(*args, **kwargs)
             return self
         else:
             return GriddedData(self.data.median(*args, **kwargs), mutable=False, attrs=self.attrs)
 
-    def sd(self, *args, **kwargs):
-        "standard deviation of the mean"
+    def sd(self, *args, **kwargs):        
+        "compute the standard deviation of the mean"
         if self.mutable:
             self.data = np.std(self.data, *args, **kwargs)
             return self
@@ -232,6 +276,7 @@ class GriddedData:
 
 
     def variance(self, *args, **kwargs):
+        "compute the variance of the array"
         if self.mutable:
             self.data = np.var(self.data, *args, **kwargs)
             return self
@@ -239,7 +284,7 @@ class GriddedData:
             return np.var(self.data, *args, **kwargs)
 
     def se(self, *args, **kwargs):
-        "standard error of the mean"
+        "compute the standard error of the mean"
         if self.mutable:
             self.data = sem(self.data, nan_policy="omit", axis=None, *args, **kwargs)
             return self
@@ -279,7 +324,12 @@ class GriddedData:
 
         57: Southern Ocean
         46: Arctic Ocean
-        --------------------------------        
+        --------------------------------
+
+        
+        Example:
+        ---------        
+        >>> gd.sel_modern_basin(47) ## North Pacific
         """
         ocean = regionmask.defined_regions.ar6.ocean
 
@@ -304,8 +354,15 @@ class GriddedData:
 
     def mask_basin(self, base, basin, subbasin):
 
-        """
-        use pre-defined grid mask to select_basin, mostly used for cGENIE model
+        """use pre-defined grid mask to select_basin, mostly used for cGENIE model
+
+        :param base: the base configuration name, e.g., worjh2, worlg4
+        :param basin: the basin name, e.g., Atlantic, Pacific, Indian
+        :param subbasin: N/S/ALL, ALL means Southern Ocean section included
+
+        Example
+        ---------
+        >>> gd.mask_basin('worjh2', 'Atlantic'').mean()        
         """
         gp = GridOperation()
         data = self.data
@@ -329,7 +386,6 @@ class GriddedData:
     def ocn_only_data(self, index=False):
         """
         remove the NA grid (i.e., land definition)
-
         :param index: return GeoIndex if True or real value if false
         """
 
@@ -350,6 +406,13 @@ class GriddedData:
         :param point: a list/tuple of coordinate values in the same order to the data dimension (self.data.dims)
         :param ignore_na: whether only check ocean data (which ignore the NA grids)
         :param to_genielon: whether convert the input longitude to genie longitude, input point must be list if True
+
+        ----------------------
+        Example
+        ----------------------
+        >>> lat, lon, depth = 10, 20, 30
+        >>> data.search_point((lat, lon, depth))
+
         """
         ## ignore the first dimension (which is time)        
         ndim = self.data.ndim

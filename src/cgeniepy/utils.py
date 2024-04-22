@@ -15,6 +15,12 @@ def check_rm(path):
 
 
 def file_exists(path):
+    """
+    Check if file exists. If not, raise FileNotFoundError.
+
+    :param path: path string of target file
+    :returns: True if file exists
+    """
     if os.path.isfile(path):
         return True
     else:
@@ -33,6 +39,12 @@ def is_empty(path):
     else:
         Path(path).touch()
 
-def efficient_log(data):
-    "keep NA, remove zeros"
-    return np.where(data == 0, -10, np.log10(data))
+def efficient_log(data, replace_zero=10):
+    """A shortcut to efficiently calculate log10 of data.
+
+    :param data: data to calculate log10
+    :param replace_zero: value to replace zero in data
+
+    :returns: log10 of data
+    """
+    return np.where(data == 0, replace_zero, np.log10(data))
