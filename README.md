@@ -47,3 +47,7 @@ Logo is designed by me using free **righteous** font.
 ## Raise a bug
 
 Please use GitHub's Issues to raise a bug. This makes the issues traceable so that future users having the same problem can find the answer in the public domain.
+
+## Contributing
+
+[How to contribute](CONTRIBUTING.md)
