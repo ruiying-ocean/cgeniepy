@@ -2,11 +2,17 @@ import numpy as np
 from scipy.spatial import distance
 import matplotlib.pyplot as plt
 
+from matplotlib.projections import PolarAxes
+import mpl_toolkits.axisartist.floating_axes as fa
+import mpl_toolkits.axisartist.grid_finder as gf
+
+import warnings
+
 class ArrComparison:
     
     "quantitatively compare similarity metrics between two 2D arrays (model and observation)"
 
-    def __init__(self, model, observation):
+    def __init__(self, model, observation, label=None):
         """
         
         :param: model: array-like data
@@ -29,6 +35,7 @@ class ArrComparison:
         """
         self.model = model
         self.data = observation
+        self.label = label
 
         ## check data type, if not float, convert to float
         if self.model.dtype != np.float64:
@@ -176,171 +183,134 @@ class DFComparison(ArrComparison):
         super().__init__(self.model, self.data)
 
  
-# class TaylorDiagram(object):
-#     """
-#     Taylor diagram.
-#     Plot model standard deviation and correlation to reference data in a single-quadrant polar plot,
-#     with r=stddev and theta=arccos(correlation).
+class TaylorDiagram(object):
+    """
+    Taylor diagram.
 
-#     modified from Yannick Copin, https://gist.github.com/ycopin/3342888
-#     reference: https://matplotlib.org/stable/gallery/axisartist/demo_floating_axes.html
-#     """
+    A visualisation of model-data comparison considering (1) RMSE; (2) Correlation; (3) Standard Deviation.
 
-#     def __init__(
-#             self,
-#             fig=None,
-#             figscale=1,
-#             subplot=111,
-#             xmax=None,
-#             tmax=np.pi / 2,
-#             ylabel="Standard Deviation",
-#             rotation=None,
-#     ):
+    In practical it is a polar axis with point distributed at (std, arccos(correlation))
+    These two metrics, combining with the observed standard deviation, drived the cRMSE that measures the distance from reference point
 
-#         """
-#         Set up Taylor diagram axes, i.e. single quadrant polar
-#         plot, using `mpl_toolkits.axisartist.floating_axes`.
+    see https://en.wikipedia.org/wiki/Taylor_diagram#/media/File:Taylor_diagram_fig2.png
+    and https://bookdown.org/david_carslaw/openair/sections/model-evaluation/taylor-diagram.html (Figure 20.2)
 
-#         Parameters:
+    This class is modified from Yannick Copin, https://gist.github.com/ycopin/3342888
+    """
 
-#         * fig: input Figure or None
-#         * subplot: subplot definition
-#         * xmax: the length of radius, xmax can be 1.5* reference std
-#         """
+    def __init__(self, ac: ArrComparison):
+        if isinstance(ac, list):
+            self.mult_comp = True
+        else:
+            self.mult_comp = False
+            
+        self.ac = ac
+        self._extract_data()
 
-#         # --------------- tickers --------------------------
-#         # Correlation labels (if half round)
-#         cor_label = np.array([0, 0.2, 0.4, 0.6, 0.8, 0.9, 0.95, 0.99, 1])
+    def _extract_data(self):
 
-#         # add the negative ticks if more than half round
-#         excess_theta = tmax - np.pi / 2
-#         if excess_theta > 0:
-#             cor_label = np.concatenate((-cor_label[:0:-1], cor_label))
+        if not self.mult_comp:        
+            self.corr = self.ac.pearson_r()
+            self.model_std = np.std(self.ac.model)
+            self.obs_std = np.std(self.ac.data)
+            self.label = self.ac.label
+        else:
+            corr, model_std, obs_std, labe = [],[],[],[]
+            for ac_i in self.ac:
+                corr.append(ac_i.pearson_r())
+                model_std.append(np.std(ac_i.model))
+                obs_std.append(np.std(ac_i.data))
+                labe.append(ac_i.label)                
 
-#         # convert to radian
-#         rad = np.arccos(cor_label)
-#         # tick location
-#         gl = gf.FixedLocator(rad)
-#         # tick formatting: bind radian and correlation coefficient
-#         tf = gf.DictFormatter(dict(zip(rad, map(str, cor_label))))
+            self.corr = corr
+            self.model_std = model_std
+            self.obs_std = obs_std
+            self.label = labe
+                
 
-#         # --------------- coordinate -----------------------
-#         # Standard deviation axis extent (in units of reference stddev)
-#         # xmin must be 0, which is the centre of round
+    def setup_ax(self, positive_only=True, crmse_contour=False):
 
-#         self.xmin = 0
-#         self.xmax = xmax
-#         self.tmax = tmax
+        tr = PolarAxes.PolarTransform()
 
-#         # ------- curvilinear coordinate definition -------
-#         # use built-in polar transformation (i.e., from theta and r to x and y)
-#         tr = PolarAxes.PolarTransform()
-#         ghelper = fa.GridHelperCurveLinear(
-#             tr,
-#             extremes=(0, self.tmax, self.xmin, self.xmax),
-#             grid_locator1=gl,
-#             tick_formatter1=tf,
-#         )
+        ## 1.creating extrems for gridhelper
+          ## ymax = 1/2 pi if
+        if positive_only:
+            ymax= 1/2 * np.pi
+        else:
+            ymax = np.pi
 
-#         # ------- create floating axis -------
-#         if fig is None:
-#             fig_height = 4.5 * figscale
-#             fig_width = fig_height * (1 + np.sin(excess_theta))
-#             fig = plt.figure(figsize=(fig_width, fig_height), dpi=100)
+        x0 = 0
+        if self.mult_comp:
+            self.ref_std = 1        
 
-#         ax = fa.FloatingSubplot(fig, subplot, grid_helper=ghelper)
-#         fig.add_subplot(ax)
+        x1 = self.ref_std * 1.6
+        extremes=(0, ymax, x0, x1)
 
-#         # Adjust axes
-#         # Angle axis
-#         ax.axis["top"].label.set_text("Correlation")
-#         ax.axis["top"].toggle(ticklabels=True, label=True)
-#         # inverse the direction
-#         ax.axis["top"].set_axis_direction("bottom")
-#         ax.axis["top"].major_ticklabels.set_axis_direction("top")
-#         ax.axis["top"].label.set_axis_direction("top")
+        # 2. grid locator     
+        rlocs = np.array([0, .1, 0.2,.3, 0.4,.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 1])
+        # a concatenate with ticks' reverse
+        rlocs = np.concatenate((-rlocs[:0:-1], rlocs))
+        ## arc-cos -> convert to polar angles
+        tlocs = np.arccos(rlocs)
+        grid_locator1 = gf.FixedLocator(tlocs)    # Positions
 
-#         # X axis
-#         ax.axis["left"].set_axis_direction("bottom")
+        # 3. tick formatters for each axis
+        tf1 = gf.DictFormatter(dict(zip(tlocs, map(str, rlocs))))
 
-#         # Y axis direction & label
-#         ax.axis["right"].toggle(all=True)
-#         ax.axis["right"].label.set_text(ylabel)
-#         ax.axis["right"].set_axis_direction("top")
-#         # ticklabel direction
-#         ax.axis["right"].major_ticklabels.set_axis_direction("left")
+        ## gridhelper to create the special axis
+        gridhelper = fa.GridHelperCurveLinear(
+                tr, extremes=extremes,
+                grid_locator1=grid_locator1,
+                tick_formatter1=tf1)
 
-#         ax.axis["bottom"].set_visible(False)
+        ## create figure
+        fig = plt.figure()
+        ax = fig.add_axes(111, axes_class=fa.FloatingAxes, grid_helper=gridhelper)
 
-#         # ------- Set instance attribute ----------
-#         self.fig = fig
-#         # Graphical axes
-#         self._ax = ax
-#         # grid line
-#         self._ax.grid(True, zorder=0, linestyle="--")
-#         # aspect ratio
-#         self._ax.set_aspect(1)
-#         # A parasite axes for further plotting data
-#         self.ax = ax.get_aux_axes(tr)
-#         # Collect sample points for latter use (e.g. legend)
-#         self.samplePoints = []
+        # Adjust axes
+        plt.rcParams['font.family'] = 'sans-serif'
+        ax.axis["top"].set_axis_direction("bottom")   # "Angle axis"
+        ax.axis["top"].toggle(ticklabels=True, label=True)
+        ax.axis["top"].major_ticklabels.set_axis_direction("top")
+        ax.axis["top"].label.set_axis_direction("top")
+        ax.axis["top"].label.set_text("Correlation")
 
-#     def add_ref(self, refstd, reflabel="Observation", linestyle="-", color="k"):
-#         """add a reference point"""
-#         self.refstd = refstd
-#         # Add reference point
-#         # slightly higher than 0 so star can be fully seen
-#         l = self.ax.plot(0.01, self.refstd, "k*", ls="", ms=10)
-#         # xy for the point, xytext for the text (the coordinates are
-#         # defined in xycoords and textcoords, respectively)
-#         self.ax.annotate(
-#             reflabel,
-#             xy=(0.01, self.refstd),
-#             xycoords="data",
-#             xytext=(-25, -30),
-#             textcoords="offset points",
-#         )
-#         # add stddev contour
-#         t = np.linspace(0, self.tmax)
-#         r = np.zeros_like(t) + self.refstd
-#         self.ax.plot(t, r, linestyle=linestyle, color=color)
-#         self.samplePoints.append(l)
+        ax.axis["left"].set_axis_direction("bottom")  # "X axis"
+        ax.axis["left"].label.set_text("Standard deviation")
 
-#     def add_scatter(self, stddev, corrcoef, *args, **kwargs):
-#         """
-#         Add sample (*stddev*, *corrcoeff*) to the Taylor
-#         diagram. *args* and *kwargs* are directly propagated to the
-#         `Figure.plot` command.
-#         """
+        ax.axis["right"].set_axis_direction("top")    # "Y-axis"
+        ax.axis["right"].toggle(ticklabels=True)
 
-#         l = self.ax.scatter(
-#             np.arccos(corrcoef), stddev, *args, **kwargs
-#         )  # (theta, radius)
-#         self.samplePoints.append(l)
+        ax.axis["bottom"].toggle(ticklabels=False, label=False)
 
-#         return l
+        ## add grid lines
+        ax.grid(linestyle='dashed')
 
-#     def add_contours(self, levels=5, **kwargs):
-#         """
-#         Add constant centered RMS difference contours, defined by *levels*.
-#         """
 
-#         rs, ts = np.meshgrid(
-#             np.linspace(self.xmin, self.xmax), np.linspace(0, self.tmax)
-#         )
-#         # Compute centered RMS difference
-#         crmse = np.sqrt(self.refstd**2 + rs**2 - 2 * self.refstd * rs * np.cos(ts))
-#         contours = self.ax.contour(ts, rs, crmse, levels, linestyles="--", **kwargs)
-#         self.ax.clabel(contours, contours.levels[::1], inline=False)
+        self._ax = ax # Graphical axes
+        self.ax = ax.get_aux_axes(tr) # Polar coordinates
 
-#         return contours
+        if crmse_contour:
+            rs, ts = np.meshgrid(np.linspace(x0, x1), np.linspace(0, ymax))
+            RMSE=np.sqrt(np.power(self.ref_std, 2) + np.power(rs, 2) - (2.0 * self.ref_std * rs  *np.cos(ts)))
+            contours = self.ax.contour(ts, rs, RMSE, 5, linestyles='dashed', colors='brown', linewidths=1.5)
+            ## add label
+            self.ax.clabel(contours, inline=True, fontsize=10)
 
-#     def add_legend(self, *args, **kwargs):
-#         return self.ax.legend(*args, **kwargs)
 
-#     def add_annotation(self, *args, **kwargs):
-#         return self.ax.annotation(*args, **kwargs)
+    def add_point(self, correlation, std, *args, **kwargs):
+        self.ax.plot(np.arccos(correlation), std, '.', *args, **kwargs)        
 
-#     def savefig(self, *args, **kwargs):
-#         self.fig.savefig(*args, **kwargs)
-    
+    def show(self):
+        if not self.mult_comp:
+            ## add reference point
+            self.add_point(1, self.ref_std, 'r*', ls='', ms=10)
+            ## add model point
+            self.add_point(self.corr, self.model_std, '.', ms=10)
+        else:
+            
+            for i in range(len(self.ac)):
+                ## normalised std
+                self.add_point(self.corr[i], self.model_std[i]/self.obs_std[i], label=self.label[i],
+                               ms=10)
+        self.ax.legend()
