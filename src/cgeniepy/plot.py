@@ -644,7 +644,7 @@ class CommunityPalette:
 
         if cmap_name not in self.avail_palettes():
             raise ValueError(
-                f"{cmap_name} not found, accepted values are {self.avail_palette()}"
+                f"{cmap_name} not found, accepted values are {self.avail_palettes()}"
             )
 
         data_dir = files("data").joinpath("colormaps")
