@@ -6,6 +6,8 @@
 ![PyPI](https://img.shields.io/pypi/v/PACKAGE?label=pypi%20cgeniepy)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/cgeniepy)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![status](https://joss.theoj.org/papers/b08301b8ec79f1da9150cec224da8391/status.svg)](https://joss.theoj.org/papers/b08301b8ec79f1da9150cec224da8391)
+
 
 `cgeniepy` is a Python package to analyse the output of [cGENIE Earth System Model](https://www.seao2.info/mymuffin.html). It aims to provide a set of convenient tools for the post-simulation work, including analysing the model output, plotting publication-quality figures, and conducting model-data comparison.
 
