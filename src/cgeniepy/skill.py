@@ -1,3 +1,4 @@
+from typing import Union
 import numpy as np
 from scipy.spatial import distance
 import matplotlib.pyplot as plt
@@ -198,7 +199,7 @@ class TaylorDiagram(object):
     This class is modified from Yannick Copin, https://gist.github.com/ycopin/3342888
     """
 
-    def __init__(self, ac: ArrComparison):
+    def __init__(self, ac: Union[ArrComparison,list]):
         if isinstance(ac, list):
             self.mult_comp = True
         else:
@@ -215,20 +216,20 @@ class TaylorDiagram(object):
             self.obs_std = np.std(self.ac.data)
             self.label = self.ac.label
         else:
-            corr, model_std, obs_std, labe = [],[],[],[]
+            corr, model_std, obs_std, label = [],[],[],[]
             for ac_i in self.ac:
                 corr.append(ac_i.pearson_r())
                 model_std.append(np.std(ac_i.model))
                 obs_std.append(np.std(ac_i.data))
-                labe.append(ac_i.label)                
+                label.append(ac_i.label)                
 
             self.corr = corr
             self.model_std = model_std
             self.obs_std = obs_std
-            self.label = labe
+            self.label = label
                 
 
-    def setup_ax(self, positive_only=True, crmse_contour=False):
+    def setup_ax(self, fig=None, positive_only=True, crmse_contour=False):
 
         tr = PolarAxes.PolarTransform()
 
@@ -241,7 +242,9 @@ class TaylorDiagram(object):
 
         x0 = 0
         if self.mult_comp:
-            self.ref_std = 1        
+            self.ref_std = 1
+        else:
+            self.ref_std = self.obs_std
 
         x1 = self.ref_std * 1.6
         extremes=(0, ymax, x0, x1)
@@ -264,8 +267,12 @@ class TaylorDiagram(object):
                 tick_formatter1=tf1)
 
         ## create figure
-        fig = plt.figure()
-        ax = fig.add_axes(111, axes_class=fa.FloatingAxes, grid_helper=gridhelper)
+        if not fig:
+            self.fig = plt.figure()
+        else:
+            self.fig = fig
+            
+        ax = self.fig.add_axes(111, axes_class=fa.FloatingAxes, grid_helper=gridhelper)
 
         # Adjust axes
         plt.rcParams['font.family'] = 'sans-serif'
@@ -293,24 +300,29 @@ class TaylorDiagram(object):
         if crmse_contour:
             rs, ts = np.meshgrid(np.linspace(x0, x1), np.linspace(0, ymax))
             RMSE=np.sqrt(np.power(self.ref_std, 2) + np.power(rs, 2) - (2.0 * self.ref_std * rs  *np.cos(ts)))
-            contours = self.ax.contour(ts, rs, RMSE, 5, linestyles='dashed', colors='brown', linewidths=1.5)
+            contours = self.ax.contour(ts, rs, RMSE, 5, linestyles='dashed', colors='#d4af37', linewidths=1.5,
+                                       zorder=1)
             ## add label
             self.ax.clabel(contours, inline=True, fontsize=10)
+            ## add reference point (because crmse is the distance to reference point)
+            self.add_point(1, self.ref_std, marker='*',label='reference', edgecolor='k')
 
 
     def add_point(self, correlation, std, *args, **kwargs):
-        self.ax.plot(np.arccos(correlation), std, '.', *args, **kwargs)        
+        ## x->theta, y->radiance
+        self.ax.scatter(np.arccos(correlation), std,*args, **kwargs)        
 
-    def show(self):
+    def plot(self):
         if not self.mult_comp:
-            ## add reference point
-            self.add_point(1, self.ref_std, 'r*', ls='', ms=10)
             ## add model point
-            self.add_point(self.corr, self.model_std, '.', ms=10)
+            self.add_point(self.corr, self.model_std, edgecolor='k')
         else:
             
             for i in range(len(self.ac)):
                 ## normalised std
                 self.add_point(self.corr[i], self.model_std[i]/self.obs_std[i], label=self.label[i],
-                               ms=10)
+                               edgecolor='k')
         self.ax.legend()
+
+    def savefig(self, *args, **kwargs):
+        self.fig.savefig(*args, **kwargs)
