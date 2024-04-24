@@ -24,7 +24,10 @@ Additional cmap
 
 This example shows the available color palettes in the `cgeniepy` package
 
-.. GENERATED FROM PYTHON SOURCE LINES 8-40
+Many are not directly available in Python but has been used widely such as
+ODV's palette.
+
+.. GENERATED FROM PYTHON SOURCE LINES 11-43
 
 
 
@@ -75,7 +78,7 @@ This example shows the available color palettes in the `cgeniepy` package
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.631 seconds)
+   **Total running time of the script:** (0 minutes 0.206 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_additional_cmap.py:

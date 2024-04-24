@@ -627,7 +627,7 @@ class ScatterDataVis:
 
 class CommunityPalette:
 
-    """A class to handle community-driven colormaps"""
+    """A class to handle community-driven colormaps"""    
 
     def get_palette(self, cmap_name, N=256, reverse=False, alpha=None):
         """

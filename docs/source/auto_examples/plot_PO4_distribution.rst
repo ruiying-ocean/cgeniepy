@@ -25,13 +25,18 @@ Plot 2D transect of tracers in each basin
 This example plots the modelled PO4 distribution in cGENIE.
 
 The following features in the package are used:
-* Access data through `cgeniepy.model` module
-* A basin-mask operation
-* A linear interpolation
-* Additional color palette (mirrors the one in ODV)
-* Self-optimised plotting method
 
-.. GENERATED FROM PYTHON SOURCE LINES 15-38
+#. Access data through `cgeniepy.model` module
+
+#. A basin-mask operation
+
+#. A linear interpolation
+
+#. Get additional color palette (mirrors the one in ODV)
+
+#. Customise the plotting details
+
+.. GENERATED FROM PYTHON SOURCE LINES 20-43
 
 
 
@@ -85,7 +90,7 @@ The following features in the package are used:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.609 seconds)
+   **Total running time of the script:** (0 minutes 1.789 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_PO4_distribution.py:

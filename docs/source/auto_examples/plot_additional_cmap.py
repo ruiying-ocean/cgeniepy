@@ -4,6 +4,9 @@ Additional cmap
 ================
 
 This example shows the available color palettes in the `cgeniepy` package
+
+Many are not directly available in Python but has been used widely such as
+ODV's palette.
 """
 
 import numpy as np

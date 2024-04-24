@@ -6,11 +6,16 @@ Plot 2D transect of tracers in each basin
 This example plots the modelled PO4 distribution in cGENIE.
 
 The following features in the package are used:
-* Access data through `cgeniepy.model` module
-* A basin-mask operation
-* A linear interpolation
-* Additional color palette (mirrors the one in ODV)
-* Self-optimised plotting method
+
+#. Access data through `cgeniepy.model` module
+
+#. A basin-mask operation
+
+#. A linear interpolation
+
+#. Get additional color palette (mirrors the one in ODV)
+
+#. Customise the plotting details
 """
 
 from cgeniepy.model import GenieModel
