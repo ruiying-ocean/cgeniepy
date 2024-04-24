@@ -189,9 +189,9 @@ class TaylorDiagram(object):
     Taylor diagram.
 
     A visualisation of model-data comparison considering (1) RMSE; (2) Correlation; (3) Standard Deviation.
-
-    In practical it is a polar axis with point distributed at (std, arccos(correlation))
-    These two metrics, combining with the observed standard deviation, drived the cRMSE that measures the distance from reference point
+    
+    In practical it is a polar axis with point with `std` as radiance and `corr` as theta.
+    The cRMSE then measures the distance from reference point, which is at (ref_std, 0)
 
     see https://en.wikipedia.org/wiki/Taylor_diagram#/media/File:Taylor_diagram_fig2.png
     and https://bookdown.org/david_carslaw/openair/sections/model-evaluation/taylor-diagram.html (Figure 20.2)
@@ -250,7 +250,7 @@ class TaylorDiagram(object):
         extremes=(0, ymax, x0, x1)
 
         # 2. grid locator     
-        rlocs = np.array([0, .1, 0.2,.3, 0.4,.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 1])
+        rlocs = np.array([0, 0.2, 0.4, 0.6, 0.8, 0.9, 0.95, 0.99, 1])
         # a concatenate with ticks' reverse
         rlocs = np.concatenate((-rlocs[:0:-1], rlocs))
         ## arc-cos -> convert to polar angles
@@ -291,7 +291,7 @@ class TaylorDiagram(object):
         ax.axis["bottom"].toggle(ticklabels=False, label=False)
 
         ## add grid lines
-        ax.grid(linestyle='dashed')
+        ax.grid(linestyle='dashed', axis='x')
 
 
         self._ax = ax # Graphical axes
@@ -304,8 +304,15 @@ class TaylorDiagram(object):
                                        zorder=1)
             ## add label
             self.ax.clabel(contours, inline=True, fontsize=10)
+
+            ## add reference std line
+            theta_ref = np.linspace(0, 2*np.pi, 100)
+            radiance_ref = theta_ref*0 + self.ref_std
+            self.ax.plot(theta_ref, radiance_ref, color='lightblue', linestyle='dashed',
+                         linewidth=1.5)
+
             ## add reference point (because crmse is the distance to reference point)
-            self.add_point(1, self.ref_std, marker='*',label='reference', edgecolor='k')
+            self.add_point(1, self.ref_std, marker='*',label='reference', edgecolor='k')            
 
 
     def add_point(self, correlation, std, *args, **kwargs):
@@ -315,7 +322,7 @@ class TaylorDiagram(object):
     def plot(self):
         if not self.mult_comp:
             ## add model point
-            self.add_point(self.corr, self.model_std, edgecolor='k')
+            self.add_point(self.corr, self.model_std, edgecolor='k', label=self.label)
         else:
             
             for i in range(len(self.ac)):
@@ -326,3 +333,12 @@ class TaylorDiagram(object):
 
     def savefig(self, *args, **kwargs):
         self.fig.savefig(*args, **kwargs)
+
+    def add_line(self,theta1, radiance1,theta2, radiance2, *args, **kwargs):
+        """
+        Add a line in the polar axis
+
+        If you need to convert the correlation into theta/radian, use np.arccos(correlation)
+        """
+        line_2d = plt.Line2D([theta1,theta2], [radiance1,radiance2])
+        self.ax.add_line(line_2d, *args, **kwargs)

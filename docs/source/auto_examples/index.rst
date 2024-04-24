@@ -184,6 +184,23 @@ Below is a gallery of examples
 
 .. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="This example uses fake data and fitted model prediction to plot taylor diagram">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_taylor_diagram_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_taylor_diagram.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Plot Taylor Diagram</div>
+    </div>
+
+
+.. raw:: html
+
     <div class="sphx-glr-thumbcontainer" tooltip="This example is a combination of ScatterData and GriddedData to search the nearest grid point f...">
 
 .. only:: html
@@ -251,6 +268,7 @@ Below is a gallery of examples
    /auto_examples/plot_multiple_vars
    /auto_examples/plot_logo
    /auto_examples/plot_PO4_distribution
+   /auto_examples/plot_taylor_diagram
    /auto_examples/plot_d13C_comp
    /auto_examples/plot_additional_cmap
    /auto_examples/plot_other_models

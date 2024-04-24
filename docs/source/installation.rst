@@ -1,10 +1,10 @@
 Installation
-============
+==============
 
 .. _installation:
 
 Install Python
---------------
+----------------
 This is a Python package, so you need to have Python in your computer. As the most popular programming language, I assume most people can find out how to install Python by simply googling it. Visiting the `Python official website <https://www.python.org/downloads/>`_ should be enough to download the latest Python (> 3.10). Make sure it is included in the shell environment (which means you can type :code:`python` in your terminal without triggering a error).
 
 Use pip
@@ -19,7 +19,7 @@ Open *terminal* (MacOS, GNU/Linux) or `cmd` (Win) and type:
        $ pip install package_name
 
 Install cgeniepy
-----------------
+--------------------
 
 Now let's install `cgeniepy` using `pip`. It is slightly different from the last command because I want to avoid any possible error in the installation step. This command will download the package that I built and uploaded to testpypi using the specific Python3 version (in some old operation system python points to python2).
 
@@ -36,7 +36,7 @@ Alternatively, we can directly download the developing version from GitHub:
 
 
 (Optional) Install dependencies       
---------------------
+---------------------------------
 cgeniepy is not a standalone software. It is built on other excellent packages (so called "dependencies"). Although installing cgeniepy will automatically download the related dependent packages, sometime it could fail. Using the blow command can manually avoid this.
 
 .. code-block:: console
