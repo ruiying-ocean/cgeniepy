@@ -167,7 +167,7 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to plot the PO4 distribution in each basin.">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example plots the modelled PO4 distribution in cGENIE.">
 
 .. only:: html
 

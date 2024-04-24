@@ -22,9 +22,16 @@
 Plot 2D transect of tracers in each basin
 =========================================
 
-This example shows how to plot the PO4 distribution in each basin.
+This example plots the modelled PO4 distribution in cGENIE.
 
-.. GENERATED FROM PYTHON SOURCE LINES 8-26
+The following features in the package are used:
+* Access data through `cgeniepy.model` module
+* A basin-mask operation
+* A linear interpolation
+* Additional color palette (mirrors the one in ODV)
+* Self-optimised plotting method
+
+.. GENERATED FROM PYTHON SOURCE LINES 15-38
 
 
 
@@ -38,7 +45,8 @@ This example shows how to plot the PO4 distribution in each basin.
 
  .. code-block:: none
 
-    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:48: UserWarning: No gemflag is provided, use default gemflags: [biogem]
+    <frozen importlib._bootstrap>:241: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
+    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:49: UserWarning: No gemflag is provided, use default gemflags: [biogem]
       warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
 
 
@@ -52,27 +60,32 @@ This example shows how to plot the PO4 distribution in each basin.
 
 
     from cgeniepy.model import GenieModel
+    from cgeniepy.plot import CommunityPalette
     import matplotlib.pyplot as plt
 
     model = GenieModel("/Users/yingrui/Science/lgm_foram_niche/model/muffin.CBE.worlg4.BASESFeTDTL.SPIN")
     ocn_po4 = model.get_var("ocn_PO4").isel(time=-1)
 
-    fig, axs=plt.subplots(nrows=1, ncols=3, figsize=(15, 3), tight_layout=True)        
+    fig, axs=plt.subplots(nrows=1, ncols=3, figsize=(15, 3), tight_layout=True)
 
     basins = ['Atlantic', 'Pacific', 'Indian']
 
-    for i in range(3):
-    	basin_data = model.get_var('ocn_PO4').isel(time=-1).mask_basin(base='worjh2',basin=basins[i], subbasin='')
-    	basin_data.data.values = basin_data.data.values * 1E6
-    	basin_data.mean(dim='lon').interpolate().plot(ax=axs[i], contour=True)
-    	axs[i].title.set_text(basins[i])
+    odv_cmap = CommunityPalette().get_palette('ODV', reverse=True)
 
-    plt.show()        
+    for i in range(3):
+        basin_data = model.get_var('ocn_PO4').isel(time=-1).mask_basin(base='worjh2',basin=basins[i], subbasin='')
+        basin_data.data.values = basin_data.data.values * 1E6
+        basin_data_interp = basin_data.mean(dim='lon').interpolate().to_GriddedDataVis()
+        basin_data_interp.aes_dict['pcolormesh_kwargs']['cmap'] = odv_cmap
+        basin_data_interp.plot(ax=axs[i], contour=True)
+        axs[i].title.set_text(basins[i])
+
+    plt.show()
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.833 seconds)
+   **Total running time of the script:** (0 minutes 1.609 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_PO4_distribution.py:

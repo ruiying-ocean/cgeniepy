@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:03.602** total execution time for 13 files **from auto_examples**:
+**00:01.609** total execution time for 14 files **from auto_examples**:
 
 .. container::
 
@@ -32,11 +32,8 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_plot_multiple_vars.py` (``plot_multiple_vars.py``)
-     - 00:03.602
-     - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_PO4_distribution.py` (``plot_PO4_distribution.py``)
-     - 00:00.000
+     - 00:01.609
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_additional_cmap.py` (``plot_additional_cmap.py``)
      - 00:00.000
@@ -53,6 +50,9 @@ Computation times
    * - :ref:`sphx_glr_auto_examples_plot_logo.py` (``plot_logo.py``)
      - 00:00.000
      - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_multiple_vars.py` (``plot_multiple_vars.py``)
+     - 00:00.000
+     - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_other_models.py` (``plot_other_models.py``)
      - 00:00.000
      - 0.0
@@ -66,6 +66,9 @@ Computation times
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_sst_map.py` (``plot_sst_map.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_taylor_diagram.py` (``plot_taylor_diagram.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_timeseries.py` (``plot_timeseries.py``)
