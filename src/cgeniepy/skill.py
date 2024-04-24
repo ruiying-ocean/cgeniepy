@@ -334,11 +334,11 @@ class TaylorDiagram(object):
     def savefig(self, *args, **kwargs):
         self.fig.savefig(*args, **kwargs)
 
-    def add_line(self,theta1, radiance1,theta2, radiance2, *args, **kwargs):
+    def add_line(self,theta1, radius1,theta2, radius2, *args, **kwargs):
         """
         Add a line in the polar axis
 
         If you need to convert the correlation into theta/radian, use np.arccos(correlation)
         """
-        line_2d = plt.Line2D([theta1,theta2], [radiance1,radiance2])
+        line_2d = plt.Line2D([theta1,theta2], [radius1,radius2])
         self.ax.add_line(line_2d, *args, **kwargs)
