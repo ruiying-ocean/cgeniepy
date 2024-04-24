@@ -33,7 +33,6 @@ odv_cmap = CommunityPalette().get_palette('ODV', reverse=True)
 
 for i in range(3):
     basin_data = model.get_var('ocn_PO4').isel(time=-1).mask_basin(base='worjh2',basin=basins[i], subbasin='')
-    basin_data.data.values = basin_data.data.values * 1E6
     basin_data_interp = basin_data.mean(dim='lon').interpolate().to_GriddedDataVis()
     basin_data_interp.aes_dict['pcolormesh_kwargs']['cmap'] = odv_cmap
     basin_data_interp.plot(ax=axs[i], contour=True)
