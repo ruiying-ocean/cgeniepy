@@ -2,6 +2,7 @@ from os.path import join
 from typing import Union, List, Tuple
 import re
 import warnings
+from pathlib import Path
 
 import pandas as pd
 from netCDF4 import Dataset

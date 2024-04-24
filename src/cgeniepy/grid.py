@@ -1,17 +1,14 @@
 import numpy as np
-import pandas as pd
 import xarray as xr
+from importlib_resources import files
 
 from scipy.interpolate import (
     RegularGridInterpolator,
     LinearNDInterpolator,
     NearestNDInterpolator,
 )
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
-import pandas as pd
+
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 class GridOperation:
@@ -146,7 +143,7 @@ class GridOperation:
         """
 
         filename = f"mask_{base}_{basin}{subbasin}.txt"
-        file_path=str(file('data').join_path(filename))
+        file_path=str(files('data').joinpath(filename))
 
         grid_mask_raw = np.loadtxt(file_path, dtype=int)
         grid_mask = np.flip(np.fliplr(grid_mask_raw))

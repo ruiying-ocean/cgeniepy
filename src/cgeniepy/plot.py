@@ -608,7 +608,7 @@ class ScatterDataVis:
         )        
 
         if bathy_lon:
-            data_path = str(file('data').joinpath('GEBCO2002_bathy.nc'))
+            data_path = str(files('data').joinpath('GEBCO2002_bathy.nc'))
             bathy = xr.open_dataset(data_path)
 
             ## get the lat range
