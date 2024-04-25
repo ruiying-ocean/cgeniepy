@@ -1,6 +1,6 @@
 import xml.etree.ElementTree as ET
-from cgeniepy.grid import GridOperation
 from importlib.resources import files
+import itertools
 
 import numpy as np
 import pandas as pd
@@ -10,8 +10,10 @@ import xarray as xr
 
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap, to_rgb as hex_to_rgb
-
-
+import matplotlib.patheffects as pe
+from matplotlib.patheffects import Stroke, Normal
+import cartopy.mpl.geoaxes
+from cgeniepy.grid import GridOperation
 from .utils import efficient_log
 
 
@@ -161,6 +163,7 @@ class GriddedDataVis:
         borderline=True,
         gridline=False,
         cfeature=None,
+        zebra_frame=False,
         *args,
         **kwargs,
     ):
@@ -255,6 +258,9 @@ class GriddedDataVis:
 
         if cfeature:
             self._add_cfeature(local_ax, cfeature)
+        
+        if zebra_frame:
+            self._add_zebra_frame(local_ax)
 
         if pcolormesh:
             return p_pcolormesh
@@ -347,6 +353,8 @@ class GriddedDataVis:
                 local_ax, p_contour, **self.aes_dict["contour_label_kwargs"]
             )
             ## contour will not be used to plot colorbar because it's set to black
+
+
 
         if contourf:
             p_contourf = self._add_contourf(local_ax, x_arr, y_arr)
@@ -490,6 +498,51 @@ class GriddedDataVis:
                                         edgecolor='black', facecolor='silver')
         ## use ax's transform
         ax.add_feature(feature, zorder=10)
+
+
+    def _add_zebra_frame(self,ax, lw=1.2):
+        """
+        copied from https://github.com/SciTools/cartopy/issues/1830
+        """
+        ax.spines["geo"].set_visible(False)
+        left, right, bot, top = ax.get_extent()
+        
+        # Alternate black and white line segments
+        bws = itertools.cycle(["k", "white"])
+
+        xticks = sorted([left, *ax.get_xticks(), right])
+        xticks = np.unique(np.array(xticks))
+        yticks = sorted([bot, *ax.get_yticks(), top])
+        yticks = np.unique(np.array(yticks))
+        for ticks, which in zip([xticks, yticks], ["lon", "lat"]):
+            for idx, (start, end) in enumerate(zip(ticks, ticks[1:])):
+                bw = next(bws)
+                if which == "lon":
+                    xs = [[start, end], [start, end]]
+                    ys = [[bot, bot], [top, top]]
+                else:
+                    xs = [[left, left], [right, right]]
+                    ys = [[start, end], [start, end]]
+
+                # For first and lastlines, used the "projecting" effect
+                capstyle = "butt" if idx not in (0, len(ticks) - 2) else "projecting"
+                for (xx, yy) in zip(xs, ys):
+                    ax.plot(
+                        xx,
+                        yy,
+                        color=bw,
+                        linewidth=lw,
+                        clip_on=False,
+                        transform=self.transform_crs,
+                        solid_capstyle=capstyle,
+                        # Add a black border to accentuate white segments
+                        path_effects=[
+                            pe.Stroke(linewidth=lw + 1, foreground="black"),
+                            pe.Normal(),
+                        ],
+                    )
+
+
 
 
 class ScatterDataVis:
