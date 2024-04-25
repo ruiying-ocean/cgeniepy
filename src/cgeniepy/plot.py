@@ -213,6 +213,7 @@ class GriddedDataVis:
                 **self.aes_dict["gridline_kwargs"],
             )
 
+
         if pcolormesh:
             ## pcolormesh uses edge coordinates
             ## need to be transformed to PlateCarree
@@ -400,7 +401,25 @@ class GriddedDataVis:
         ax.clabel(cs, cs.levels[::2], *args, **kwargs)
 
     def _add_gridline(self, ax, *args, **kwargs):
-        ax.gridlines(*args, **kwargs)
+        gl = ax.gridlines(*args, **kwargs)     
+
+        if ax.projection == ccrs.PlateCarree():
+            gl.xlines = False  # removing gridlines
+            gl.ylines = False            
+            ## add ticks
+            xticks = np.linspace(-180, 180, 7)
+            yticks = np.linspace(-90, 90, 7)
+            ax.set_xticks(xticks, crs=ccrs.PlateCarree())
+            ax.set_yticks(yticks, crs=ccrs.PlateCarree())
+            ax.set_yticklabels("")
+            ax.set_xticklabels("")
+            bbox_pixels = ax.get_window_extent().get_points()
+            width_pixels = bbox_pixels[1, 0] - bbox_pixels[0, 0]
+
+            # Set the tick length as a fraction of the width
+            tick_length = 0.015 * width_pixels            
+            ax.tick_params(axis='x', length=tick_length)
+            ax.tick_params(axis='y', length=tick_length)
 
     def _set_borderline(self, ax, geo=True, **kwargs):
         if geo:
@@ -580,7 +599,7 @@ class ScatterDataVis:
             cbar.ax.tick_params(axis="both", which="major", labelsize=8)
             cbar.set_label(f"{var}")
 
-        return p
+        return p    
 
     def _plot_transect(
         self,
