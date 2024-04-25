@@ -24,7 +24,15 @@ Plot multiple variables
 
 This example shows how to plot multiple variables from a GenieModel object. I use a modern model run as an example and plot the surface temperature, PO4, Fe, and O2.
 
-.. GENERATED FROM PYTHON SOURCE LINES 8-22
+The following features are particularly demonstrated:
+
+#. Customizing the plot projection with cartopy
+
+#. Plotting multiple variables in one figure
+
+#. Controlling the elements in cgeniepy.GriddedDataVis object
+
+.. GENERATED FROM PYTHON SOURCE LINES 16-32
 
 
 
@@ -34,8 +42,18 @@ This example shows how to plot multiple variables from a GenieModel object. I us
    :class: sphx-glr-single-img
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    <frozen importlib._bootstrap>:241: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
 
 
+
+
+
+
+|
 
 .. code-block:: Python
 
@@ -52,12 +70,14 @@ This example shows how to plot multiple variables from a GenieModel object. I us
     variable = ['ocn_sur_temp', 'ocn_sur_PO4', 'ocn_sur_TDFe', 'ocn_sur_O2']
 
     for i in range(4):
-        pi_model.get_var(variable[i]).isel(time=-1).plot(ax=axs.flatten()[i],colorbar=True, outline=True, contourf=True)
+        pi_model.get_var(variable[i]).isel(time=-1).plot(ax=axs.flatten()[i],colorbar=True,
+                                                         outline=True, contourf=True,
+                                                         gridline=True)
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 3.602 seconds)
+   **Total running time of the script:** (0 minutes 2.379 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_multiple_vars.py:
