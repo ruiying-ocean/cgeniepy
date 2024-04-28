@@ -64,12 +64,14 @@ class GriddedData:
         coords = tuple([self.data[dim].values for dim in self.data.dims])
         values = self.data.values
         dims = self.data.dims
+        output = Interporaltor(dims, coords,values, *args, **kwargs).to_xarray()
         
         if self.mutable:
-            self.data = Interporaltor(dims, coords,values, *args, **kwargs).to_xarray()
+            self.data = output
+            self.attrs = self.attrs            
             return self            
         else:
-            return GriddedData(Interporaltor(dims, coords,values, *args, **kwargs).to_xarray())
+            return GriddedData(output, mutable=False, attrs=self.attrs)
         
 
     def sel(self, *args, **kwargs):
@@ -152,20 +154,17 @@ class GriddedData:
     def __add__(self, other):
         """Allow GriddedData to be added by a number or another GriddedData
         """
-        sum = GriddedData()
+        sum_array = GriddedData()
         if hasattr(other, "array"):
-            sum.data = self.data + other.array
+            sum_array.data = self.data + other.array
             ## check the attributes
-            if self.attrs == other.attrs:
-                sum.attrs = self.attrs
-            else:
-                warnings.warn("The attributes are not equal, the attributes of the first GriddedData is used")
-                sum.attrs = self.attrs
+            np.testing.assert_equal(self.attrs, other.attrs)            
+            sum_array.attrs = self.attrs
         else:
-            ## a scalar
-            sum.data = self.data + other
-            sum.attrs = self.attrs
-        return sum
+            ## a scalar or xarray.DataArray
+            sum_array.data = self.data + other
+            sum_array.attrs = self.attrs
+        return sum_array
 
     def __sub__(self, other):
         """
@@ -173,13 +172,11 @@ class GriddedData:
         """
         diff = GriddedData()
         if hasattr(other, "data"):
+            
             diff.data = self.data - other.data
-            ## check the attributes
-            if self.attrs == other.attrs:
-                diff.attrs = self.attrs
-            else:
-                warnings.warn("The attributes are not equal, the attributes of the first GriddedData is used")
-                diff.attrs = self.attrs
+            ## check all the attributes
+            np.testing.assert_equal(self.attrs, other.attrs)
+            diff.attrs = self.attrs
         else:
             ## a scalar
             diff.data = self.data - other
@@ -369,6 +366,7 @@ class GriddedData:
         """
         gp = GridOperation()
         data = self.data
+        attr = self.attrs
         mask = gp.GENIE_grid_mask(base=base, basin=basin, subbasin=subbasin, invert=True)
 
         if self.data.ndim > 2:
@@ -377,12 +375,15 @@ class GriddedData:
         mask_data = np.ma.array(data, mask=mask)
         mask_data = np.ma.masked_invalid(mask_data)
 
+        output = xr.DataArray(mask_data, dims=data.dims, coords=data.coords)
+
 
         if self.mutable:
-            self.data = xr.DataArray(mask_data, dims=data.dims, coords=data.coords)            
+            self.data = output
+            self.attrs = attr        
             return self
         else:
-            return xr.DataArray(mask_data, dims=data.dims, coords=data.coords)
+            return GriddedData(output, mutable=False, attrs=attr)
 
 
     @cache
