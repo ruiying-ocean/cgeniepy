@@ -81,8 +81,8 @@ The R package open-air has provided a nice explanation on what taylor diagram is
     fit2 = exp_func(x, *popt2)
 
     ## Create Comparison instance
-    ac1 = ArrComparison(y, fit1, 'exponential')
-    ac2 = ArrComparison(y, fit2, 'linear')
+    ac1 = ArrComparison(y, fit1, 'linear')
+    ac2 = ArrComparison(y, fit2, 'exponential')
 
     ## Create TaylorDiagram instance
     diagram = TaylorDiagram([ac1, ac2])
@@ -92,7 +92,7 @@ The R package open-air has provided a nice explanation on what taylor diagram is
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.383 seconds)
+   **Total running time of the script:** (0 minutes 0.416 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_taylor_diagram.py:
