@@ -155,9 +155,16 @@ class GriddedData:
         sum = GriddedData()
         if hasattr(other, "array"):
             sum.data = self.data + other.array
+            ## check the attributes
+            if self.attrs == other.attrs:
+                sum.attrs = self.attrs
+            else:
+                warnings.warn("The attributes are not equal, the attributes of the first GriddedData is used")
+                sum.attrs = self.attrs
         else:
             ## a scalar
             sum.data = self.data + other
+            sum.attrs = self.attrs
         return sum
 
     def __sub__(self, other):
@@ -167,6 +174,12 @@ class GriddedData:
         diff = GriddedData()
         if hasattr(other, "data"):
             diff.data = self.data - other.data
+            ## check the attributes
+            if self.attrs == other.attrs:
+                diff.attrs = self.attrs
+            else:
+                warnings.warn("The attributes are not equal, the attributes of the first GriddedData is used")
+                diff.attrs = self.attrs
         else:
             ## a scalar
             diff.data = self.data - other
