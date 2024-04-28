@@ -37,8 +37,8 @@ popt2, pcov2 = curve_fit(exp_func, x, y)
 fit2 = exp_func(x, *popt2)
 
 ## Create Comparison instance
-ac1 = ArrComparison(y, fit1, 'exponential')
-ac2 = ArrComparison(y, fit2, 'linear')
+ac1 = ArrComparison(y, fit1, 'linear')
+ac2 = ArrComparison(y, fit2, 'exponential')
 
 ## Create TaylorDiagram instance
 diagram = TaylorDiagram([ac1, ac2])
