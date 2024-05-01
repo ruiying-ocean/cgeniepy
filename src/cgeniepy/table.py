@@ -116,7 +116,14 @@ class ScatterData:
         file_path = str(files("data").joinpath("oceans/oceans.shp"))
         oceans = gpd.read_file(file_path)
         
+        if len(self.index) != 2:
+            raise ValueError("The index must have two columns: lon and lat")
+        
+        assert self.lon in self.index, f"{self.lon} not found in the index"
+        assert self.lat in self.index, f"{self.lat} not found in the index"
+
         result = self.data.reset_index().apply(lambda row: sub_detect_basin(row[self.lon], row[self.lat]), axis=1)
+        
 
         ## add to self.data
         tmp_data = self.data.reset_index()

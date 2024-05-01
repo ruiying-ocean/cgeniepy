@@ -182,6 +182,22 @@ class GriddedData:
             diff.data = self.data - other
         return diff
 
+    def __rsub__(self, other):
+        """
+        Allow a number or another GriddedData to be subtracted from this GriddedData
+        """
+        diff = GriddedData()
+        if hasattr(other, "data"):
+            diff.data = other.data - self.data
+            # check all the attributes
+            np.testing.assert_equal(self.attrs, other.attrs)
+            diff.attrs = self.attrs
+        else:
+            # a scalar
+            diff.data = other - self.data
+
+        return diff
+
     def __truediv__(self, other):
         """
         Allow GriddedData to be divided by a number or another GriddedData
@@ -214,6 +230,17 @@ class GriddedData:
                 print("Sorry, only number and GriddedData are accepted")
 
         return product
+
+    def __pow__(self, other):
+        """
+        Allow GriddedData to be raised to a power
+        """
+
+        if self.mutable:
+            self.data = self.data ** other
+            return self
+        else:
+            return GriddedData(self.data ** other, mutable=False, attrs=self.attrs)
 
 
     def max(self, *args, **kwargs):
