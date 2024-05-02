@@ -18,7 +18,7 @@ class GridOperation:
     
     def lon_n2g(self, x):
         """
-        Change normal longitude (-180, 180) to GENIE longitude (-270, 90)
+        Convert normal longitude (-180, 180) to GENIE longitude (-270, 90)
 
         :param x: normal longitude
         :return: GENIE longitude
@@ -30,7 +30,7 @@ class GridOperation:
 
     def lon_g2n(self, x):
         """
-        Change GENIE longitude to normal longitude
+        Convert GENIE longitude to normal longitude
 
         :param x: GENIE longitude
         :return: normal longitude        
@@ -42,7 +42,7 @@ class GridOperation:
             return x
 
     def lon_e2n(self, x):
-        """ Change eastern longitude to normal longitude
+        """ Convert eastern longitude to normal longitude
 
         :param x: longitude in eastern degree
         :return: normal longitude
@@ -54,7 +54,7 @@ class GridOperation:
             return x
 
     def lon_n2e(self, x):
-        """normal longitude (-180, 180) to longitude east(0,360)
+        """Convert normal longitude (-180, 180) to longitude east(0,360)
 
         :param x: normal longitude
         :return: longitude in eastern degree
@@ -64,7 +64,7 @@ class GridOperation:
         else:
             return x
 
-    def apply_n2g(self, data: xr.Dataset, longitude="lon") -> xr.Dataset:
+    def xr_n2g(self, data: xr.Dataset, longitude="lon") -> xr.Dataset:
         """Apply longitude conversion method n2g for the input data (normal to GENIE)
 
         :param data: input data
@@ -76,7 +76,7 @@ class GridOperation:
             {longitude: list(map(self.lon_n2g, data[longitude].values))}
         ).sortby("lon")
 
-    def apply_g2n(self, data: xr.Dataset, longitude="lon") -> xr.Dataset:
+    def xr_g2n(self, data: xr.Dataset, longitude="lon") -> xr.Dataset:
         """Apply longitude conversion method g2n for the input data (GENIE to normal)
 
         :param data: input data
@@ -88,7 +88,7 @@ class GridOperation:
             {longitude: list(map(self.lon_g2n, data[longitude].values))}
         ).sortby(longitude)
 
-    def apply_e2n(self, data: xr.Dataset, longitude="lon") -> xr.Dataset:
+    def xr_e2n(self, data: xr.Dataset, longitude="lon") -> xr.Dataset:
         """Apply longitude conversion method e2n for the input data (eastern to normal)
 
         :param data: input data
@@ -100,7 +100,7 @@ class GridOperation:
             {longitude: list(map(self.lon_e2n, data[longitude].values))}
         ).sortby(longitude)
 
-    def apply_n2e(self, data: xr.Dataset, longitude="lon") -> xr.Dataset:
+    def xr_n2e(self, data: xr.Dataset, longitude="lon") -> xr.Dataset:
         """
         Apply longitude conversion method n2e for the input data (normal to eastern)
 
@@ -129,7 +129,7 @@ class GridOperation:
         return array
 
     def GENIE_grid_mask(
-        self, base="worjh2", basin="ALL", subbasin="", mask_Arc_Med=False, invert=False
+        self, base="worjh2", basin="ALL", subbasin="", invert=False
     ):
         """
         Get a modern GENIE 36x36 mask array from input data.
@@ -153,7 +153,7 @@ class GridOperation:
 
         return grid_mask
 
-    def normal_lon(self, N=36, edge=False):
+    def get_normal_lon(self, N=36, edge=False):
         """
         Normal longitude in 10 degree resolution,
         if edge is False, then return midpoint
@@ -165,12 +165,12 @@ class GridOperation:
             lon = np.linspace(-175, 175, N)
             return lon
 
-    def regrid_lat(self, x):
+    def geniebin_lat(self, x):
 
         """
-        Transform <latitude> into cGENIE resolution to facilitate comparison between
-        model and observational data.
+        Categorize <latitude> into cGENIE grid bins
         """
+        ## check the latitude input range
         if x >= -90 and x <= 90:
             lat_edge = np.rad2deg(np.arcsin(np.linspace(-1, 1, 37)))
             lat = np.rad2deg(np.arcsin(np.linspace(-1, 1, 36)))
@@ -183,13 +183,11 @@ class GridOperation:
 
         return x
 
-    def regrid_lon(self, x):
-
+    def geniebin_lon(self, x):
         """
-        Transform <longitude> into cGENIE resolution to facilitate comparison between
-        model and observational data.
+        Categorize <longitude> into cGENIE grid bins
         """
-
+        ## check the longitude input range
         if x >= -180 and x <= 180:
             lon_edge = np.linspace(-180, 180, 37)
             for i in range(36):

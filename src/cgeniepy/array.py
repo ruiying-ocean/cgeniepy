@@ -132,13 +132,13 @@ class GriddedData:
 
         match method:
             case 'g2n':
-                output = gp.apply_g2n(self.data, *args, **kwargs)
+                output = gp.xr_g2n(self.data, *args, **kwargs)
             case 'n2g':
-                output = gp.apply_n2g(self.data, *args, **kwargs)
+                output = gp.xr_n2g(self.data, *args, **kwargs)
             case 'e2n':
-                output = gp.apply_e2n(self.data, *args, **kwargs)
+                output = gp.xr_e2n(self.data, *args, **kwargs)
             case 'n2e':
-                output = gp.apply_n2e(self.data, *args, **kwargs)
+                output = gp.xr_n2e(self.data, *args, **kwargs)
             case _:
                 ## No change
                 warnings.warn("No change applied because of invalid method")

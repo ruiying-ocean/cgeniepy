@@ -1,3 +1,4 @@
+import numpy as np
 from cgeniepy.skill import DFComparison
 import geopandas as gpd
 from shapely.geometry import Point
@@ -5,7 +6,7 @@ import pandas as pd
 
 from io import StringIO
 
-from cgeniepy.grid import Interporaltor
+from cgeniepy.grid import Interporaltor, GridOperation
 
 from .plot import ScatterDataVis
 from .grid import GridOperation
@@ -50,6 +51,13 @@ class ScatterData:
         self.data.set_index(index, inplace=True)
         self.index= index
         GridOperation().set_coordinates(obj=self, index=self.index)
+
+
+    def reset_index(self, inplace=True):
+        if inplace:
+            self.data = self.data.reset_index()
+        else:
+            return self.data.reset_index()
 
     def parse_tab_file(self, filename, begin_cmt = '/*', end_cmt = '*/'):
         """
@@ -153,9 +161,9 @@ class ScatterData:
         output= Interporaltor(dims, coords, values, 200, 'ir-linear')
         return output
 
-
-    def to_genie(
+    def to_geniegrid(
         self,
+        var,
         low_threshold=None,
         new_low_bound=None,
         high_threshold=None,
@@ -176,24 +184,27 @@ class ScatterData:
         For example, covert any data < 0.03 to 0. Work same to high_threshold/new_high_bound.
         """
 
+        assert self.lon in self.index, f"{self.lon} not found in the index"
+        assert self.lat in self.index, f"{self.lat} not found in the index"
+        
         df = self.data.copy()
 
         # subset
-        df = df[["Longitude", "Latitude", "Observation"]]
+        df = df[[self.lon, self.lat, var]]
 
         # drop NAN
         df = df.dropna(axis="rows", how="any")
 
         # regrid coordinate
-        df.loc[:, "Latitude"] = df.loc[:, "Latitude"].apply(regrid_lat)
-        df.loc[:, "Longitude"] = df.loc[:, "Longitude"].apply(regrid_lon)
+        df.loc[:, self.lon] = df.loc[:, self.lat].apply(geniebin_lon)
+        df.loc[:, self.lon] = df.loc[:, self.lon].apply(geniebin_lat)
 
         # group and aggregate (still in long format)
-        df_agg = df.groupby(["Longitude", "Latitude"]).agg("mean")
+        df_agg = df.groupby([self.lon, self.lat]).agg("mean")
 
         # Create a all-nan data frame with full cGENIE grids
-        lat = GENIE_lat()
-        lon = normal_lon()
+        lat = get_GENIE_lat()
+        lon = get_normal_lon()
         data = np.zeros([36 * 36])
         index = pd.MultiIndex.from_product([lon, lat], names=["Longitude", "Latitude"])
         df_genie = pd.DataFrame(data, index=index, columns=["Observation"])
@@ -228,7 +239,7 @@ class ScatterData:
 
         # long -> wide data format
         df_genie_wide = df_genie.pivot_table(
-            values="Observation", index="Latitude", columns="Longitude", dropna=False
+            values=var, index=self.lat, columns=self.lon, dropna=False
         )
 
         return df_genie_wide
