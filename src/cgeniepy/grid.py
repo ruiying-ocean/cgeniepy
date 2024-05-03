@@ -15,7 +15,79 @@ class GridOperation:
 
     """A set of operations on grid/coordinate data
     """
-    
+
+    def get_genie_lon(self, N=36, edge=False, offset_start=-260):
+        """get GENIE longitude in 10 degree resolution, if edge is False, then return midpoint
+
+        :param N: number of grid points
+        :param edge: if True, return edge points
+        :param offset_start: the par_grid_lon_offset option in main configuration file
+        """
+        resolution = 360 / N
+        if edge:
+            lon_edge = np.linspace(offset_start, 360+offset_start, N + 1)
+            return lon_edge
+        else:
+            lon = np.linspace(offset_start+resolution/2, 360+offset_start-resolution/2, N)
+            return lon
+
+    def get_genie_lat(self, N=36, edge=False):
+        """
+        return cGENIE latitude in log-sine normally degree resolution,
+        if edge is False, then return midpoint
+        """
+        if edge:
+            lat_edge = np.rad2deg(np.arcsin(np.linspace(-1, 1, N + 1)))
+            return lat_edge
+        else:
+            lat = np.rad2deg(np.arcsin(np.linspace(-0.97222222, 0.97222222, N)))
+            return lat
+
+    def get_genie_depth(self, edge=False):
+        """hard coded cGENIE vertical depth in 16 levels
+
+        No idea how it is calculated yet.
+        """
+        z_edge = np.array(
+            [
+                0.0000,
+                80.8407,
+                174.7519,
+                283.8467,
+                410.5801,
+                557.8040,
+                728.8313,
+                927.5105,
+                1158.3124,
+                1426.4307,
+                1737.8987,
+                2099.7254,
+                2520.0527,
+                3008.3391,
+                3575.5723,
+                4234.45166,
+                5000.0000,
+            ]
+        )
+        if edge:
+            return z_edge
+        else:
+            z = np.array([(z_edge[i] + z_edge[i + 1]) / 2 for i in range(len(z_edge) - 1)])
+            return z
+
+    def get_normal_lon(self, N=36, edge=False):
+        """
+        Normal longitude in 10 degree resolution (default),
+        if edge is False, then return midpoint
+        """
+        resolution = 360 / N
+        if edge:
+            lon_edge = np.linspace(-180, 180, N + 1)
+            return lon_edge
+        else:
+            lon = np.linspace(-180+resolution/2, 180-resolution/2, N)
+            return lon        
+        
     def lon_n2g(self, x):
         """
         Convert normal longitude (-180, 180) to GENIE longitude (-270, 90)
@@ -152,27 +224,14 @@ class GridOperation:
             grid_mask = ~grid_mask + 2
 
         return grid_mask
-
-    def get_normal_lon(self, N=36, edge=False):
-        """
-        Normal longitude in 10 degree resolution,
-        if edge is False, then return midpoint
-        """
-        if edge:
-            lon_edge = np.linspace(-180, 180, N + 1)
-            return lon_edge
-        else:
-            lon = np.linspace(-175, 175, N)
-            return lon
-
-    def geniebin_lat(self, x):
-
+        
+    def geniebin_lat(self, x, *args,**kwargs):
         """
         Categorize <latitude> into cGENIE grid bins
         """
         ## check the latitude input range
         if x >= -90 and x <= 90:
-            lat_edge = np.rad2deg(np.arcsin(np.linspace(-1, 1, 37)))
+            lat_edge = self.get_genie_lat(edge=True, *args,**kwargs)
             lat = np.rad2deg(np.arcsin(np.linspace(-1, 1, 36)))
 
             for i in range(36):
@@ -183,14 +242,15 @@ class GridOperation:
 
         return x
 
-    def geniebin_lon(self, x):
+    def geniebin_lon(self, x, *args,**kwargs):
         """
         Categorize <longitude> into cGENIE grid bins
         """
         ## check the longitude input range
         if x >= -180 and x <= 180:
-            lon_edge = np.linspace(-180, 180, 37)
-            for i in range(36):
+            lon_edge = self.get_genie_lon(edge=True, *args,**kwargs)
+            if 'N' not in kwargs: N=36                
+            for i in range(N):
                 if x > lon_edge[i] and x <= lon_edge[i + 1]:
                     x = (lon_edge[i] + lon_edge[i + 1]) / 2  # middle value in the bin
         else:
