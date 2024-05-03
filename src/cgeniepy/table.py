@@ -161,7 +161,7 @@ class ScatterData:
         output= Interporaltor(dims, coords, values, 200, 'ir-linear')
         return output
 
-    def to_geniegrid(
+    def to_geniebin(
         self,
         var,
         low_threshold=None,
@@ -186,6 +186,8 @@ class ScatterData:
 
         assert self.lon in self.index, f"{self.lon} not found in the index"
         assert self.lat in self.index, f"{self.lat} not found in the index"
+
+        go= GridOperation()
         
         df = self.data.copy()
 
@@ -196,19 +198,19 @@ class ScatterData:
         df = df.dropna(axis="rows", how="any")
 
         # regrid coordinate
-        df.loc[:, self.lon] = df.loc[:, self.lat].apply(geniebin_lon)
-        df.loc[:, self.lon] = df.loc[:, self.lon].apply(geniebin_lat)
+        df.loc[:, self.lon] = df.loc[:, self.lat].apply(go.geniebin_lon)
+        df.loc[:, self.lon] = df.loc[:, self.lon].apply(go.geniebin_lat)
 
         # group and aggregate (still in long format)
         df_agg = df.groupby([self.lon, self.lat]).agg("mean")
 
         # Create a all-nan data frame with full cGENIE grids
-        lat = get_GENIE_lat()
-        lon = get_normal_lon()
+        lat = go.get_genie_lat()
+        lon = go.get_normal_lon()
         data = np.zeros([36 * 36])
-        index = pd.MultiIndex.from_product([lon, lat], names=["Longitude", "Latitude"])
-        df_genie = pd.DataFrame(data, index=index, columns=["Observation"])
-        df_genie["Observation"] = df_genie["Observation"].replace(0, np.nan)
+        index = pd.MultiIndex.from_product([lon, lat], names=[self.lon, self.lat])
+        df_genie = pd.DataFrame(data, index=index, columns=[var])
+        df_genie[var] = df_genie[var].replace(0, np.nan)
 
         # transform the tuple elements in multindex to lists
         df_genie_index_list = [list(item) for item in df_genie.index.values]
@@ -229,12 +231,12 @@ class ScatterData:
         # filter data if necessary
         if (low_threshold is not None) and (new_low_bound is not None):
             df_genie.loc[
-                df_genie.Observation < low_threshold, "Observation"
+                df_genie.Observation < low_threshold, var
             ] = new_low_bound
 
         if (high_threshold is not None) and (new_high_bound is not None):
             df_genie.loc[
-                df_genie.Observation > high_threshold, "Observation"
+                df_genie.Observation > high_threshold, var
             ] = new_high_bound
 
         # long -> wide data format
