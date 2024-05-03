@@ -88,21 +88,26 @@ class GridOperation:
             lon = np.linspace(-180+resolution/2, 180-resolution/2, N)
             return lon        
         
-    def lon_n2g(self, x):
+    def lon_n2g(self, x, grid_lon_offset=-260):
         """
         Convert normal longitude (-180, 180) to GENIE longitude (-270, 90)
 
         :param x: normal longitude
         :return: GENIE longitude
         """
-        if x > 90 and x < 180:
+        if grid_lon_offset == -180:
+            print("this is already normal lat")
+            return x
+        normal_lon_cut = self.lon_g2n(grid_lon_offset)
+        if x > normal_lon_cut and x < 180:
             return x - 360
         else:
             return x
 
     def lon_g2n(self, x):
         """
-        Convert GENIE longitude to normal longitude
+        Convert GENIE longitude to normal longitude.
+        This is independent on the grid_offset_start option
 
         :param x: GENIE longitude
         :return: normal longitude        
@@ -136,7 +141,7 @@ class GridOperation:
         else:
             return x
 
-    def xr_n2g(self, data: xr.Dataset, longitude="lon") -> xr.Dataset:
+    def xr_n2g(self, data: xr.Dataset, longitude="lon", *args, **kwargs) -> xr.Dataset:
         """Apply longitude conversion method n2g for the input data (normal to GENIE)
 
         :param data: input data
@@ -145,10 +150,10 @@ class GridOperation:
         :returns: xr.Dataset        
         """
         return data.assign_coords(
-            {longitude: list(map(self.lon_n2g, data[longitude].values))}
+            {longitude: list(map(self.lon_n2g, data[longitude].values, *args, **kwargs))}
         ).sortby("lon")
 
-    def xr_g2n(self, data: xr.Dataset, longitude="lon") -> xr.Dataset:
+    def xr_g2n(self, data: xr.Dataset, longitude="lon", *args, **kwargs) -> xr.Dataset:
         """Apply longitude conversion method g2n for the input data (GENIE to normal)
 
         :param data: input data
@@ -157,10 +162,10 @@ class GridOperation:
         :returns: xr.Dataset        
         """
         return data.assign_coords(
-            {longitude: list(map(self.lon_g2n, data[longitude].values))}
+            {longitude: list(map(self.lon_g2n, data[longitude].values, *args, **kwargs))}
         ).sortby(longitude)
 
-    def xr_e2n(self, data: xr.Dataset, longitude="lon") -> xr.Dataset:
+    def xr_e2n(self, data: xr.Dataset, longitude="lon", *args, **kwargs) -> xr.Dataset:
         """Apply longitude conversion method e2n for the input data (eastern to normal)
 
         :param data: input data
@@ -169,10 +174,10 @@ class GridOperation:
         :returns: xr.Dataset        
         """
         return data.assign_coords(
-            {longitude: list(map(self.lon_e2n, data[longitude].values))}
+            {longitude: list(map(self.lon_e2n, data[longitude].values), *args, **kwargs)}
         ).sortby(longitude)
 
-    def xr_n2e(self, data: xr.Dataset, longitude="lon") -> xr.Dataset:
+    def xr_n2e(self, data: xr.Dataset, longitude="lon", *args, **kwargs) -> xr.Dataset:
         """
         Apply longitude conversion method n2e for the input data (normal to eastern)
 
@@ -182,7 +187,7 @@ class GridOperation:
         :returns: xr.Dataset
         """
         return data.assign_coords(
-            {longitude: list(map(self.lon_n2e, data[longitude].values))}
+            {longitude: list(map(self.lon_n2e, data[longitude].values, *args, **kwargs))}
         ).sortby(longitude)
 
     def mask_Arctic_Med(self, array, policy="na"):
