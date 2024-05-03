@@ -373,7 +373,7 @@ class GridOperation:
         lat_candidates = ['lat', 'latitude', 'y']
         lon_candidates = ['lon', 'longitude', 'x']
         depth_candidates = ['depth', 'z', 'z_t', 'level', 'nlevel', 'lvl','lev', 'depth_1',
-                            'elevation [m]', 'zt']
+                            'elevation [m]', 'zt','depth_surface']
         time_candidates = ['time', 't', 'age', 'date', 'year', 'age [ka]', 'age [ka bp]']
 
         # Check for presence of each element
@@ -407,7 +407,7 @@ class GridOperation:
         dim_candidates = [
             ['time', 't', 'age', 'date', 'year', 'age [ka]', 'age [ka bp]'],
             ['depth', 'z', 'z_t', 'level', 'nlevel', 'lvl', 'lev', 'depth_1',
-                'elevation [m]','zt'],
+                'elevation [m]','zt', 'depth_surface'],
             ['lat', 'latitude', 'y'],
             ['lon', 'longitude', 'x']
         ]

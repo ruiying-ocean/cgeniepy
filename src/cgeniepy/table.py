@@ -164,32 +164,38 @@ class ScatterData:
     def to_geniebin(
         self,
         var,
+        agg_method="mean"
     ):
         """
         Regrid a dataframe within certain format to cGENIE grids
 
-        Output:
-        A 36x36 2D array.
+        :param var: The variable to regrid.
+        :param agg_method: The aggregation method to use when regridding.
+        :return: An indexed data frame
         """
 
         go= GridOperation()
-        
+
         src_df = self.data.reset_index(inplace=False)
 
         # subset
-        src_df = src_df[[self.lon, self.lat, var]]
+        select_cols = self.index + [var]
+        src_df = src_df[select_cols]
 
         # drop NAN
         src_df = src_df.dropna(axis="rows", how="any")
 
         # regrid coordinate: genie lat x normal lon
         ## lat
-        src_df.loc[:, self.lat] = src_df.loc[:, self.lat].apply(go.geniebin_lat)
-        ## lon 
-        src_df.loc[:, self.lon] = src_df.loc[:, self.lon].apply(go.normbin_lon)
+        if hasattr(self, "lat"):
+            src_df.loc[:, self.lat] = src_df.loc[:, self.lat].apply(go.geniebin_lat)
+        if hasattr(self, "lon"):
+            src_df.loc[:, self.lon] = src_df.loc[:, self.lon].apply(go.normbin_lon)
+        if hasattr(self, "depth"):
+            src_df.loc[:, self.depth] = src_df.loc[:, self.depth].apply(go.geniebin_depth)
 
         # aggregated source data (in long format)
-        src_df_agg = src_df.groupby([self.lat,self.lon]).agg("mean")
+        src_df_agg = src_df.groupby(self.index).agg(agg_method)
         return src_df_agg
 
     def drop_na(self, *args, **kwargs):

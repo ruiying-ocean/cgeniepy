@@ -337,7 +337,7 @@ class GenieModel(object):
         either calculated from existing data or using biogem.grid_mask
         """
         try:
-            grid_mask = self.get_var("grid_mask").data
+            grid_mask = self.get_var("grid_mask", mutable=False).data
             return grid_mask
         except ValueError:
             print("grid_mask not found!")
