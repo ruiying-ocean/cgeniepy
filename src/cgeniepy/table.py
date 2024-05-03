@@ -167,7 +167,9 @@ class ScatterData:
         agg_method="mean"
     ):
         """
-        Regrid a dataframe within certain format to cGENIE grids
+        Regrid a dataframe within certain format to cGENIE grids.
+        This method does not consider the land-sea mask. So if convert from a higher resolution data to GENIE grids,
+        the land-sea mask could be different (Not a problem in comparison though).
 
         :param var: The variable to regrid.
         :param agg_method: The aggregation method to use when regridding.

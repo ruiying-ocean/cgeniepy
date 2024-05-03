@@ -40,7 +40,9 @@ class GridOperation:
             lat_edge = np.rad2deg(np.arcsin(np.linspace(-1, 1, N + 1)))
             return lat_edge
         else:
-            lat = np.rad2deg(np.arcsin(np.linspace(-0.97222222, 0.97222222, N)))
+            lat_min = -1 + (1 / N)
+            lat_max = 1 - (1 / N)
+            lat = np.rad2deg(np.arcsin(np.linspace(lat_min, lat_max, N)))
             return lat
 
     def get_genie_depth(self, edge=False):
