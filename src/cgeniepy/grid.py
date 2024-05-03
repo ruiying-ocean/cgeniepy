@@ -263,6 +263,23 @@ class GridOperation:
 
         return x
 
+    def geniebin_depth(self, x, *args,**kwargs):
+        """
+        Categorize <depth> into cGENIE grid bins
+        """
+        ## check the depth input range
+        if x >= 0 and x <= 5000:
+            depth_edge = self.get_genie_depth(edge=True)
+            depth = self.get_genie_depth(edge=False)
+
+            for i in range(16):
+                if x >= depth_edge[i] and x < depth_edge[i + 1]:
+                    x = depth[i]
+        else:
+            raise ValueError("Depth must be in [0,5000]")
+
+        return x
+
     def normbin_lon(self, x, *args,**kwargs):
         """
         Categorize <longitude> into normal grid bins
