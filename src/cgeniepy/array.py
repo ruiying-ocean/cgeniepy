@@ -48,6 +48,10 @@ class GriddedData:
         "make GriddedData subscriptable like xarray.DataArray"
         return self.data[item]
 
+    def __array__(self):
+        "return the numpy array of the data"
+        return self.data.values
+
     def interpolate(self, *args, **kwargs):
         """Interpolate the GriddedData to a finer grid, mostly useful for GENIE plotting
 
