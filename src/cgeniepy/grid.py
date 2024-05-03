@@ -237,7 +237,7 @@ class GridOperation:
         ## check the latitude input range
         if x >= -90 and x <= 90:
             lat_edge = self.get_genie_lat(edge=True, *args,**kwargs)
-            lat = np.rad2deg(np.arcsin(np.linspace(-1, 1, 36)))
+            lat = self.get_genie_lat(edge=False)
 
             for i in range(36):
                 if x > lat_edge[i] and x <= lat_edge[i + 1]:
@@ -261,6 +261,22 @@ class GridOperation:
         else:
             raise ValueError("Longitude must be in [-180,180]")
 
+        return x
+
+    def normbin_lon(self, x, *args,**kwargs):
+        """
+        Categorize <longitude> into normal grid bins
+        """
+        ## check the longitude input range
+        if x >= -180 and x <= 180:
+            lon_edge = self.get_normal_lon(edge=True, *args,**kwargs)
+            if 'N' not in kwargs: N=36                
+            for i in range(N):
+                if x > lon_edge[i] and x <= lon_edge[i + 1]:
+                    x = (lon_edge[i] + lon_edge[i + 1]) / 2
+        else:
+            raise ValueError("Longitude must be in [-180,180]")
+        
         return x
 
     def haversine_distance(self, lat1, lon1, lat2, lon2):
