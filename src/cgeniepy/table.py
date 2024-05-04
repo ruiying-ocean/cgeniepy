@@ -45,6 +45,18 @@ class ScatterData:
             self.index= list(self.data.index.names)
             GridOperation().set_coordinates(obj=self, index=self.index)
 
+    def __repr__(self):
+        prefix = "ScatterData\n"
+        columns = f"Columns: {self.data.columns}\n"
+        rows = f"Rows: {len(self.data)}\n"
+        if hasattr(self, "index"):
+            index = f"Index: {self.index}\n"
+        else:
+            index = ""
+
+        return prefix + columns + index + rows
+
+
     def set_index(self, index):
         """Tell the object which columns are the coordinates.        
         """
