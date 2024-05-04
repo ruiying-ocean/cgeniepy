@@ -252,6 +252,23 @@ Below is a gallery of examples
 
 .. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to regrid observational data to cGENIE grids and compare with cGENIE out...">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_regridded_data_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_regridded_data.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Regrid observational data and compare with cGENIE output</div>
+    </div>
+
+
+.. raw:: html
+
     </div>
 
 
@@ -272,6 +289,7 @@ Below is a gallery of examples
    /auto_examples/plot_d13C_comp
    /auto_examples/plot_additional_cmap
    /auto_examples/plot_other_models
+   /auto_examples/plot_regridded_data
 
 
 .. only:: html

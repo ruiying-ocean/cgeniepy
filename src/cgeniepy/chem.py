@@ -152,9 +152,9 @@ class Chemistry:
         :param formula: chemical formula
         :returns: molecular weight
 
-        ------
+        ---------
         Example
-        ------
+        ----------
         >>> molecular_weight("C6H12O6")
         >>> 180.15588
         """
@@ -171,9 +171,9 @@ class Chemistry:
         :param unit: unit string with elements
         :returns: pure unit string
 
-        ------
+        ---------
         Example
-        ------
+        ----------
         >>> pure_unit("mmol C d-1")
         >>> "mmol d-1"
         """
@@ -202,6 +202,7 @@ class Chemistry:
         
         ----------
         Example:
+        ----------
         
         >>> convert_a_unit('m2')
         '$m^2$'
@@ -269,7 +270,8 @@ class Chemistry:
         :return: a  formatted string
         
         ----------
-        Example
+        Example:
+        ----------
         
         >>> format_unit('mol kg-1')
         'mol kg$^{-1}$'

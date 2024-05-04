@@ -30,6 +30,7 @@ Weighted mean
 -----------------------
 
 .. code-block:: python
+		
     model = GenieModel("xxx", gemflag='biogem')
 
     o2 = model.get_var('ocn_O2').isel(time=-1) ##mol/kg
