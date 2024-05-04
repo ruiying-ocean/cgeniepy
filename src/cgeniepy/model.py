@@ -63,8 +63,10 @@ class GenieModel(object):
         if self.is_ensemble:
             return f"GenieModel(ensemble of {len(self.model_path)} models)"
         else:
-            return self.get_diag_avg("biogem_year_09999_500_diag_GLOBAL_AVERAGE.res")
-    
+            poc_export = self.get_diag_avg(-1, is_index=True).query("variable == 'Total POC export'").iloc[:, 2].to_string(index=False)
+            ocn_temp = self.get_diag_avg(-1, is_index=True).query("variable == 'Ocean temp'").iloc[:, 2].to_string(index=False)
+            repr_string = f"GenieModel({self.model_path})\nLast Year Diagnostics:\nOcean temp: {ocn_temp}\nTotal POC export: {poc_export}"
+            return repr_string    
 
     def _model_ncpath(self, gem="ecogem", dim="2d"):
         """
