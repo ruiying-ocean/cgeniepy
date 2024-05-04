@@ -332,8 +332,14 @@ class GenieModel(object):
         return df
         
         
-    def get_diag_avg(self, target_year):
+    def get_diag_avg(self, target_year, is_index=False):
         """
+        read the diagnostic file of cGENIE
+
+        :param target_year: the target year of the diagnostic file
+        :param is_index: if True, target_year is the index of the sorted years
+        :return: a pandas DataFrame
+
         Example
         ----------
         >>> from cgeniepy.model import GenieModel
@@ -352,14 +358,20 @@ class GenieModel(object):
             all_years.append(int(year))
             diag_files.append(path)
 
-        # merge two lists into a dictionary
-        sorted_diagfiles = dict(zip(all_years, diag_files))
-     
-        if target_year not in all_years:
-            raise ValueError(f"{target_year} not found in the diagnostic files. Available years are {all_years}")
-        
-        ## start to read
-        return self._render_diag_avg(sorted_diagfiles[target_year])
+        if is_index:
+            sorted_diagfiles = dict(sorted(zip(all_years, diag_files)))        
+            sorted_years = sorted(all_years)
+            try:
+                target_year = sorted_years[target_year]
+            except IndexError:
+                raise IndexError(f"Index {target_year} is out of range. Available indices are from 0 to {len(sorted_years) - 1}.")
+            return self._render_diag_avg(sorted_diagfiles[target_year])
+        else:
+            # merge two lists into a dictionary (and sort by year)
+            diagfiles_dict = dict(zip(all_years, diag_files))            
+            if target_year not in all_years:
+                raise ValueError(f"{target_year} not found in the diagnostic files. Available years are {all_years}")    
+            return self._render_diag_avg(diagfiles_dict[target_year])
         
 
     def grid_mask(self):
