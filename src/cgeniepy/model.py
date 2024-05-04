@@ -56,7 +56,14 @@ class GenieModel(object):
 
         self.model_path = model_path
         self.ncvar_dict = self._ncvar_dict()
-        self.tsvar_list = self.tsvar_list()
+        self.tsvar_list = self._tsvar_list()
+
+    def __repr__(self):
+        if self.is_ensemble:
+            return f"GenieModel(ensemble of {len(self.model_path)} models)"
+        else:
+            return self.get_diag_avg("biogem_year_09999_500_diag_GLOBAL_AVERAGE.res")
+    
 
     def _model_ncpath(self, gem="ecogem", dim="2d"):
         """
@@ -186,7 +193,7 @@ class GenieModel(object):
             return GriddedData(array, mutable=mutable, attrs=attrs)
             
 
-    def tsvar_list(self):
+    def _tsvar_list(self):
         """list all files biogem timeseries files
 
         If the model is an ensemble, it assumes that all models share the same
@@ -267,19 +274,12 @@ class GenieModel(object):
             all_df = pd.concat(df_list, axis=0)
 
             return all_df
-        
-    def get_diag_avg(self, filename):
-        """print out the summary of a diagnostic file
 
-        :param filename: the name of the diagnostic file
+    def _render_diag_avg(self, f):
+        """read the diagnostic file of cGENIE
 
-        Example
-        ----------
-        >>> from cgeniepy.model import GenieModel
-        >>> model = GenieModel("path_to_GENIE_output")
-        >>> model.get_diag_avg("biogem_year_09999_500_diag_GLOBAL_AVERAGE.res")
+        :param f: the name of the diagnostic file
         """
-        f = join(self.model_path, "biogem", filename)
         with open(f, 'r') as f:
             text = f.read()
 
@@ -330,6 +330,37 @@ class GenieModel(object):
         df = df.iloc[1:]
 
         return df
+        
+        
+    def get_diag_avg(self, target_year):
+        """
+        Example
+        ----------
+        >>> from cgeniepy.model import GenieModel
+        >>> model = GenieModel("path_to_GENIE_output")
+        >>> model.get_diag_avg(9999)
+        """
+        biogem_files = self.tsvar_list
+        pattern = r"biogem_year_(?P<year>\d{4})_\d{3}_diag_GLOBAL_AVERAGE"
+        
+        all_years, diag_files = [], []
+        for path in biogem_files:
+          match = re.search(pattern, path.name)
+          if match:
+            # Extract the year using the named capture group 'year'
+            year = match.group('year')
+            all_years.append(int(year))
+            diag_files.append(path)
+
+        # merge two lists into a dictionary
+        sorted_diagfiles = dict(zip(all_years, diag_files))
+     
+        if target_year not in all_years:
+            raise ValueError(f"{target_year} not found in the diagnostic files. Available years are {all_years}")
+        
+        ## start to read
+        return self._render_diag_avg(sorted_diagfiles[target_year])
+        
 
     def grid_mask(self):
         """
