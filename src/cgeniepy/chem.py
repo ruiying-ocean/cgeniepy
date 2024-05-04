@@ -208,24 +208,22 @@ class Chemistry:
         >>> convert_a_unit('m-2')
         '$m^{-2}$'
         """
+
         if input_str == 'n/a':
             return None
 
-        ## if the input string contains a '^' character, then remove it
-        if '^' in input_str:
-            input_str = input_str.replace('^', '')
-
-        if '**' in input_str:
-            input_str = input_str.replace('**', '^')
-            
-        if 'o/oo' in input_str:
-            input_str = input_str.replace('o/oo', '‰')
-            
-        if 'degrees' in input_str:
-            input_str = input_str.replace('degrees', '°')
-
-        if 'degC' in input_str:
-            input_str = input_str.replace('degC', '°C')            
+        replacements = {
+            '^': '',
+            '**': '^',
+            'o/oo': '‰',
+            'degrees': '°',
+            'degC': '°C'
+        }
+        
+        ## replace some special characters
+        for k, v in replacements.items():
+            if k in input_str:
+                input_str = input_str.replace(k, v)
 
         ## when exponent is negative  (e.g., m-2, m-3)
         if '-' in input_str:
