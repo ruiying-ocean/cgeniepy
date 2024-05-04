@@ -44,6 +44,9 @@ class GriddedData:
         if 'units' in self.attrs:
             self.attrs['units'] = Chemistry().format_unit(self.attrs['units'])
 
+    def __repr__(self):
+        return f"GriddedData\ndata={self.data}\nmutable:\n    {self.mutable}"
+
     def __getitem__(self, item):
         "make GriddedData subscriptable like xarray.DataArray"
         return self.data[item]
