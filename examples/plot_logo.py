@@ -19,6 +19,7 @@ sst = model.get_var("ocn_sur_temp").isel(time=-1)
 fig, ax = plt.subplots(subplot_kw={'projection': ccrs.Orthographic()})
 
 ## set the color map
-sst.aes_dict['pcolormesh_kwargs']['cmap'] = plt.cm.inferno
-sst.plot(ax=ax, outline=True)
+sst_plotter= sst.to_GriddedDataVis()
+sst_plotter.aes_dict['pcolormesh_kwargs']['cmap'] = plt.cm.inferno
+sst_plotter.plot(ax=ax, outline=True)
 plt.show()
