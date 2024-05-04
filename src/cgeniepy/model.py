@@ -3,6 +3,7 @@ from typing import Union, List, Tuple
 import re
 import warnings
 from pathlib import Path
+import itertools
 
 import pandas as pd
 from netCDF4 import Dataset
@@ -201,17 +202,23 @@ class GenieModel(object):
         """
 
         if self.is_ensemble:
-            biogem_path = join(self.model_path[0], "biogem")
+            biogem_paths = []
+            for path in self.model_path:
+                biogem_paths.append(join(path, "biogem"))
+
+            ## return all files in all directories
+            tsvar_list = [list(Path(path).glob("*.res")) for path in biogem_paths]
+            ## unnest the list using itertools.chain
+            tsvar_list = list(itertools.chain(*tsvar_list))
+            return tsvar_list
         else:
             biogem_path = join(self.model_path, "biogem")
+            ## return all files in the directory
+            all_bg_files = Path(biogem_path)
 
-        ## return all files in the directory
-        all_bg_files = Path(biogem_path)
-
-        ## find out files with .res extension
-        tsvar_list = [f for f in all_bg_files.glob("*.res")]
-
-        return tsvar_list
+            ## find out files with .res extension
+            tsvar_list = [f for f in all_bg_files.glob("*.res")]         
+            return tsvar_list
 
     def get_ts(self, var: str):
         """
@@ -332,12 +339,14 @@ class GenieModel(object):
         return df
         
         
-    def get_diag_avg(self, target_year, is_index=False):
+    def get_diag_avg(self, target_year, is_index=False, pattern_year=r"\d{5}",pattern_year_digit=r"\d{3}"):
         """
         read the diagnostic file of cGENIE
 
         :param target_year: the target year of the diagnostic file
         :param is_index: if True, target_year is the index of the sorted years
+        :param pattern: the pattern of the diagnostic file name
+        
         :return: a pandas DataFrame
 
         Example
@@ -346,11 +355,10 @@ class GenieModel(object):
         >>> model = GenieModel("path_to_GENIE_output")
         >>> model.get_diag_avg(9999)
         """
-        biogem_files = self.tsvar_list
-        pattern = r"biogem_year_(?P<year>\d{4})_\d{3}_diag_GLOBAL_AVERAGE"
-        
+        pattern = r"biogem_year_(?P<year>" + pattern_year + ")_" + pattern_year_digit + "_diag_GLOBAL_AVERAGE"
+
         all_years, diag_files = [], []
-        for path in biogem_files:
+        for path in self.tsvar_list:
           match = re.search(pattern, path.name)
           if match:
             # Extract the year using the named capture group 'year'
@@ -358,20 +366,33 @@ class GenieModel(object):
             all_years.append(int(year))
             diag_files.append(path)
 
-        if is_index:
-            sorted_diagfiles = dict(sorted(zip(all_years, diag_files)))        
-            sorted_years = sorted(all_years)
-            try:
-                target_year = sorted_years[target_year]
-            except IndexError:
-                raise IndexError(f"Index {target_year} is out of range. Available indices are from 0 to {len(sorted_years) - 1}.")
-            return self._render_diag_avg(sorted_diagfiles[target_year])
+        if self.is_ensemble:
+            assert is_index == False, "is_index is not supported for ensemble model"
+            output = []
+            ## get all files matching target years
+            for year, file in zip(all_years, diag_files):
+                if year == target_year:
+                    single_df = self._render_diag_avg(file)
+                    ## add label
+                    single_df["model"] = file.parent.parent.name
+                    output.append(single_df)
+            return pd.concat(output)
         else:
-            # merge two lists into a dictionary (and sort by year)
-            diagfiles_dict = dict(zip(all_years, diag_files))            
-            if target_year not in all_years:
-                raise ValueError(f"{target_year} not found in the diagnostic files. Available years are {all_years}")    
-            return self._render_diag_avg(diagfiles_dict[target_year])
+            ## A single model        
+            if is_index:
+                sorted_diagfiles = dict(sorted(zip(all_years, diag_files)))        
+                sorted_years = sorted(all_years)
+                try:
+                    target_year = sorted_years[target_year]
+                except IndexError:
+                    raise IndexError(f"Index {target_year} is out of range. Available indices are from 0 to {len(sorted_years) - 1}.")
+                return self._render_diag_avg(sorted_diagfiles[target_year])
+            else:
+                # merge two lists into a dictionary (and sort by year)
+                diagfiles_dict = dict(zip(all_years, diag_files))            
+                if target_year not in all_years:
+                    raise ValueError(f"{target_year} not found in the diagnostic files. Available years are {all_years}")    
+                return self._render_diag_avg(diagfiles_dict[target_year])
         
 
     def grid_mask(self):
