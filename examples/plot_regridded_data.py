@@ -13,6 +13,8 @@ This example uses many features from the cgeniepy package, including:
 
 #. Bin observational data to cGENIE grid (a coarse implementation)
 
+#. Visualisation based on cgeniepy's customised plotting functions
+
 #. Compare model and observational data
 """
 import xarray as xr
