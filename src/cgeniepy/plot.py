@@ -377,10 +377,11 @@ class GriddedDataVis:
         local_ax.tick_params(
             axis="both",
             which="major",
-            direction="in",
+            direction="out",
             labelsize=self.aes_dict["general_kwargs"]["fontsize"],
             labelfontfamily=self.aes_dict["general_kwargs"]["font"],
         )
+        local_ax.minorticks_on()
 
         if pcolormesh:
             return p_pcolormesh
