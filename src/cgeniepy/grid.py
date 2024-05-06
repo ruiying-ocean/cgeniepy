@@ -1,6 +1,6 @@
 import numpy as np
 import xarray as xr
-from importlib_resources import files
+from importlib.resources import files
 
 from scipy.interpolate import (
     RegularGridInterpolator,
