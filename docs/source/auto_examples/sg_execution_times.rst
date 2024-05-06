@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:00.886** total execution time for 15 files **from auto_examples**:
+**00:44.389** total execution time for 15 files **from auto_examples**:
 
 .. container::
 
@@ -32,48 +32,48 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_plot_scatterdata.py` (``plot_scatterdata.py``)
-     - 00:00.886
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_plot_PO4_distribution.py` (``plot_PO4_distribution.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_plot_additional_cmap.py` (``plot_additional_cmap.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_plot_arrcomparison.py` (``plot_arrcomparison.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_plot_coastal_data.py` (``plot_coastal_data.py``)
-     - 00:00.000
-     - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_d13C_comp.py` (``plot_d13C_comp.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_plot_logo.py` (``plot_logo.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_plot_multiple_vars.py` (``plot_multiple_vars.py``)
-     - 00:00.000
+     - 00:33.079
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_other_models.py` (``plot_other_models.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_plot_pac_sst.py` (``plot_pac_sst.py``)
-     - 00:00.000
+     - 00:04.864
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_regridded_data.py` (``plot_regridded_data.py``)
-     - 00:00.000
+     - 00:01.541
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_plot_scatter_map.py` (``plot_scatter_map.py``)
-     - 00:00.000
+   * - :ref:`sphx_glr_auto_examples_plot_pac_sst.py` (``plot_pac_sst.py``)
+     - 00:01.391
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_multiple_vars.py` (``plot_multiple_vars.py``)
+     - 00:01.262
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_sst_map.py` (``plot_sst_map.py``)
-     - 00:00.000
+     - 00:00.449
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_plot_taylor_diagram.py` (``plot_taylor_diagram.py``)
-     - 00:00.000
+   * - :ref:`sphx_glr_auto_examples_plot_scatter_map.py` (``plot_scatter_map.py``)
+     - 00:00.381
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_PO4_distribution.py` (``plot_PO4_distribution.py``)
+     - 00:00.347
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_logo.py` (``plot_logo.py``)
+     - 00:00.249
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_arrcomparison.py` (``plot_arrcomparison.py``)
+     - 00:00.213
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_additional_cmap.py` (``plot_additional_cmap.py``)
+     - 00:00.205
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_coastal_data.py` (``plot_coastal_data.py``)
+     - 00:00.183
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_timeseries.py` (``plot_timeseries.py``)
-     - 00:00.000
+     - 00:00.084
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_taylor_diagram.py` (``plot_taylor_diagram.py``)
+     - 00:00.074
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_scatterdata.py` (``plot_scatterdata.py``)
+     - 00:00.067
      - 0.0

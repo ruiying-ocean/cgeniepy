@@ -31,23 +31,6 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="Here use the sea surface temperature as an example to plot the 2D global map from the model out...">
-
-.. only:: html
-
-  .. image:: /auto_examples/images/thumb/sphx_glr_plot_sst_map_thumb.png
-    :alt:
-
-  :ref:`sphx_glr_auto_examples_plot_sst_map.py`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">Plot 2D global map from the model output</div>
-    </div>
-
-
-.. raw:: html
-
     <div class="sphx-glr-thumbcontainer" tooltip="Plot the model variable for a spficic basin, here we use sea surface temperature in the Pacific...">
 
 .. only:: html
@@ -94,6 +77,23 @@ Below is a gallery of examples
 .. raw:: html
 
       <div class="sphx-glr-thumbnail-title">Plot coastal only data</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Here use the sea surface temperature as an example to plot the 2D global map from the model out...">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_sst_map_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_sst_map.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Plot 2D global map from the model output</div>
     </div>
 
 
@@ -276,10 +276,10 @@ Below is a gallery of examples
    :hidden:
 
    /auto_examples/plot_arrcomparison
-   /auto_examples/plot_sst_map
    /auto_examples/plot_pac_sst
    /auto_examples/plot_scatter_map
    /auto_examples/plot_coastal_data
+   /auto_examples/plot_sst_map
    /auto_examples/plot_timeseries
    /auto_examples/plot_multiple_vars
    /auto_examples/plot_logo

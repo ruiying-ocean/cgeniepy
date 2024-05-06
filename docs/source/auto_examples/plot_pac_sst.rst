@@ -41,7 +41,7 @@ Plot the model variable for a spficic basin, here we use sea surface temperature
     /Users/yingrui/cgeniepy/src/cgeniepy/model.py:50: UserWarning: No gemflag is provided, use default gemflags: [biogem]
       warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
 
-    <cartopy.mpl.geocollection.GeoQuadMesh object at 0x31f6d4790>
+    <cartopy.mpl.geocollection.GeoQuadMesh object at 0x32aa6c250>
 
 
 
@@ -62,7 +62,7 @@ Plot the model variable for a spficic basin, here we use sea surface temperature
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.088 seconds)
+   **Total running time of the script:** (0 minutes 1.391 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_pac_sst.py:
