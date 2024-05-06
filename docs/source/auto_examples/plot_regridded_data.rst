@@ -32,9 +32,11 @@ This example uses many features from the cgeniepy package, including:
 
 #. Bin observational data to cGENIE grid (a coarse implementation)
 
+#. Visualisation based on cgeniepy's customised plotting functions
+
 #. Compare model and observational data
 
-.. GENERATED FROM PYTHON SOURCE LINES 18-57
+.. GENERATED FROM PYTHON SOURCE LINES 20-59
 
 
 
@@ -48,7 +50,6 @@ This example uses many features from the cgeniepy package, including:
 
  .. code-block:: none
 
-    <frozen importlib._bootstrap>:241: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
     /Users/yingrui/cgeniepy/src/cgeniepy/model.py:50: UserWarning: No gemflag is provided, use default gemflags: [biogem]
       warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
     M-score of sea surface temperature 0.8211028102365528
@@ -105,7 +106,7 @@ This example uses many features from the cgeniepy package, including:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 2.809 seconds)
+   **Total running time of the script:** (0 minutes 1.500 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_regridded_data.py:

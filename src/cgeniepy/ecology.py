@@ -12,8 +12,10 @@ class EcoModel(GenieModel):
 
     Initialise a EcoModel object with a path to cGENIE output directory
 
-    -------
+
     Example
+    -----------
+    
     >>> from cgeniepy.ecology import EcoModel
     >>> model = EcoModel("path_to_GENIE_output")
     """
@@ -91,8 +93,9 @@ class EcoModel(GenieModel):
 
         :return: a GenieArray object
 
+
+        Example
         ----------------------------------------
-        Example:
 
         >>> from cgeniepy.ecology import EcoModel
 

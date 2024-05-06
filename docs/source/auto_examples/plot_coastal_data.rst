@@ -39,7 +39,7 @@ This example shows how to plot the PO4 distribution in each basin.
  .. code-block:: none
 
 
-    <matplotlib.collections.QuadMesh object at 0x16e2c9650>
+    <matplotlib.collections.QuadMesh object at 0x31f70d5d0>
 
 
 
@@ -70,7 +70,7 @@ This example shows how to plot the PO4 distribution in each basin.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 5.255 seconds)
+   **Total running time of the script:** (0 minutes 0.117 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_coastal_data.py:

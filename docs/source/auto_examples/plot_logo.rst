@@ -24,7 +24,7 @@ Customise the 2D map projection
 
 This example shows how to customise the 2D map including the projection, the color map, which is used as the logo of this package.
 
-.. GENERATED FROM PYTHON SOURCE LINES 8-25
+.. GENERATED FROM PYTHON SOURCE LINES 8-26
 
 
 
@@ -38,7 +38,8 @@ This example shows how to customise the 2D map including the projection, the col
 
  .. code-block:: none
 
-    >>> No gemflag is provided, use default gemflags: [biogem, ecogem]
+    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:50: UserWarning: No gemflag is provided, use default gemflags: [biogem]
+      warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
 
 
 
@@ -63,14 +64,15 @@ This example shows how to customise the 2D map including the projection, the col
     fig, ax = plt.subplots(subplot_kw={'projection': ccrs.Orthographic()})
 
     ## set the color map
-    sst.aes_dict['pcolormesh_kwargs']['cmap'] = plt.cm.inferno
-    sst.plot(ax=ax, outline=True)
+    sst_plotter= sst.to_GriddedDataVis()
+    sst_plotter.aes_dict['pcolormesh_kwargs']['cmap'] = plt.cm.inferno
+    sst_plotter.plot(ax=ax, outline=True)
     plt.show()
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.874 seconds)
+   **Total running time of the script:** (0 minutes 0.228 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_logo.py:

@@ -24,4 +24,4 @@ It is worth noting that cGENIE also produces a global average diagnostic table. 
 
 .. code-block:: python
 
-    model.get_diag_avg('biogem_year_09999_500_diag_GLOBAL_AVERAGE')
+    model.get_diag_avg(9999) ## get the summary of the 9999th year

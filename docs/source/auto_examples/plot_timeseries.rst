@@ -38,7 +38,7 @@ This example shows how to read in and plot time series data
 
  .. code-block:: none
 
-    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:48: UserWarning: No gemflag is provided, use default gemflags: [biogem]
+    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:50: UserWarning: No gemflag is provided, use default gemflags: [biogem]
       warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
 
 
@@ -66,7 +66,7 @@ This example shows how to read in and plot time series data
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.108 seconds)
+   **Total running time of the script:** (0 minutes 0.085 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_timeseries.py:

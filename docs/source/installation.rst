@@ -54,8 +54,8 @@ This also touches the most famous Python data science-related packages:
 
 (Optional) Verify the installation
 -------------------------------------
-One can use pytest to do the unit test. If you have pytest installed, you can run the following command to test the installation:
+One can use pytest to do the unit test. First, download the cgeniepy from GitHub repo and run the following command to test the installation:
 
 .. code-block:: console
 
-       $ pytest --pyargs cgeniepy
+       $ pytest --pyargs cgeniepy_folder

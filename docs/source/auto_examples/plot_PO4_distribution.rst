@@ -50,8 +50,7 @@ The following features in the package are used:
 
  .. code-block:: none
 
-    <frozen importlib._bootstrap>:241: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
-    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:49: UserWarning: No gemflag is provided, use default gemflags: [biogem]
+    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:50: UserWarning: No gemflag is provided, use default gemflags: [biogem]
       warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
 
 
@@ -89,7 +88,7 @@ The following features in the package are used:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.661 seconds)
+   **Total running time of the script:** (0 minutes 0.341 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_PO4_distribution.py:

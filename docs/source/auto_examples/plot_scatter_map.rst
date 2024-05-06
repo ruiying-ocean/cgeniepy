@@ -39,7 +39,7 @@ This example shows how to plot the 2D ScatterData object. I use a LGM d13C data 
  .. code-block:: none
 
 
-    <matplotlib.collections.PathCollection object at 0x30dd1c110>
+    <matplotlib.collections.PathCollection object at 0x31f70cfa0>
 
 
 
@@ -60,7 +60,7 @@ This example shows how to plot the 2D ScatterData object. I use a LGM d13C data 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.334 seconds)
+   **Total running time of the script:** (0 minutes 0.335 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_scatter_map.py:

@@ -38,7 +38,7 @@ Here use the sea surface temperature as an example to plot the 2D global map fro
 
  .. code-block:: none
 
-    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:48: UserWarning: No gemflag is provided, use default gemflags: [biogem]
+    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:50: UserWarning: No gemflag is provided, use default gemflags: [biogem]
       warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
 
 
@@ -63,7 +63,7 @@ Here use the sea surface temperature as an example to plot the 2D global map fro
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.269 seconds)
+   **Total running time of the script:** (0 minutes 1.011 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_sst_map.py:

@@ -37,18 +37,8 @@ The R package open-air has provided a nice explanation on what taylor diagram is
    :class: sphx-glr-single-img
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    <frozen importlib._bootstrap>:241: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
 
 
-
-
-
-
-|
 
 .. code-block:: Python
 
@@ -92,7 +82,7 @@ The R package open-air has provided a nice explanation on what taylor diagram is
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.416 seconds)
+   **Total running time of the script:** (0 minutes 0.070 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_taylor_diagram.py:

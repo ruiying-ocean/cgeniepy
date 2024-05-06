@@ -287,6 +287,7 @@ class GriddedDataVis:
     ):
         """
         Examples
+        ---------------
 
         import matplotlib.pyplot as plt
 

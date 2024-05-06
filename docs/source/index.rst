@@ -26,7 +26,7 @@ Get started
         :link: guide
         :link-type: doc
 
-        This section a complete user guide with more technical details.
+        This section gives a complete user guide with more technical details.
 
     .. grid-item-card::  Examples
        :link: auto_examples/index

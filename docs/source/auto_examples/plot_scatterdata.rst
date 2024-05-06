@@ -38,8 +38,9 @@ This example shows how to plot the 1D ScatterData object. I use a data file from
 
  .. code-block:: none
 
+    <frozen importlib._bootstrap>:241: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
 
-    <matplotlib.collections.PathCollection object at 0x1264661d0>
+    <matplotlib.collections.PathCollection object at 0x17684ebc0>
 
 
 
@@ -51,14 +52,14 @@ This example shows how to plot the 1D ScatterData object. I use a data file from
 
 
     from cgeniepy.table import ScatterData
-    data= ScatterData("/Users/yingrui/cgeniepy/test/EDC_CO2.tab", sep='\t')
+    data= ScatterData("/Users/yingrui/cgeniepy/src/data/EDC_CO2.tab", sep='\t')
     data.set_index(['Age [ka BP]'])
     data.to_ScatterDataVis().plot(var='CO2 [ppmv]')
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.047 seconds)
+   **Total running time of the script:** (0 minutes 0.820 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_scatterdata.py:
