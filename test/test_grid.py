@@ -1,7 +1,7 @@
 from cgeniepy.grid import GridOperation as go
 import numpy as np
 def test_lon_n2g():
-    assert go().lon_n2g(100) == -260
+    assert go().lon_n2g(100, -270) == -260
 
 
 def test_lon_g2n():
