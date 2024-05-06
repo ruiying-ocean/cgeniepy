@@ -11,8 +11,8 @@ import xarray as xr
 from scipy.ndimage import binary_dilation
 import numpy as np
 
-from .utils import file_exists
-from .array import GriddedData
+from cgeniepy.utils import file_exists
+from cgeniepy.array import GriddedData
 
 
 class GenieModel(object):

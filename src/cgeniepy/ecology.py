@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import re
 
-from .model import GenieModel
+from cgeniepy.model import GenieModel
 
 class EcoModel(GenieModel):
     """

@@ -1,15 +1,14 @@
 import numpy as np
 import xarray as xr
 from importlib.resources import files
+import pandas as pd
 
 from scipy.interpolate import (
     RegularGridInterpolator,
     LinearNDInterpolator,
     NearestNDInterpolator,
+    CubicSpline
 )
-
-import numpy as np
-
 
 class GridOperation:
 
@@ -481,7 +480,7 @@ class GridOperation:
                     obj.lat = index[index_order[2]]
                     obj.lon = index[index_order[3]]             
 
-class Interporaltor:
+class Interpolator:
 
     """A univeral ineteprolator for cgeniepy that
     can be used to interpolate data for both regular and irregular grid
@@ -491,9 +490,11 @@ class Interporaltor:
         """
         initialize regridder
 
-        :param array: xr data array or dataframe
-        :param grid_number: number of target grid points
-        :param method: interpolation method, only linear is supported
+        :param dims: dimensions of the data
+        :param coordinates: a list of coordinate arrays
+        :param values: data values
+        :param grid_number: number of grid points
+        :param method: interpolation method, use "x-y" format. where x is strcutre or not, y is the algorithm
         """
         self.dims = dims
         self.coords = coordinates
@@ -516,6 +517,10 @@ class Interporaltor:
 
         :param method: interpolation method, use "x-y" format. where x is strcutre or not, y is the algorithm
         """
+
+        if method=='1d':
+            ## use cubic spline
+            return CubicSpline(self.coords[0], self.values)
 
         data_class = method.split("-")[0]
         ## regular grid interpolation
@@ -574,3 +579,18 @@ class Interporaltor:
         return xr.DataArray(
             self.gridded_data, dims=self.dims, coords=self.gridded_coord
         )
+
+    def to_dataframe(self):
+        """
+        Convert the regridded data to a pandas DataFrame
+
+        :returns: pandas DataFrame
+        """
+        index = self.gridded_coord[0]
+        values = self.gridded_data[0]
+
+        ## build a data frame
+        data = {self.dims[0]: index, "values": values}
+
+        return pd.DataFrame(data)
+    

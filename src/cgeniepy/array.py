@@ -3,9 +3,9 @@ import xarray as xr
 from scipy.stats import sem
 import regionmask
 
-from .grid import Interporaltor, GridOperation
-from .plot import GriddedDataVis
-from .chem import Chemistry
+from cgeniepy.grid import Interpolator, GridOperation
+from cgeniepy.plot import GriddedDataVis
+from cgeniepy.chem import Chemistry
 import cgeniepy.table as ct
 from functools import cache
 
@@ -71,7 +71,7 @@ class GriddedData:
         coords = tuple([self.data[dim].values for dim in self.data.dims])
         values = self.data.values
         dims = self.data.dims
-        output = Interporaltor(dims, coords,values, *args, **kwargs).to_xarray()
+        output = Interpolator(dims, coords,values, *args, **kwargs).to_xarray()
         
         if self.mutable:
             self.data = output

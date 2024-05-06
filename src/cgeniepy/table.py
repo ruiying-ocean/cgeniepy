@@ -6,10 +6,10 @@ import pandas as pd
 
 from io import StringIO
 
-from cgeniepy.grid import Interporaltor, GridOperation
+from cgeniepy.grid import Interpolator, GridOperation
 
-from .plot import ScatterDataVis
-from .grid import GridOperation
+from cgeniepy.plot import ScatterDataVis
+from cgeniepy.grid import GridOperation
 import cgeniepy.array as ca
 from importlib.resources import files
     
@@ -170,7 +170,13 @@ class ScatterData:
         ## array values
         values = self.data[var].values
         dims = self.index
-        output= Interporaltor(dims, coords, values, 200, 'ir-linear')
+
+        ## if 1D
+        if len(dims) == 1:            
+            output= Interpolator(dims, coords, values, 200, '1d')
+        else:
+            output= Interpolator(dims, coords, values, 200, 'ir-linear')
+            
         return output
 
     def to_geniebin(
