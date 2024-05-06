@@ -14,23 +14,6 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to plot the 1D ScatterData object. I use a data file from the EDC ice co...">
-
-.. only:: html
-
-  .. image:: /auto_examples/images/thumb/sphx_glr_plot_scatterdata_thumb.png
-    :alt:
-
-  :ref:`sphx_glr_auto_examples_plot_scatterdata.py`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">Plot the 1D ScatterData</div>
-    </div>
-
-
-.. raw:: html
-
     <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to use the ArrComparison class to compare two arrays and plot the compar...">
 
 .. only:: html
@@ -184,6 +167,23 @@ Below is a gallery of examples
 
 .. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to plot the 1D ScatterData object. I use a CO2 data file from the Antarc...">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_scatterdata_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_scatterdata.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Plot the 1D ScatterData</div>
+    </div>
+
+
+.. raw:: html
+
     <div class="sphx-glr-thumbcontainer" tooltip="This example uses fake data and fitted model prediction to plot taylor diagram">
 
 .. only:: html
@@ -275,7 +275,6 @@ Below is a gallery of examples
 .. toctree::
    :hidden:
 
-   /auto_examples/plot_scatterdata
    /auto_examples/plot_arrcomparison
    /auto_examples/plot_sst_map
    /auto_examples/plot_pac_sst
@@ -285,6 +284,7 @@ Below is a gallery of examples
    /auto_examples/plot_multiple_vars
    /auto_examples/plot_logo
    /auto_examples/plot_PO4_distribution
+   /auto_examples/plot_scatterdata
    /auto_examples/plot_taylor_diagram
    /auto_examples/plot_d13C_comp
    /auto_examples/plot_additional_cmap

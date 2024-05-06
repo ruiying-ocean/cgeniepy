@@ -586,11 +586,13 @@ class Interpolator:
 
         :returns: pandas DataFrame
         """
+        assert len(self.dims) == 1, "Only support 1D data"
+
         index = self.gridded_coord[0]
         values = self.gridded_data[0]
 
         ## build a data frame
-        data = {self.dims[0]: index, "values": values}
+        data = {self.dims[0]: index, "interpolated_values": values}
 
         return pd.DataFrame(data)
     

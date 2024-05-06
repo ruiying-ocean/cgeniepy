@@ -22,9 +22,9 @@
 Plot the 1D ScatterData
 =========================================
 
-This example shows how to plot the 1D ScatterData object. I use a data file from the EDC ice core (https://doi.pangaea.de/10.1594/PANGAEA.472488) as an example.
+This example shows how to plot the 1D ScatterData object. I use a CO2 data file from the Antarctic EDC ice core (https://doi.pangaea.de/10.1594/PANGAEA.472488) as an example.
 
-.. GENERATED FROM PYTHON SOURCE LINES 8-13
+.. GENERATED FROM PYTHON SOURCE LINES 8-35
 
 
 
@@ -40,7 +40,6 @@ This example shows how to plot the 1D ScatterData object. I use a data file from
 
     <frozen importlib._bootstrap>:241: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
 
-    <matplotlib.collections.PathCollection object at 0x17684ebc0>
 
 
 
@@ -52,14 +51,36 @@ This example shows how to plot the 1D ScatterData object. I use a data file from
 
 
     from cgeniepy.table import ScatterData
-    data= ScatterData("/Users/yingrui/cgeniepy/src/data/EDC_CO2.tab", sep='\t')
-    data.set_index(['Age [ka BP]'])
-    data.to_ScatterDataVis().plot(var='CO2 [ppmv]')
+    import matplotlib.pyplot as plt
+
+    # Load data
+    edc_co2 = ScatterData("/Users/yingrui/cgeniepy/src/data/EDC_CO2.tab", sep='\t')
+    edc_co2.set_index(['Age [ka BP]'])
+
+    # Create subplots
+    fig, ax = plt.subplots()
+
+    # Plot the raw data
+    edc_co2.to_ScatterDataVis().plot(var='CO2 [ppmv]', ax=ax, label='Raw Data', edgecolor='black', facecolor='none', marker='o')
+    # Plot the interpolated data (based on cubic spline interpolation)
+    interpolated_data = edc_co2.interpolate(var='CO2 [ppmv]').to_dataframe()
+    interpolated_data.plot(ax=ax, x='Age [ka BP]', y='interpolated_values', label='Interpolated', linewidth=2)
+
+    # Use rolling mean to smooth the data
+    smoothed_data = edc_co2.rolling(window=2).mean()
+    smoothed_data['CO2 [ppmv]'].plot(ax=ax, label='2pt Rolling Mean', linewidth=2)
+
+    ax.legend()
+    ax.grid(True)
+    ax.minorticks_on()
+
+    plt.show()
+
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.820 seconds)
+   **Total running time of the script:** (0 minutes 0.886 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_scatterdata.py:

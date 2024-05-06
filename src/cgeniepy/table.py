@@ -234,3 +234,7 @@ class ScatterData:
         "compare two ScatterData objects"
         return DFComparison(self.data, var1, var2)
 
+    def rolling(self, window, *args, **kwargs):
+        "apply rolling to the data"
+        return self.data.rolling(window, *args, **kwargs)
+
