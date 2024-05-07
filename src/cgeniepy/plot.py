@@ -724,7 +724,6 @@ class CommunityPalette:
             self.colormap = self.get_palette(name, *args, **kwargs)
         else:
             self.colormap=None
-        
 
     def get_palette(self, cmap_name, N=256, reverse=False, alpha=None):
         """
@@ -751,13 +750,9 @@ class CommunityPalette:
         colors = []
         c = None
 
-        # Search for the directory based on list comprehension
-        file_path = [f for f in data_dir.glob("**/*") if cmap_name in str(f)]
-        if len(file_path) > 1:
-            raise ValueError("Multiple colormaps found")
-        else:
-            file_path = file_path[0]
-            file_ext = file_path.suffix
+        file_path = [f for f in data_dir.glob("**/*") if f.stem == cmap_name]        
+        file_path = file_path[0]
+        file_ext = file_path.suffix
 
 
         match file_ext:
@@ -813,15 +808,22 @@ class CommunityPalette:
 
         return c
 
-    def avail_palettes(self):
+    def avail_palettes(self, show_ferret_data=True):
         """return a list of colormap names"""
         data_dir = files("data").joinpath("colormaps")
 
-        return [
-            f.stem
-            for f in data_dir.glob("*")
-            if f.suffix in [".txt", ".xml"]
-        ]
+        if show_ferret_data:
+            return [
+                f.stem
+                for f in data_dir.glob("*")
+                if f.suffix in [".txt", ".xml", ".spk"]
+            ]
+        else:
+            return [
+                f.stem
+                for f in data_dir.glob("*")
+                if f.suffix in [".txt", ".xml"]
+            ]
 
     def _parse_spk_data(self, filename):
         data = []
