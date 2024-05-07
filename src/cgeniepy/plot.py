@@ -889,4 +889,13 @@ class CommunityPalette:
         return cmap
 
 
+    def __repr__(self):
+        x = np.linspace(0, 1, 256).reshape(1,-1)
+        plt.imshow(x, cmap=self.colormap, aspect=20)
+        plt.axis('off')
+        plt.show()
+        ## title
+
+        return f"Colormap: {self.name}"
+
 
