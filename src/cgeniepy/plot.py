@@ -9,7 +9,7 @@ import cartopy.feature as cfeature
 import xarray as xr
 
 import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap, to_rgb as hex_to_rgb
+from matplotlib.colors import ListedColormap, to_rgb as hex_to_rgb, LinearSegmentedColormap, rgb2hex
 import matplotlib.patheffects as pe
 from matplotlib.patheffects import Stroke, Normal
 import cartopy.mpl.geoaxes
@@ -715,7 +715,16 @@ class ScatterDataVis:
 
 class CommunityPalette:
 
-    """A class to handle community-driven colormaps"""    
+    """A class to handle community-driven colormaps"""
+
+    def __init__(self, name=None, *args, **kwargs):
+        self.name = name
+        
+        if self.name:
+            self.colormap = self.get_palette(name, *args, **kwargs)
+        else:
+            self.colormap=None
+        
 
     def get_palette(self, cmap_name, N=256, reverse=False, alpha=None):
         """
@@ -750,37 +759,45 @@ class CommunityPalette:
             file_path = file_path[0]
             file_ext = file_path.suffix
 
-        if file_ext == ".txt":
-            colors = pd.read_csv(file_path, header=None).values.tolist()
-            colors = [colors[i][0] for i in range(len(colors))]
-            c = ListedColormap(colors, name=cmap_name)
-        elif file_ext == ".xml":
-            tree = ET.parse(file_path)
-            root = tree.getroot()
-            positions = []
 
-            # Extract color points and their positions from the XML
-            for point in root.findall(".//Point"):
-                r = float(point.get("r"))
-                g = float(point.get("g"))
-                b = float(point.get("b"))
-                colors.append((r, g, b))
-                positions.append(float(point.get("x")))
+        match file_ext:
+            case ".txt":
+                colors = self._parse_txt_data(file_path)
 
-            c = ListedColormap(colors, name=cmap_name)
+                if alpha is not None:
+                    rgba_colors = [(*hex_to_rgb(color), alpha) for color in colors]
+                    c = ListedColormap(rgba_colors, name=cmap_name)
+                else:
+                    c = ListedColormap(colors, name=cmap_name)
+                    
+            case ".xml":
+                colors = self._parse_xml_data(file_path)
+                if alpha is not None:
+                    rgba_colors = [(color[0], color[1], color[2], alpha) for color in colors]                    
+                    c = ListedColormap(rgba_colors, name=cmap_name)
+                else:
+                    c = ListedColormap(colors, name=cmap_name)
+            case ".spk":
+                data = self._parse_spk_data(file_path)
+                pos = data[:,0]
+                ## normalise pos to 0-1
+                pos_min = np.min(pos)
+                pos_max = np.max(pos)
+                scaled_pos = [(val - pos_min) / (pos_max - pos_min) for val in pos]
 
-        # Optionally add transparency
-        if alpha is not None:
-            if file_ext == ".txt":
-                rgba_colors = [(*hex_to_rgb(color), alpha) for color in colors]
-                c = ListedColormap(rgba_colors, name=cmap_name)
-            elif file_ext == ".xml":
-                # Assuming alpha is to be applied uniformly to all colors in the XML-based colormap
-                rgba_colors = [
-                    (color[0], color[1], color[2], alpha) for color in colors
-                ]
-                c = ListedColormap(rgba_colors, name=cmap_name)
+                rgb = data[:,1:]/100
 
+                ## if alpha is not None, add alpha to the rgb
+                if alpha is not None:
+                    rgba = np.zeros((len(rgb), 4))
+                    rgba[:,0:3] = rgb
+                    rgba[:,3] = alpha
+                    c = self.create_colormap(scaled_pos, rgba)
+                else:
+                    c = self.create_colormap(scaled_pos, rgb)
+            case _:
+                raise ValueError("File extension not supported")
+            
         interval = np.linspace(0, 1, N)
         c = ListedColormap(c(interval), name=cmap_name)
         
@@ -794,7 +811,6 @@ class CommunityPalette:
         if c is None:
             raise ValueError("Colormap could not be created")
 
-
         return c
 
     def avail_palettes(self):
@@ -806,3 +822,69 @@ class CommunityPalette:
             for f in data_dir.glob("*")
             if f.suffix in [".txt", ".xml"]
         ]
+
+    def _parse_spk_data(self, filename):
+        data = []
+        with open(filename, 'r') as file:
+            for line in file:
+                # Skip empty lines and comment lines starting with "!"
+                if "RGB_Mapping" in line or not line.strip() or line.strip().startswith('!'):
+                    continue
+                # Split the line by whitespace and convert to floats
+                values = list(map(float, line.split()))
+                data.append(values)
+        return np.array(data)
+
+    def _parse_txt_data(self, filename):
+        colors = pd.read_csv(filename, header=None).values.tolist()
+        colors = [colors[i][0] for i in range(len(colors))]
+        return colors
+
+    def _parse_xml_data(self, filename):
+        tree = ET.parse(filename)
+        root = tree.getroot()
+        colors = []
+        for point in root.findall(".//Point"):
+            r = float(point.get("r"))
+            g = float(point.get("g"))
+            b = float(point.get("b"))
+            colors.append((r, g, b))
+        return colors
+        
+
+    def to_rgb(self):
+        pass
+
+    def to_hex(self, unique=True):
+        df = pd.DataFrame(self.colormap.colors)
+        ## get unique rows
+        if unique:
+            df = df.drop_duplicates()
+            
+        x_unique = df.to_numpy()
+
+        hex_color = [rgb2hex(i) for i in x_unique]
+        return hex_color
+
+    
+    def create_colormap(self, positions, colors):
+        """
+        Create a colormap with specified positions and colors.
+
+        Args:
+            positions (list): List of floats indicating the positions of colors in the colormap.
+            colors (list): List of RGB tuples representing the colors.
+
+        Returns:
+            LinearSegmentedColormap: The created colormap.
+        """
+        segments = {'red': [], 'green': [], 'blue': []}
+        for pos, color in zip(positions, colors):
+            for i, key in enumerate(['red', 'green', 'blue']):
+                segments[key].append((pos, color[i], color[i]))
+
+        cmap = LinearSegmentedColormap('custom_colormap', segments)
+        return cmap
+
+
+
