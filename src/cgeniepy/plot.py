@@ -772,9 +772,8 @@ class CommunityPalette:
         # Optionally add transparency
         if alpha is not None:
             if file_ext == ".txt":
-                rgb_array = np.array([hex_to_rgb(i) for i in colors])
-                rgb_array[:, -1] = alpha
-                c = ListedColormap(rgb_array, N=N)
+                rgba_colors = [(*hex_to_rgb(color), alpha) for color in colors]
+                c = ListedColormap(rgba_colors, name=cmap_name)
             elif file_ext == ".xml":
                 # Assuming alpha is to be applied uniformly to all colors in the XML-based colormap
                 rgba_colors = [
@@ -791,6 +790,9 @@ class CommunityPalette:
 
         if c is None:
             raise ValueError("Colormap could not be created")
+
+        interval = np.linspace(0, 1, N)
+        c = ListedColormap(c(interval), name=cmap_name)
 
         return c
 
