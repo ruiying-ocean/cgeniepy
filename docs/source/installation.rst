@@ -25,7 +25,7 @@ Now let's install `cgeniepy` using `pip`. It is slightly different from the last
 
 .. code-block:: console
 
-       $ python3 -m pip install -i https://test.pypi.org/simple/ cgeniepy
+       $ python3 -m pip install cgeniepy
 
 
 Alternatively, we can directly download the developing version from GitHub:
