@@ -781,6 +781,9 @@ class CommunityPalette:
                 ]
                 c = ListedColormap(rgba_colors, name=cmap_name)
 
+        interval = np.linspace(0, 1, N)
+        c = ListedColormap(c(interval), name=cmap_name)
+        
         if reverse and c is not None:
             return c.reversed()
 
@@ -791,8 +794,6 @@ class CommunityPalette:
         if c is None:
             raise ValueError("Colormap could not be created")
 
-        interval = np.linspace(0, 1, N)
-        c = ListedColormap(c(interval), name=cmap_name)
 
         return c
 
