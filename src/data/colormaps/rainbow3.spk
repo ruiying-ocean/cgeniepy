@@ -1,0 +1,11 @@
+! contributed by Marco Van Hulten. 
+! 1/2018: This palette was an earlier version of rainbow_lilac_darkred.spk.  
+! It now contains the same colors as that palette.
+    
+    0.0   90.0   80.0  100.0
+   10.0   70.0   50.0  100.0
+   35.0    0.0   40.0   30.0
+   60.0   95.0   95.0    0.0
+   67.0  100.0  100.0   30.0
+   90.0  100.0   10.0    0.0
+  100.0   35.0    0.0    0.0
