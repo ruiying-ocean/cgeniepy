@@ -46,13 +46,14 @@ class GriddedDataVis:
                 "colors": "black",
                 "linestyles": "solid",
                 "zorder": 10,
+                "levels": 15,
             },
             "contour_label_kwargs": {
                 "colors": ["black"],
                 "fontsize": 8,
                 "inline": False,
             },
-            "contourf_kwargs": {"levels": 20},
+            "contourf_kwargs": {"levels": 15},
             "colorbar_label_kwargs": {
                 "label": f"{self.attrs['long_name']}\n({self.attrs['units']})",
                 "size": 10,
@@ -311,6 +312,7 @@ class GriddedDataVis:
         zt_order = dim_order[0] ## in the case of 2D, zt is the first dimension
         lat_order = dim_order[1] ## in the case of 2D, lat is the second dimension
         
+        
         x_name = self.data.dims[lat_order]  ## lat
         y_name = self.data.dims[zt_order]  ## zt
 
@@ -330,7 +332,7 @@ class GriddedDataVis:
 
         
         if "ax" not in kwargs:
-            fig, local_ax = self._init_fig(figsize=(4, 3))
+            fig, local_ax = self._init_fig(figsize=(5, 3))
         else:
             local_ax = kwargs.pop("ax")
 
@@ -369,9 +371,8 @@ class GriddedDataVis:
             ## contour will not be used to plot colorbar because it's set to black
 
 
-
         if contourf:
-            p_contourf = self._add_contourf(local_ax, x_arr, y_arr)
+            p_contourf = self._add_contourf(local_ax, x_arr, y_arr, **self.aes_dict["contourf_kwargs"])
 
         ## reverse y axis
         local_ax.set_ylim(local_ax.get_ylim()[::-1])
