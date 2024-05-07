@@ -183,7 +183,9 @@ class GriddedDataVis:
         x_res = x_arr[1] - x_arr[0]
         x_edge = np.linspace(x_min-x_res/2, x_max+x_res/2, x_arr.size + 1)
 
+
         y_edge = np.rad2deg(np.arcsin(np.linspace(-1, 1, y_arr.size + 1)))
+
 
         if "ax" not in kwargs:
             fig, local_ax = self._init_fig(subplot_kw={"projection": ccrs.EckertIV()})
@@ -273,8 +275,6 @@ class GriddedDataVis:
 
     def _plot_transect(
         self,
-        x="lat_edge",
-        y="zt_edge",
         pcolormesh=True,
         contour=False,
         colorbar=True,
@@ -305,8 +305,9 @@ class GriddedDataVis:
         available kwargs:
         outline_kwargs = {'outline_color': 'red', 'outline_width': .5}
         """
-
+        ## sort the dimension
         dim_order = GridOperation().dim_order(self.data.dims)        
+
         zt_order = dim_order[0] ## in the case of 2D, zt is the first dimension
         lat_order = dim_order[1] ## in the case of 2D, lat is the second dimension
         
@@ -316,8 +317,20 @@ class GriddedDataVis:
         x_arr = self.data[x_name]
         y_arr = self.data[y_name]
 
+        x_edge = np.rad2deg(np.arcsin(np.linspace(-1, 1, x_arr.size + 1)))
+        ## get y edge coordinates (starting from 0)
+        ## this assumes depth is the mid point of two edges
+        y_edge = np.zeros(len(y_arr)+1)
+        y_edge[1] = y_arr[0] * 2
+
+        for i in range(1, len(y_arr)):    
+            half_length = y_arr[i] - y_edge[i]
+            next_edge = y_arr[i] + half_length
+            y_edge[i+1] = next_edge        
+
+        
         if "ax" not in kwargs:
-            fig, local_ax = self._init_fig(figsize=(6, 3))
+            fig, local_ax = self._init_fig(figsize=(4, 3))
         else:
             local_ax = kwargs.pop("ax")
 
@@ -332,13 +345,13 @@ class GriddedDataVis:
         if outline:
             ## outline uses edge coordinates
             self._add_outline(
-                local_ax, x=x_arr, y=y_arr, **self.aes_dict["outline_kwargs"]
+                local_ax, x=x_edge, y=y_edge, **self.aes_dict["outline_kwargs"]
             )
 
         if pcolormesh:
             ## pcolormesh uses edge coordinates
             p_pcolormesh = self._add_pcolormesh(
-                local_ax, x=x_arr, y=y_arr, *args, **self.aes_dict["pcolormesh_kwargs"]
+                local_ax, x=x_edge, y=y_edge, *args, **self.aes_dict["pcolormesh_kwargs"]
             )
             if colorbar:
                 cbar = self._add_colorbar(p_pcolormesh, orientation="vertical")
