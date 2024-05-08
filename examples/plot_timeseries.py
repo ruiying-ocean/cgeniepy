@@ -1,9 +1,9 @@
 """
-====================
-Plot Time Series
-====================
+==============================================
+Extract and Plot cGENIE Time Series data
+==============================================
 
-This example shows how to read in and plot time series data
+This example shows how to read in and plot cGENIE time series data
 """
 from cgeniepy.model import GenieModel
 import seaborn as sns

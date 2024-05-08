@@ -1,7 +1,7 @@
 """
-================
-Additional cmap
-================
+=================================
+Get additional color palettes
+=================================
 
 I created a class called `CommunityPalette` for accessing those pretty color palettes that are widely seen in oceanography but not directly available in Python.
 This can be from Ocean Data View (ODV), NCL, Ferret, etc.

@@ -605,7 +605,7 @@ class ScatterDataVis:
             ax.set_global()
             ## plot land and coastline, zorder is the drawing order, smaller -> backer layer
             # ax.stock_img()
-            ax.add_feature(cfeature.LAND.with_scale("110m"), zorder=2, facecolor="white")
+            ax.add_feature(cfeature.LAND.with_scale("110m"), zorder=2, facecolor="lightgrey")
             ax.add_feature(cfeature.COASTLINE.with_scale("110m"), linewidth=1.4)
             ax.add_feature(cfeature.LAKES.with_scale('110m'), zorder=3, facecolor='black')
 
