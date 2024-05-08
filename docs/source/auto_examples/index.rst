@@ -201,7 +201,7 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example shows the available color palettes in the cgeniepy package">
+    <div class="sphx-glr-thumbcontainer" tooltip="I created a class called CommunityPalette for accessing those pretty color palettes that are wi...">
 
 .. only:: html
 

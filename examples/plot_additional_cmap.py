@@ -3,10 +3,12 @@
 Additional cmap
 ================
 
-This example shows the available color palettes in the `cgeniepy` package
+I created a class called `CommunityPalette` for accessing those pretty color palettes that are widely seen in oceanography but not directly available in Python.
+This can be from Ocean Data View (ODV), NCL, Ferret, etc.
 
-Many are not directly available in Python but has been used widely such as
-ODV's palette.
+In this example, I will show these available color palettes in the `CommunityPalette` class.
+But the majority of them is from Ferret (Thank the Ferret community for making this open sourced), which
+can be found in https://ferret.pmel.noaa.gov/Ferret/faq/ferret-color-palettes
 """
 
 import numpy as np

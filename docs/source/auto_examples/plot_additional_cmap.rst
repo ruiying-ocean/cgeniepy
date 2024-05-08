@@ -22,12 +22,14 @@
 Additional cmap
 ================
 
-This example shows the available color palettes in the `cgeniepy` package
+I created a class called `CommunityPalette` for accessing those pretty color palettes that are widely seen in oceanography but not directly available in Python.
+This can be from Ocean Data View (ODV), NCL, Ferret, etc.
 
-Many are not directly available in Python but has been used widely such as
-ODV's palette.
+In this example, I will show these available color palettes in the `CommunityPalette` class.
+But the majority of them is from Ferret (Thank the Ferret community for making this open sourced), which
+can be found in https://ferret.pmel.noaa.gov/Ferret/faq/ferret-color-palettes
 
-.. GENERATED FROM PYTHON SOURCE LINES 11-43
+.. GENERATED FROM PYTHON SOURCE LINES 13-45
 
 
 
@@ -37,8 +39,18 @@ ODV's palette.
    :class: sphx-glr-single-img
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    <frozen importlib._bootstrap>:241: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
 
 
+
+
+
+
+|
 
 .. code-block:: Python
 
@@ -78,7 +90,7 @@ ODV's palette.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.285 seconds)
+   **Total running time of the script:** (0 minutes 0.891 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_additional_cmap.py:
