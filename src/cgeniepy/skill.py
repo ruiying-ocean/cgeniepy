@@ -1,6 +1,7 @@
 from typing import Union
 import numpy as np
 from scipy.spatial import distance
+from scipy.stats import pearsonr
 import matplotlib.pyplot as plt
 
 from matplotlib.projections import PolarAxes
@@ -162,14 +163,41 @@ class ArrComparison:
         crmse = sigma1**2 + sigma2**2 - 2 * sigma1 * sigma2 * corr
 
         return crmse
+    
+    def lm_pvalue(self):
+        """
+        get p-value from linear regression
+        """
+        
+        indx = self.intersect_index()
+        sub_data1 = self.model[indx].ravel()
+        sub_data2 = self.data[indx].ravel()        
+        
+        r, p = pearsonr(sub_data1, sub_data2)
+        
+        return p
 
     def plot(self):
         ## a x-y plot
         fig, ax = plt.subplots()
-        ax.scatter(self.model, self.data)
+        plt.rcParams['font.family'] = 'sans-serif'
+        ax.grid(True, linestyle='--', alpha=0.5)
+        ax.scatter(self.model, self.data, zorder=2)
+        ax.minorticks_on()
+        ax.tick_params(axis='both', which='both', direction='in', top=True, right=True)
         ax.set_xlabel("Model")
         ax.set_ylabel("Observation")
-        ax.set_title("Model vs Observation")
+        ## add 1:1 line
+        ax.plot([0, 1], [0, 1], transform=ax.transAxes, ls="--", color='k')
+        
+        ## add metrics        
+        ax.text(0.05, 0.85, "Pearson R: {:.3f}".format(self.pearson_r()),transform = ax.transAxes)
+        ax.text(0.05, 0.9, "p-value: {:.4f}".format(self.lm_pvalue()),transform = ax.transAxes)
+        ax.text(0.05, 0.75, "M-score: {:.3f}".format(self.mscore()),transform = ax.transAxes)
+        ax.text(0.05, 0.8, "RMSE: {:.3f}".format(self.rmse()), transform = ax.transAxes)
+                
+
+        ax.set_title("Model vs Observation", loc='left', fontweight='bold', fontsize=12)
 
     
 class DFComparison(ArrComparison):
