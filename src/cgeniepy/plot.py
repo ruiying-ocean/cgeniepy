@@ -435,7 +435,7 @@ class GriddedDataVis:
         if ax.projection == ccrs.PlateCarree():
             gl.xlines = False  # removing gridlines
             gl.ylines = False
-            add_border_ticks(ax)
+            add_border_ticks(ax, 0.015)
 
 
     def _set_borderline(self, ax, geo=True, **kwargs):
@@ -918,7 +918,7 @@ def add_zebra_frame(ax, lw=1.2):
                     ],
                 )
 
-def add_border_ticks(ax, tick_len_scale=0.15):
+def add_border_ticks(ax, tick_len_scale=0.015):
     ## add ticks
     xticks = np.linspace(-180, 180, 7)
     yticks = np.linspace(-90, 90, 7)
