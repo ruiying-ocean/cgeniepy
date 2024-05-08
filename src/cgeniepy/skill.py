@@ -14,7 +14,7 @@ class ArrComparison:
     
     "quantitatively compare similarity metrics between two 2D arrays (model and observation)"
 
-    def __init__(self, model, observation, label=None):
+    def __init__(self, model, observation, model_name="Model", obs_name="Observation", label=None):
         """
         
         :param: model: array-like data
@@ -37,6 +37,9 @@ class ArrComparison:
         """
         self.model = model
         self.data = observation
+
+        self.model_name = model_name
+        self.obs_name = obs_name
         self.label = label
 
         ## check data type, if not float, convert to float
@@ -177,18 +180,19 @@ class ArrComparison:
         
         return p
 
-    def plot(self):
+    def plot(self, diagonly=True, savefig_name=None, *args, **kwargs):
         ## a x-y plot
         fig, ax = plt.subplots()
         plt.rcParams['font.family'] = 'sans-serif'
         ax.grid(True, linestyle='--', alpha=0.5)
-        ax.scatter(self.model, self.data, zorder=2)
+        ax.scatter(self.model, self.data, zorder=2,*args, **kwargs)
         ax.minorticks_on()
         ax.tick_params(axis='both', which='both', direction='in', top=True, right=True)
-        ax.set_xlabel("Model")
-        ax.set_ylabel("Observation")
+        ax.set_xlabel(self.model_name)
+        ax.set_ylabel(self.obs_name)
         ## add 1:1 line
-        ax.plot([0, 1], [0, 1], transform=ax.transAxes, ls="--", color='k')
+        if diagonly:
+            ax.plot([0, 1], [0, 1], transform=ax.transAxes, ls="--", color='k')
         
         ## add metrics        
         ax.text(0.05, 0.85, "Pearson R: {:.3f}".format(self.pearson_r()),transform = ax.transAxes)
@@ -199,6 +203,9 @@ class ArrComparison:
 
         ax.set_title("Model vs Observation", loc='left', fontweight='bold', fontsize=12)
 
+        if savefig_name:
+            fig.savefig(savefig_name)
+
     
 class DFComparison(ArrComparison):
 
@@ -206,10 +213,10 @@ class DFComparison(ArrComparison):
     Quantitatively compare similarity metrics between two columns in a dataframe-like objects
     """
 
-    def __init__(self, df, model_col, observation_col):
+    def __init__(self, df, model_col, observation_col, model_name="Model", obs_name="Observation"):
         self.model = df[model_col].to_numpy()
         self.data = df[observation_col].to_numpy()
-        super().__init__(self.model, self.data)
+        super().__init__(self.model, self.data, model_name=model_col, obs_name=observation_col)
 
  
 class TaylorDiagram(object):

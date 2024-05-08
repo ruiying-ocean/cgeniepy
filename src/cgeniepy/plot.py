@@ -89,16 +89,21 @@ class GriddedDataVis:
         dim: time/lon/lat
         """
         if "ax" not in kwargs:
-            fig, local_ax = self._init_fig()
+            fig, local_ax = self._init_fig(figsize=(5, 3.5))
         else:
             local_ax = kwargs.pop("ax")
 
         ## get the only dimension as x
         dim = self.data[self.data.dims[0]]
-
-        # local_ax.set_xlabel(dim.name)
-        # local_ax.set_ylabel(f"{self.array.long_name} ({self.array.units})")
+        
         p = local_ax.plot(dim, self.data, *args, **kwargs)
+            
+        
+        local_ax.grid(True, linestyle='--', alpha=0.5)
+        local_ax.minorticks_on()
+        local_ax.tick_params(axis='both', which='both', direction='in', top=True, right=True)        
+        local_ax.set_xlabel(dim.name)
+        local_ax.set_ylabel(f"{self.attrs['long_name']} ({self.attrs['units']})")
 
         return p
 
@@ -409,8 +414,8 @@ class GriddedDataVis:
 
     ## ------- Below is implementations -------------------------
 
-    def _init_fig(self, *args, **kwargs):
-        return plt.subplots(dpi=120, *args, **kwargs)
+    def _init_fig(self,dpi=120, *args, **kwargs):
+        return plt.subplots(dpi=dpi, *args, **kwargs)
 
     def _add_pcolormesh(self, ax, x, y, *args, **kwargs):
         return ax.pcolormesh(x, y, self.data, *args, **kwargs)
@@ -610,9 +615,13 @@ class ScatterDataVis:
         x = self.data[self.index[0]]
         y = self.data[var]
 
-        p = local_ax.scatter(x,y, *args, **kwargs)
+        p = local_ax.plot(x,y, *args, **kwargs)
         local_ax.set_xlabel(self.index[0])
         local_ax.set_ylabel(var)
+        
+        local_ax.grid(True, linestyle='--', alpha=0.5)
+        local_ax.minorticks_on()
+        local_ax.tick_params(axis='both', which='both', direction='in', top=True, right=True)
 
         return p
 

@@ -230,9 +230,13 @@ class ScatterData:
         "plot the data"
         return self.to_ScatterDataVis().plot(var, *args, **kwargs)
 
-    def compare(self, var1, var2):
+    def compare(self, var1, var2, model_name=None, obs_name=None):
         "compare two ScatterData objects"
-        return DFComparison(self.data, var1, var2)
+        if model_name is None:
+            model_name = var1
+        if obs_name is None:
+            obs_name = var2
+        return DFComparison(self.data, var1, var2, model_name=model_name, obs_name=obs_name)
 
     def rolling(self, window, *args, **kwargs):
         "apply rolling to the data"
