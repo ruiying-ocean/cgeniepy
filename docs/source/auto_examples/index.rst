@@ -14,7 +14,7 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to use the ArrComparison class to compare two arrays and plot the compar...">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to build the ArrComparison class plot the comparison.">
 
 .. only:: html
 
@@ -26,23 +26,6 @@ Below is a gallery of examples
 .. raw:: html
 
       <div class="sphx-glr-thumbnail-title">Plot Comparison Between Arrays</div>
-    </div>
-
-
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="Plot the model variable for a spficic basin, here we use sea surface temperature in the Pacific...">
-
-.. only:: html
-
-  .. image:: /auto_examples/images/thumb/sphx_glr_plot_pac_sst_thumb.png
-    :alt:
-
-  :ref:`sphx_glr_auto_examples_plot_pac_sst.py`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">Plot basin-specific data</div>
     </div>
 
 
@@ -60,6 +43,23 @@ Below is a gallery of examples
 .. raw:: html
 
       <div class="sphx-glr-thumbnail-title">Plot the 2D ScatterData</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Plot the model variable for a spficic basin, here we use sea surface temperature in the Atlanti...">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_pac_sst_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_pac_sst.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Plot basin-specific data</div>
     </div>
 
 
@@ -201,23 +201,6 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example is a combination of ScatterData and GriddedData to search the nearest grid point f...">
-
-.. only:: html
-
-  .. image:: /auto_examples/images/thumb/sphx_glr_plot_d13C_comp_thumb.png
-    :alt:
-
-  :ref:`sphx_glr_auto_examples_plot_d13C_comp.py`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">Search the nearest grid point for a given location</div>
-    </div>
-
-
-.. raw:: html
-
     <div class="sphx-glr-thumbcontainer" tooltip="This example shows the available color palettes in the cgeniepy package">
 
 .. only:: html
@@ -252,6 +235,23 @@ Below is a gallery of examples
 
 .. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="This example is a combination of ScatterData and GriddedData to search the nearest grid point f...">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_d13C_comp_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_d13C_comp.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Search the nearest grid point for a given location</div>
+    </div>
+
+
+.. raw:: html
+
     <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to regrid observational data to cGENIE grids and compare with cGENIE out...">
 
 .. only:: html
@@ -276,8 +276,8 @@ Below is a gallery of examples
    :hidden:
 
    /auto_examples/plot_arrcomparison
-   /auto_examples/plot_pac_sst
    /auto_examples/plot_scatter_map
+   /auto_examples/plot_pac_sst
    /auto_examples/plot_coastal_data
    /auto_examples/plot_sst_map
    /auto_examples/plot_timeseries
@@ -286,9 +286,9 @@ Below is a gallery of examples
    /auto_examples/plot_scatterdata
    /auto_examples/plot_taylor_diagram
    /auto_examples/plot_multiple_vars
-   /auto_examples/plot_d13C_comp
    /auto_examples/plot_additional_cmap
    /auto_examples/plot_other_models
+   /auto_examples/plot_d13C_comp
    /auto_examples/plot_regridded_data
 
 

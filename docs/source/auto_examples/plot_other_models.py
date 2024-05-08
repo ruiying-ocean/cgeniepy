@@ -10,9 +10,12 @@ import xarray as xr
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 
+## read in the data
 cesm_lgm = xr.load_dataset("/Users/yingrui/cgeniepy/examples/CESM_LGM_var_regrid.nc")
+## construct GriddedData object
 cesm_temp = GriddedData(cesm_lgm['TEMP'], mutable=False, attrs=cesm_lgm['TEMP'].attrs)
 
+## same for HadCM3L
 hadcm3_lgm=  xr.load_dataset("/Users/yingrui/cgeniepy/examples/teitu_020_o.pgclann.nc", decode_times=False)
 hadcm3_temp = GriddedData(hadcm3_lgm['temp_ym_dpth'], mutable=False, attrs=hadcm3_lgm['temp_ym_dpth'].attrs)
 

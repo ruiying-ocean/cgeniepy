@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:02.707** total execution time for 15 files **from auto_examples**:
+**00:33.400** total execution time for 15 files **from auto_examples**:
 
 .. container::
 
@@ -32,13 +32,16 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_plot_multiple_vars.py` (``plot_multiple_vars.py``)
-     - 00:02.422
+   * - :ref:`sphx_glr_auto_examples_plot_d13C_comp.py` (``plot_d13C_comp.py``)
+     - 00:31.951
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_plot_additional_cmap.py` (``plot_additional_cmap.py``)
-     - 00:00.285
+   * - :ref:`sphx_glr_auto_examples_plot_timeseries.py` (``plot_timeseries.py``)
+     - 00:01.450
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_PO4_distribution.py` (``plot_PO4_distribution.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_additional_cmap.py` (``plot_additional_cmap.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_arrcomparison.py` (``plot_arrcomparison.py``)
@@ -47,10 +50,10 @@ Computation times
    * - :ref:`sphx_glr_auto_examples_plot_coastal_data.py` (``plot_coastal_data.py``)
      - 00:00.000
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_plot_d13C_comp.py` (``plot_d13C_comp.py``)
+   * - :ref:`sphx_glr_auto_examples_plot_logo.py` (``plot_logo.py``)
      - 00:00.000
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_plot_logo.py` (``plot_logo.py``)
+   * - :ref:`sphx_glr_auto_examples_plot_multiple_vars.py` (``plot_multiple_vars.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_other_models.py` (``plot_other_models.py``)
@@ -72,8 +75,5 @@ Computation times
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_taylor_diagram.py` (``plot_taylor_diagram.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_plot_timeseries.py` (``plot_timeseries.py``)
      - 00:00.000
      - 0.0

@@ -22,7 +22,7 @@
 Plot basin-specific data
 =========================================
 
-Plot the model variable for a spficic basin, here we use sea surface temperature in the Pacific Ocean as an example.
+Plot the model variable for a spficic basin, here we use sea surface temperature in the Atlantic Ocean as an example.
 
 .. GENERATED FROM PYTHON SOURCE LINES 8-15
 
@@ -38,10 +38,11 @@ Plot the model variable for a spficic basin, here we use sea surface temperature
 
  .. code-block:: none
 
+    <frozen importlib._bootstrap>:241: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
     /Users/yingrui/cgeniepy/src/cgeniepy/model.py:50: UserWarning: No gemflag is provided, use default gemflags: [biogem]
       warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
 
-    <cartopy.mpl.geocollection.GeoQuadMesh object at 0x32aa6c250>
+    <cartopy.mpl.geocollection.GeoQuadMesh object at 0x31b32fb80>
 
 
 
@@ -56,13 +57,13 @@ Plot the model variable for a spficic basin, here we use sea surface temperature
 
     model = GenieModel("/Users/yingrui/Science/lgm_foram_niche/model/muffin.CBE.worlg4.BASESFeTDTL.SPIN")
     sst = model.get_var('ocn_sur_temp').isel(time=-1)
-    ## plot the sea surface temperature in the Pacific Ocean only
-    sst.sel_modern_basin(['NPO','EPO','SPO']).plot()
+    ## plot the sea surface temperature in the Atlantic Ocean only
+    sst.sel_modern_basin(['NAO','EAO','SAO']).plot(outline=True, colorbar=True)
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.391 seconds)
+   **Total running time of the script:** (0 minutes 1.364 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_pac_sst.py:

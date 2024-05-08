@@ -24,7 +24,7 @@ Plot Time Series
 
 This example shows how to read in and plot time series data
 
-.. GENERATED FROM PYTHON SOURCE LINES 8-26
+.. GENERATED FROM PYTHON SOURCE LINES 8-24
 
 
 
@@ -42,6 +42,7 @@ This example shows how to read in and plot time series data
     /Users/yingrui/cgeniepy/src/cgeniepy/model.py:50: UserWarning: No gemflag is provided, use default gemflags: [biogem]
       warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
 
+    [<matplotlib.lines.Line2D object at 0x31abb0f70>]
 
 
 
@@ -54,6 +55,7 @@ This example shows how to read in and plot time series data
     from cgeniepy.model import GenieModel
     import seaborn as sns
     import matplotlib.pyplot as plt
+    from cgeniepy.table import ScatterData
 
     model = GenieModel("/Users/yingrui/Science/lgm_foram_niche/model/muffin.CBE.worlg4.BASESFeTDTL.historical")
     fig, axs = plt.subplots(1,2,figsize=(8, 3), tight_layout=True)
@@ -61,19 +63,16 @@ This example shows how to read in and plot time series data
     temp = model.get_ts("ocn_temp")
     o2 = model.get_ts("ocn_O2")
 
-    ## merge both
-    merged = temp.merge(o2, on="time (yr)")
-
-    ## use seaborn to plot
-    sns.set_theme(context='notebook', style='ticks', palette='deep')
-    sns.lineplot(data=merged, x="time (yr)", y="temperature (C)", ax=axs[0])
-    sns.lineplot(data=merged, x="time (yr)", y="global mean O2 (mol kg-1)", ax=axs[1])
-    sns.despine()
+    ## merge both and convert to ScatterData format
+    ts_data = ScatterData(temp.merge(o2, on="time (yr)"))
+    ts_data.set_index("time (yr)")
+    ts_data.plot(var="temperature (C)", ax=axs[0])
+    ts_data.plot(var="surface O2 (mol kg-1)", ax=axs[1])
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.286 seconds)
+   **Total running time of the script:** (0 minutes 1.450 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_timeseries.py:

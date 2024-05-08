@@ -24,7 +24,7 @@ Plot Other Models' output
 
 This example shows how to use cgeniepy to plot gridded data from other models.
 
-.. GENERATED FROM PYTHON SOURCE LINES 8-32
+.. GENERATED FROM PYTHON SOURCE LINES 8-35
 
 
 
@@ -39,7 +39,7 @@ This example shows how to use cgeniepy to plot gridded data from other models.
  .. code-block:: none
 
 
-    <matplotlib.colorbar.Colorbar object at 0x34069b760>
+    <matplotlib.colorbar.Colorbar object at 0x323cb3eb0>
 
 
 
@@ -54,9 +54,12 @@ This example shows how to use cgeniepy to plot gridded data from other models.
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
+    ## read in the data
     cesm_lgm = xr.load_dataset("/Users/yingrui/cgeniepy/examples/CESM_LGM_var_regrid.nc")
+    ## construct GriddedData object
     cesm_temp = GriddedData(cesm_lgm['TEMP'], mutable=False, attrs=cesm_lgm['TEMP'].attrs)
 
+    ## same for HadCM3L
     hadcm3_lgm=  xr.load_dataset("/Users/yingrui/cgeniepy/examples/teitu_020_o.pgclann.nc", decode_times=False)
     hadcm3_temp = GriddedData(hadcm3_lgm['temp_ym_dpth'], mutable=False, attrs=hadcm3_lgm['temp_ym_dpth'].attrs)
 
@@ -77,7 +80,7 @@ This example shows how to use cgeniepy to plot gridded data from other models.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 4.864 seconds)
+   **Total running time of the script:** (0 minutes 4.470 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_other_models.py:

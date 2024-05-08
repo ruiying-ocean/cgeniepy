@@ -22,9 +22,9 @@
 Plot Comparison Between Arrays
 =========================================
 
-This example shows how to use the ArrComparison class to compare two arrays and plot the comparison.
+This example shows how to build the ArrComparison class plot the comparison.
 
-.. GENERATED FROM PYTHON SOURCE LINES 8-20
+.. GENERATED FROM PYTHON SOURCE LINES 8-19
 
 
 
@@ -39,7 +39,6 @@ This example shows how to use the ArrComparison class to compare two arrays and 
  .. code-block:: none
 
     <frozen importlib._bootstrap>:241: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
-    Pearson coefficient: 0.7054519438385228
 
 
 
@@ -55,18 +54,17 @@ This example shows how to use the ArrComparison class to compare two arrays and 
     import numpy as np
 
     np.random.seed(1923)
-    x = np.random.rand(36, 36)
-    y = x + np.random.rand(36, 36)
+    x = np.random.rand(100)
+    y = x + np.random.rand(100)
 
     ## calculate skill score
     ac = ArrComparison(x, y)
-    print("Pearson coefficient:", ac.pearson_r())
-    ac.plot()
+    ac.plot(marker='x')
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.213 seconds)
+   **Total running time of the script:** (0 minutes 0.548 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_arrcomparison.py:
