@@ -119,38 +119,38 @@ class GriddedDataVis:
         "plot 3D data = plot mutiple 2D plots"
         has_lat, has_lon, has_depth, has_time = GridOperation().check_dimension(self.data.dims)
         
-        if has_time:
-            time_order = GridOperation().dim_order(self.data.dims)[0]
-            time_name = self.data.dims[time_order]
-            time_arr = self.data[time_name]
+        if has_time or has_depth:
+            target_order = GridOperation().dim_order(self.data.dims)[0]
+            target_name = self.data.dims[target_order]
+            target_arr = self.data[target_name]
 
             # Determine the optimal number of columns and rows for subplots
-            num_plots = len(time_arr)
-            ncols = min(num_plots, 4)  # Maximum of 4 columns
+            num_plots = len(target_arr)
+            ncols = min(num_plots, 3)
             nrows = (num_plots + ncols - 1) // ncols  # Calculate the required number of rows
 
-            # Create a figure and axis objects
-            fig, axs = plt.subplots(nrows=nrows, ncols=ncols, figsize=(6 * ncols, 3 * nrows), squeeze=False)
+            fig, axs = plt.subplots(nrows=nrows, ncols=ncols, figsize=(3 * ncols, 2.2 * nrows),
+                                    sharex=True, sharey=True, squeeze=False)
 
             # Flatten the axes array for easier iteration
             axs = axs.flatten()
 
-            # Plot the data for each time step
+            # Plot the data for each time step                
             for i, ax in enumerate(axs):
                 if i < num_plots:
-                    im = self.data.isel(time=i).plot(ax=ax,add_colorbar=False)
-
-                # Hide unused axes
-                if i >= num_plots:
+                    im = self.data.isel({target_name: i}).plot(ax=ax, add_colorbar=False)
+                    title = f"{target_name} = {target_arr[i].values:.2f} {self.data[target_name].attrs['units']}"
+                    ax.set_title(title, fontsize=10)
+                    ax.set_xlabel("")
+                    ax.set_ylabel("")
+                else:
                     ax.set_visible(False)
 
             # Add a common colorbar to the figure
-            plt.colorbar(im, ax=axs.tolist(), orientation='horizontal', label=f"{self.attrs['long_name']} ({self.attrs['units']})", fraction=0.046, pad=0.05)
-
-            # Adjust spacing between subplots
-            fig.subplots_adjust(hspace=0.5, wspace=0.5)
-        else:
-            raise ValueError("Not support 3D plot iterating over other dimension than time")
+            fig.colorbar(im, ax=axs.tolist(), orientation='horizontal', label=f"{self.attrs['long_name']} ({self.attrs['units']})",
+                         fraction=0.046, pad=0.05)            
+        else:            
+            raise ValueError("Not support 3D plot iterating over other dimension than time and depth")
     
 
     def _plot_map(
