@@ -919,6 +919,9 @@ def add_zebra_frame(ax, lw=1.2):
                 )
 
 def add_border_ticks(ax, tick_len_scale=0.015):
+    """
+    copied from https://github.com/SciTools/cartopy/issues/2003
+    """
     ## add ticks
     xticks = np.linspace(-180, 180, 7)
     yticks = np.linspace(-90, 90, 7)
