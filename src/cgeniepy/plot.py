@@ -799,8 +799,8 @@ class CommunityPalette:
         if reverse and c is not None:
             return c.reversed()
 
-        ## if _r exsit in the string, reverse the colormap
-        if "_r" in cmap_name and c is not None:
+        ## if _r exsit in the end of the string
+        if cmap_name[-2:] == "_r":
             return c.reversed()
 
         if c is None:
@@ -833,6 +833,8 @@ class CommunityPalette:
                 if "RGB_Mapping" in line or not line.strip() or line.strip().startswith('!'):
                     continue
                 # Split the line by whitespace and convert to floats
+                if "!" in line:
+                    line = line.split("!")[0]
                 values = list(map(float, line.split()))
                 data.append(values)
         return np.array(data)
@@ -855,7 +857,7 @@ class CommunityPalette:
         
 
     def to_rgb(self):
-        pass
+        return self.colormap.colors
 
     def to_hex(self, unique=True):
         df = pd.DataFrame(self.colormap.colors)
