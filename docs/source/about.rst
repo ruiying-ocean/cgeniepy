@@ -29,3 +29,7 @@ How was this package created?
 ------------------------------
 I use cGENIE for my PhD research and I kept writing analysing codes in Python to implement ideas in my mind. I also want to make all my codes sustainable, reproducible, without losing performance. Finally, these codes become a package and I think it fun to share with the cGENIE community.
 
+
+Citation
+------------------
+You can cite this preprint (https://www.researchsquare.com/article/rs-3967633/v1).
