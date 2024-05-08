@@ -637,8 +637,8 @@ class ScatterDataVis:
             gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth=.5,
                               color='black', alpha=0.5,
                               linestyle='--', zorder=1)
-            gl.xlabels_top = False
-            gl.ylabels_right = False
+            gl.top_labels = False
+            gl.right_labels = False
             if isinstance(ax.projection, ccrs.PlateCarree):
                 add_border_ticks(ax, 0.01)
 

@@ -24,7 +24,7 @@ Plot the 2D ScatterData
 
 This example shows how to plot the 2D ScatterData object. I use a LGM d13C data from Peterson et al. 2014 (https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2013PA002552) as an example.
 
-.. GENERATED FROM PYTHON SOURCE LINES 8-15
+.. GENERATED FROM PYTHON SOURCE LINES 8-16
 
 
 
@@ -38,8 +38,9 @@ This example shows how to plot the 2D ScatterData object. I use a LGM d13C data 
 
  .. code-block:: none
 
+    <frozen importlib._bootstrap>:241: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
 
-    <matplotlib.collections.PathCollection object at 0x113f7bc10>
+    <matplotlib.collections.PathCollection object at 0x307e3ae30>
 
 
 
@@ -51,16 +52,17 @@ This example shows how to plot the 2D ScatterData object. I use a LGM d13C data 
 
 
     from cgeniepy.table import ScatterData
-
+    from cgeniepy.plot import CommunityPalette
     proxy_d13C = ScatterData("~/Science/lgm_bcp/data/LGM_d13c_CLEAN.txt", delimiter="\t", header=None)
     proxy_d13C.data.columns = ["Longitude", "Latitude", "Depth", "d13C","Event"]
     proxy_d13C.set_index(["Latitude", "Longitude"])
-    proxy_d13C.plot(var='d13C', edgecolor='k', cmap='Spectral_r')
+    cmap = CommunityPalette("BuDaRd18").colormap
+    proxy_d13C.plot(var='d13C', edgecolor='k', cmap=cmap)
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.381 seconds)
+   **Total running time of the script:** (0 minutes 0.903 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_scatter_map.py:
