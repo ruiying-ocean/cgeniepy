@@ -48,23 +48,6 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to plot the 2D ScatterData object. I use a LGM d13C data from Peterson e...">
-
-.. only:: html
-
-  .. image:: /auto_examples/images/thumb/sphx_glr_plot_scatter_map_thumb.png
-    :alt:
-
-  :ref:`sphx_glr_auto_examples_plot_scatter_map.py`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">Plot the 2D ScatterData</div>
-    </div>
-
-
-.. raw:: html
-
     <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to plot the PO4 distribution in each basin.">
 
 .. only:: html
@@ -94,6 +77,23 @@ Below is a gallery of examples
 .. raw:: html
 
       <div class="sphx-glr-thumbnail-title">Plot 2D global map from the model output</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to plot the 2D ScatterData object. I use a LGM d13C data from Peterson e...">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_scatter_map_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_scatter_map.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Plot the 2D ScatterData</div>
     </div>
 
 
@@ -277,9 +277,9 @@ Below is a gallery of examples
 
    /auto_examples/plot_arrcomparison
    /auto_examples/plot_pac_sst
-   /auto_examples/plot_scatter_map
    /auto_examples/plot_coastal_data
    /auto_examples/plot_sst_map
+   /auto_examples/plot_scatter_map
    /auto_examples/plot_timeseries
    /auto_examples/plot_logo
    /auto_examples/plot_PO4_distribution
