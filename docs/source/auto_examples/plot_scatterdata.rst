@@ -24,7 +24,17 @@ Plot the 1D ScatterData
 
 This example shows how to plot the 1D ScatterData object. I use a CO2 data file from the Antarctic EDC ice core (https://doi.pangaea.de/10.1594/PANGAEA.472488) as an example.
 
-.. GENERATED FROM PYTHON SOURCE LINES 8-35
+The following features are used:
+
+#. Load the data (which just download from Pangaea without any modification)
+
+#. Plot the raw data
+
+#. Plot the interpolated data (based on cubic spline interpolation)
+
+#. Plot the rolling averaged data
+
+.. GENERATED FROM PYTHON SOURCE LINES 18-46
 
 
 
@@ -34,8 +44,18 @@ This example shows how to plot the 1D ScatterData object. I use a CO2 data file 
    :class: sphx-glr-single-img
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    <frozen importlib._bootstrap>:241: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
 
 
+
+
+
+
+|
 
 .. code-block:: Python
 
@@ -47,30 +67,31 @@ This example shows how to plot the 1D ScatterData object. I use a CO2 data file 
     edc_co2 = ScatterData("/Users/yingrui/cgeniepy/src/data/EDC_CO2.tab", sep='\t')
     edc_co2.set_index(['Age [ka BP]'])
 
-    # Create subplots
-    fig, ax = plt.subplots()
+    fig = plt.figure(figsize=(5, 4))
+    ax = fig.add_subplot(111)
 
     # Plot the raw data
-    edc_co2.to_ScatterDataVis().plot(var='CO2 [ppmv]', ax=ax, label='Raw Data', edgecolor='black', facecolor='none', marker='o')
-    # Plot the interpolated data (based on cubic spline interpolation)
-    interpolated_data = edc_co2.interpolate(var='CO2 [ppmv]').to_dataframe()
-    interpolated_data.plot(ax=ax, x='Age [ka BP]', y='interpolated_values', label='Interpolated', linewidth=2)
+    edc_co2.plot(var='CO2 [ppmv]', ax=ax, 
+            label='Raw Data', kind='scatter',
+            edgecolor='black', facecolor='none', marker='o')
 
-    # Use rolling mean to smooth the data
+    # # Plot the interpolated data (based on cubic spline interpolation)
+    interpolated_data = edc_co2.interpolate(var='CO2 [ppmv]')
+    interpolated_data = ScatterData(interpolated_data)
+    interpolated_data.plot(var='CO2 [ppmv]', ax=ax, label='Interpolated', kind='line')
+
+    # # Use rolling mean to smooth the data
     smoothed_data = edc_co2.rolling(window=2).mean()
-    smoothed_data['CO2 [ppmv]'].plot(ax=ax, label='2pt Rolling Mean', linewidth=2)
+    smoothed_data = ScatterData(smoothed_data)
+    smoothed_data.plot(var='CO2 [ppmv]', ax=ax, label='Smoothed', kind='line')
 
     ax.legend()
-    ax.grid(True)
-    ax.minorticks_on()
-
     plt.show()
-
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.067 seconds)
+   **Total running time of the script:** (0 minutes 0.838 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_scatterdata.py:
