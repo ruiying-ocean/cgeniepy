@@ -268,7 +268,7 @@ class GriddedDataVis:
             self._add_cfeature(local_ax, cfeature)
         
         if zebra_frame:
-            self._add_zebra_frame(local_ax)
+            add_zebra_frame(local_ax)
 
         if pcolormesh:
             return p_pcolormesh
@@ -430,25 +430,13 @@ class GriddedDataVis:
         ax.clabel(cs, cs.levels[::2], *args, **kwargs)
 
     def _add_gridline(self, ax, *args, **kwargs):
-        gl = ax.gridlines(*args, **kwargs)     
+        gl = ax.gridlines(*args, **kwargs)        
 
         if ax.projection == ccrs.PlateCarree():
             gl.xlines = False  # removing gridlines
-            gl.ylines = False            
-            ## add ticks
-            xticks = np.linspace(-180, 180, 7)
-            yticks = np.linspace(-90, 90, 7)
-            ax.set_xticks(xticks, crs=ccrs.PlateCarree())
-            ax.set_yticks(yticks, crs=ccrs.PlateCarree())
-            ax.set_yticklabels("")
-            ax.set_xticklabels("")
-            bbox_pixels = ax.get_window_extent().get_points()
-            width_pixels = bbox_pixels[1, 0] - bbox_pixels[0, 0]
+            gl.ylines = False
+            add_border_ticks(ax)
 
-            # Set the tick length as a fraction of the width
-            tick_length = 0.015 * width_pixels            
-            ax.tick_params(axis='x', length=tick_length)
-            ax.tick_params(axis='y', length=tick_length)
 
     def _set_borderline(self, ax, geo=True, **kwargs):
         if geo:
@@ -521,50 +509,6 @@ class GriddedDataVis:
         ax.add_feature(feature, zorder=10)
 
 
-    def _add_zebra_frame(self,ax, lw=1.2):
-        """
-        copied from https://github.com/SciTools/cartopy/issues/1830
-        """
-        ax.spines["geo"].set_visible(False)
-        left, right, bot, top = ax.get_extent()
-        
-        # Alternate black and white line segments
-        bws = itertools.cycle(["k", "white"])
-
-        xticks = sorted([left, *ax.get_xticks(), right])
-        xticks = np.unique(np.array(xticks))
-        yticks = sorted([bot, *ax.get_yticks(), top])
-        yticks = np.unique(np.array(yticks))
-        for ticks, which in zip([xticks, yticks], ["lon", "lat"]):
-            for idx, (start, end) in enumerate(zip(ticks, ticks[1:])):
-                bw = next(bws)
-                if which == "lon":
-                    xs = [[start, end], [start, end]]
-                    ys = [[bot, bot], [top, top]]
-                else:
-                    xs = [[left, left], [right, right]]
-                    ys = [[start, end], [start, end]]
-
-                # For first and lastlines, used the "projecting" effect
-                capstyle = "butt" if idx not in (0, len(ticks) - 2) else "projecting"
-                for (xx, yy) in zip(xs, ys):
-                    ax.plot(
-                        xx,
-                        yy,
-                        color=bw,
-                        linewidth=lw,
-                        clip_on=False,
-                        transform=self.transform_crs,
-                        solid_capstyle=capstyle,
-                        # Add a black border to accentuate white segments
-                        path_effects=[
-                            pe.Stroke(linewidth=lw + 1, foreground="black"),
-                            pe.Normal(),
-                        ],
-                    )
-
-
-
 
 class ScatterDataVis:
     "Visualisation object based on ScatterData object"
@@ -593,8 +537,11 @@ class ScatterDataVis:
                 return self._plot_1d(var=var, *args, **kwargs)
             case 2:
                 if hasattr(self, 'lat') and hasattr(self, 'lon'):
+                    ## drop kind if it exsit in kwargs
+                    del kwargs['kind']
                     return self._plot_map(var=var, *args, **kwargs)
                 elif hasattr(self, 'depth') and hasattr(self, 'lat'):
+                    del kwargs['kind']                    
                     return self._plot_transect(var=var,*args, **kwargs)
                 else:
                     raise ValueError("self.dim must be lat/lon or depth not real column name")
@@ -636,6 +583,8 @@ class ScatterDataVis:
         log=False,
         land_mask=True,
         colorbar=True,
+            gridline=True,
+            zebra_frame=False,
         *args,
         **kwargs,
     ):
@@ -650,15 +599,15 @@ class ScatterDataVis:
         """
 
         if not ax:
-            fig, ax = self._init_fig(subplot_kw={"projection": ccrs.EckertIV()})
+            fig, ax = self._init_fig(subplot_kw={"projection": ccrs.PlateCarree()})
 
         if land_mask:
             ax.set_global()
-            # plot land and coastline, zorder is the drawing order, smaller -> backer layer
-            ax.add_feature(
-                cfeature.LAND.with_scale("110m"), zorder=2, facecolor="#B1B2B4"
-            )
-            ax.add_feature(cfeature.COASTLINE.with_scale("110m"), zorder=3)
+            ## plot land and coastline, zorder is the drawing order, smaller -> backer layer
+            # ax.stock_img()
+            ax.add_feature(cfeature.LAND.with_scale("110m"), zorder=2, facecolor="white")
+            ax.add_feature(cfeature.COASTLINE.with_scale("110m"), linewidth=1.4)
+            ax.add_feature(cfeature.LAKES.with_scale('110m'), zorder=3, facecolor='black')
 
         if log:
             self.data[var] = efficient_log(self.data[var])
@@ -676,9 +625,22 @@ class ScatterDataVis:
         )
 
         if colorbar:
-            cbar = plt.colorbar(p, ax=ax, orientation="horizontal")
-            cbar.ax.tick_params(axis="both", which="major", labelsize=8)
-            cbar.set_label(f"{var}")
+            cbar = plt.colorbar(p, ax=ax, orientation="horizontal",
+                                label=f"{var}", pad=0.1)
+            cbar.ax.tick_params(axis="both", which="major", direction="out", length=5)
+            cbar.ax.minorticks_on()
+
+        if zebra_frame:
+            add_zebra_frame(ax)
+
+        if gridline:
+            gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth=.5,
+                              color='black', alpha=0.5,
+                              linestyle='--', zorder=1)
+            gl.xlabels_top = False
+            gl.ylabels_right = False
+            if isinstance(ax.projection, ccrs.PlateCarree):
+                add_border_ticks(ax, 0.01)
 
         return p    
 
@@ -914,3 +876,62 @@ class CommunityPalette:
         return f"Colormap: {self.name}"
 
 
+def add_zebra_frame(ax, lw=1.2):
+    """
+    copied from https://github.com/SciTools/cartopy/issues/1830
+    """
+    ax.spines["geo"].set_visible(False)
+    left, right, bot, top = ax.get_extent()
+
+    # Alternate black and white line segments
+    bws = itertools.cycle(["k", "white"])
+
+    xticks = sorted([left, *ax.get_xticks(), right])
+    xticks = np.unique(np.array(xticks))
+    yticks = sorted([bot, *ax.get_yticks(), top])
+    yticks = np.unique(np.array(yticks))
+    for ticks, which in zip([xticks, yticks], ["lon", "lat"]):
+        for idx, (start, end) in enumerate(zip(ticks, ticks[1:])):
+            bw = next(bws)
+            if which == "lon":
+                xs = [[start, end], [start, end]]
+                ys = [[bot, bot], [top, top]]
+            else:
+                xs = [[left, left], [right, right]]
+                ys = [[start, end], [start, end]]
+
+            # For first and lastlines, used the "projecting" effect
+            capstyle = "butt" if idx not in (0, len(ticks) - 2) else "projecting"
+            for (xx, yy) in zip(xs, ys):
+                ax.plot(
+                    xx,
+                    yy,
+                    color=bw,
+                    linewidth=lw,
+                    clip_on=False,
+                    transform=ccrs.PlateCarree(),
+                    solid_capstyle=capstyle,
+                    # Add a black border to accentuate white segments
+                    path_effects=[
+                        pe.Stroke(linewidth=lw + 1, foreground="black"),
+                        pe.Normal(),
+                    ],
+                )
+
+def add_border_ticks(ax, tick_len_scale=0.15):
+    ## add ticks
+    xticks = np.linspace(-180, 180, 7)
+    yticks = np.linspace(-90, 90, 7)
+    ax.set_xticks(xticks, crs=ccrs.PlateCarree())
+    ax.set_yticks(yticks, crs=ccrs.PlateCarree())
+    ax.set_yticklabels("")
+    ax.set_xticklabels("")
+    bbox_pixels = ax.get_window_extent().get_points()
+    width_pixels = bbox_pixels[1, 0] - bbox_pixels[0, 0]
+
+    # Set the tick length as a fraction of the width
+    tick_length = tick_len_scale * width_pixels            
+    ax.tick_params(axis='x', length=tick_length)
+    ax.tick_params(axis='y', length=tick_length)
+
+    
