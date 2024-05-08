@@ -18,7 +18,7 @@ class ScatterData:
     """ScatterData is a class to store non-gridded data with columns of coordinates.
     """
 
-    def __init__(self, data, *args, **kwargs):
+    def __init__(self, data, mutable=False, *args, **kwargs):
         """
         Initialize a ScatterData object.
 
@@ -30,10 +30,12 @@ class ScatterData:
         if isinstance(data, pd.DataFrame):
             self.data = data
 
+        self.mutable = mutable
+
         ## if a file path then read the file into a dataframe
         if isinstance(data, str):
             if data.endswith(".tab"):
-                data = self.parse_tab_file(data)
+                data = self._parse_tab_file(data)
                 self.data= pd.read_csv(StringIO(data), *args, **kwargs)
             elif data.endswith("xlsx"):
                 self.data = pd.read_excel(data, *args, **kwargs)                
@@ -65,13 +67,14 @@ class ScatterData:
         GridOperation().set_coordinates(obj=self, index=self.index)
 
 
-    def reset_index(self, inplace=True):
-        if inplace:
+    def reset_index(self):
+        if self.mutable:
             self.data = self.data.reset_index()
+            return self
         else:
             return self.data.reset_index()
 
-    def parse_tab_file(self, filename, begin_cmt = '/*', end_cmt = '*/'):
+    def _parse_tab_file(self, filename, begin_cmt = '/*', end_cmt = '*/'):
         """
         Read a tab-delimited file and return a pandas that is optimised for pangea-format data.
 
@@ -146,12 +149,16 @@ class ScatterData:
         
 
         ## add to self.data
-        tmp_data = self.data.reset_index()
-        tmp_data['basin'] = result
-        tmp_index = self.index
-        y = ScatterData(tmp_data)
-        y.set_index(tmp_index)
-        return y
+        if self.mutable:
+            self.data['basin'] = result
+            return self
+        else:        
+            tmp_data = self.data.reset_index()
+            tmp_data['basin'] = result
+            tmp_index = self.index
+            y = ScatterData(tmp_data)
+            y.set_index(tmp_index)
+            return y
 
 
     def to_xarray(self):
@@ -173,11 +180,18 @@ class ScatterData:
 
         ## if 1D
         if len(dims) == 1:            
-            output= Interpolator(dims, coords, values, 200, '1d')
+            output= Interpolator(dims, coords, values, 200, '1d').to_dataframe()
+            output.rename(columns={"interpolated_values": var}, inplace=True)
+            output.set_index(dims, inplace=True)
         else:
             output= Interpolator(dims, coords, values, 200, 'ir-linear')
-            
-        return output
+
+        if self.mutable:
+            self.data = output
+            return self
+        else:
+            return output
+
 
     def to_geniebin(
         self,
@@ -221,14 +235,15 @@ class ScatterData:
     def drop_na(self, *args, **kwargs):
         "drop rows with NA values"
         self.data = self.data.dropna(*args, **kwargs)
+        return self
 
     def to_ScatterDataVis(self):
         "convert to ScatterDataVis"
         return ScatterDataVis(self)
 
-    def plot(self, var, *args, **kwargs):
+    def plot(self, var, kind='scatter',*args, **kwargs):
         "plot the data"
-        return self.to_ScatterDataVis().plot(var, *args, **kwargs)
+        return self.to_ScatterDataVis().plot(var, kind=kind,*args, **kwargs)
 
     def compare(self, var1, var2, model_name=None, obs_name=None):
         "compare two ScatterData objects"
@@ -240,5 +255,9 @@ class ScatterData:
 
     def rolling(self, window, *args, **kwargs):
         "apply rolling to the data"
-        return self.data.rolling(window, *args, **kwargs)
+        if self.mutable:
+            self.data = self.data.rolling(window, *args, **kwargs)
+            return self
+        else:
+            return self.data.rolling(window, *args, **kwargs)
 

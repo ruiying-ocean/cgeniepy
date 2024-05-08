@@ -601,7 +601,7 @@ class ScatterDataVis:
             case _:
                 raise ValueError("Not supported 3D and higher dimensions")
 
-    def _plot_1d(self,var, *args, **kwargs):
+    def _plot_1d(self, var, kind='scatter', *args, **kwargs):
         """
         plot 1D data, e.g., zonal_average, time series
         dim: time/lon/lat
@@ -615,9 +615,12 @@ class ScatterDataVis:
         x = self.data[self.index[0]]
         y = self.data[var]
 
-        p = local_ax.plot(x,y, *args, **kwargs)
-        local_ax.set_xlabel(self.index[0])
-        local_ax.set_ylabel(var)
+        if kind == 'line':
+            p = local_ax.plot(x, y, *args, **kwargs)
+        elif kind == 'scatter':
+            p = local_ax.scatter(x, y, *args, **kwargs)
+        else:
+            raise ValueError("Invalid plot type. Choose 'line' or 'scatter'.")
         
         local_ax.grid(True, linestyle='--', alpha=0.5)
         local_ax.minorticks_on()
