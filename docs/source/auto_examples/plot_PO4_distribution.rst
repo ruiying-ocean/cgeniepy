@@ -22,7 +22,7 @@
 Plot 2D transect of tracers in each basin
 =========================================
 
-This example plots the modelled PO4 distribution in cGENIE.
+This example plots the modelled oxygen distribution in cGENIE.
 
 The following features in the package are used:
 
@@ -32,11 +32,11 @@ The following features in the package are used:
 
 #. A linear interpolation
 
-#. Get additional color palette (mirrors the one in ODV)
+#. Get pretty color palette
 
 #. Customise the plotting details
 
-.. GENERATED FROM PYTHON SOURCE LINES 20-42
+.. GENERATED FROM PYTHON SOURCE LINES 20-43
 
 
 
@@ -70,17 +70,18 @@ The following features in the package are used:
     model = GenieModel("/Users/yingrui/Science/lgm_foram_niche/model/muffin.CBE.worlg4.BASESFeTDTL.SPIN")
     ocn_po4 = model.get_var("ocn_PO4").isel(time=-1)
 
-    fig, axs=plt.subplots(nrows=1, ncols=3, figsize=(15, 3), tight_layout=True)
+    fig, axs=plt.subplots(nrows=3, ncols=1, figsize=(6,9), tight_layout=True)
 
     basins = ['Atlantic', 'Pacific', 'Indian']
 
-    odv_cmap = CommunityPalette().get_palette('ODV', reverse=True)
+    cmap = CommunityPalette('tol_rainbow').colormap
 
     for i in range(3):
-        basin_data = model.get_var('ocn_PO4').isel(time=-1).mask_basin(base='worjh2',basin=basins[i], subbasin='')
-        basin_data_interp = basin_data.mean(dim='lon').interpolate().to_GriddedDataVis()
-        basin_data_interp.aes_dict['pcolormesh_kwargs']['cmap'] = odv_cmap
-        basin_data_interp.plot(ax=axs[i], contour=True)
+        basin_data = model.get_var('ocn_O2').isel(time=-1).mask_basin(base='worjh2',basin=basins[i], subbasin='')
+        basin_data_interp = basin_data.mean(dim='lon').interpolate(grid_number=50).to_GriddedDataVis()
+        basin_data_interp.aes_dict['pcolormesh_kwargs']['cmap'] = cmap
+
+        basin_data_interp.plot(ax=axs[i], contour=False, outline=True)
         axs[i].title.set_text(basins[i])
 
     plt.show()
@@ -88,7 +89,7 @@ The following features in the package are used:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.347 seconds)
+   **Total running time of the script:** (0 minutes 1.064 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_PO4_distribution.py:

@@ -32,7 +32,7 @@ ODV's palette.
 
 
 .. image-sg:: /auto_examples/images/sphx_glr_plot_additional_cmap_001.png
-   :alt: Darjeeling, Speed, tol_rainbow, Rushmore, Section, ODV, ukiyoe, FantasticFox, BluGr, kovesi_rainbow, Zissou1, parula, Spectral, w5m4
+   :alt: Speed, Darjeeling, WtBuGnYlRd, amwg, gmt_haxby, tol_rainbow, BuGr, BuGd, Section, ODV, w5m4, BuDaRd18, FantasticFox, BlGrYeOrReVi, kovesi_rainbow, Zissou1, ukiyoe, parula, Spectral
    :srcset: /auto_examples/images/sphx_glr_plot_additional_cmap_001.png
    :class: sphx-glr-single-img
 
@@ -68,17 +68,17 @@ ODV's palette.
             row = i // ncols
             col = i % ncols
             fig.delaxes(axes[row, col])
-        
+
         plt.tight_layout()
 
     # List of colormaps from cgeniepy
-    cmaps_list = CommunityPalette().avail_palettes()
+    cmaps_list = CommunityPalette().avail_palettes(show_ferret_data=False)
     plot_colormaps(cmaps_list)
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.205 seconds)
+   **Total running time of the script:** (0 minutes 0.285 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_additional_cmap.py:

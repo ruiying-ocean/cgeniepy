@@ -32,7 +32,9 @@ The following features are particularly demonstrated:
 
 #. Controlling the elements in cgeniepy.GriddedDataVis object
 
-.. GENERATED FROM PYTHON SOURCE LINES 16-32
+#. Using CommunityPalette to get a pretty color palette
+
+.. GENERATED FROM PYTHON SOURCE LINES 18-39
 
 
 
@@ -42,32 +44,47 @@ The following features are particularly demonstrated:
    :class: sphx-glr-single-img
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    <frozen importlib._bootstrap>:241: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
 
 
+
+
+
+
+|
 
 .. code-block:: Python
 
 
-    ## many variables
+
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
     from cgeniepy.model import GenieModel
+    from cgeniepy.plot import CommunityPalette
 
     fig, axs = plt.subplots(2, 2, figsize=(10, 8), subplot_kw={'projection': ccrs.PlateCarree()})
 
     pi_model = GenieModel("/Users/yingrui/Science/lgm_foram_niche/model/muffin.CBE.worlg4.BASESFeTDTL.SPIN", gemflag='biogem')
 
-    variable = ['ocn_sur_temp', 'ocn_sur_PO4', 'ocn_sur_TDFe', 'ocn_sur_O2']
+    variable = ['ocn_sur_temp', 'bio_export_POC', 'ocn_sur_PO4','ocn_sur_O2']
+    cmap = ['ocean_temp', 'tol_rainbow', 'WtBuGnYlRd','kovesi_rainbow']
 
     for i in range(4):
-        pi_model.get_var(variable[i]).isel(time=-1).plot(ax=axs.flatten()[i],colorbar=True,
-                                                         outline=True, contourf=True,
-                                                         gridline=True)
+        data = pi_model.get_var(variable[i]).isel(time=-1).to_GriddedDataVis()
+        data.aes_dict['pcolormesh_kwargs']['cmap'] = CommunityPalette(cmap[i]).colormap
+        data.aes_dict['contourf_kwargs']['cmap'] = CommunityPalette(cmap[i]).colormap    
+
+        data.aes_dict['facecolor_kwargs']['c'] = 'white'
+        data.plot(ax=axs.flatten()[i],colorbar=True, outline=True, gridline=True, contourf=True)
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.262 seconds)
+   **Total running time of the script:** (0 minutes 2.422 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_multiple_vars.py:

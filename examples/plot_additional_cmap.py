@@ -34,9 +34,9 @@ def plot_colormaps(cmaps):
         row = i // ncols
         col = i % ncols
         fig.delaxes(axes[row, col])
-        
+
     plt.tight_layout()
 
 # List of colormaps from cgeniepy
-cmaps_list = CommunityPalette().avail_palettes()
+cmaps_list = CommunityPalette().avail_palettes(show_ferret_data=False)
 plot_colormaps(cmaps_list)

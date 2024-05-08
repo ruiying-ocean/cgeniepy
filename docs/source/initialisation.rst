@@ -6,7 +6,7 @@ Download cGENIE output from cluster
 
 The first step starts from getting data from the cluster. If it is in `tar.gz` format then uncompress it. Otherwise, directly download as a folder.
 
-.. code_block:: console
+.. code-block:: console
 
    $ scp -r remote:cgenie_output/experiment_id ~/Downloads
    

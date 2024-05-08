@@ -738,6 +738,11 @@ class CommunityPalette:
         txt data: from original packages
         """
 
+        ## if _r exsit in the end of the string
+        if cmap_name[-2:] == "_r":
+            cmap_name = cmap_name[:-2]
+            reverse = True
+
         if cmap_name not in self.avail_palettes():
             raise ValueError(
                 f"{cmap_name} not found, accepted values are {self.avail_palettes()}"
@@ -797,10 +802,6 @@ class CommunityPalette:
         c = ListedColormap(c(interval), name=cmap_name)
         
         if reverse and c is not None:
-            return c.reversed()
-
-        ## if _r exsit in the end of the string
-        if cmap_name[-2:] == "_r":
             return c.reversed()
 
         if c is None:

@@ -18,18 +18,18 @@
 .. _sphx_glr_auto_examples_plot_timeseries.py:
 
 
-================
+====================
 Plot Time Series
-================
+====================
 
 This example shows how to read in and plot time series data
 
-.. GENERATED FROM PYTHON SOURCE LINES 8-20
+.. GENERATED FROM PYTHON SOURCE LINES 8-26
 
 
 
 .. image-sg:: /auto_examples/images/sphx_glr_plot_timeseries_001.png
-   :alt: Ocean mean temperature, Global total ocean oxygen
+   :alt: plot timeseries
    :srcset: /auto_examples/images/sphx_glr_plot_timeseries_001.png
    :class: sphx-glr-single-img
 
@@ -38,6 +38,7 @@ This example shows how to read in and plot time series data
 
  .. code-block:: none
 
+    <frozen importlib._bootstrap>:241: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
     /Users/yingrui/cgeniepy/src/cgeniepy/model.py:50: UserWarning: No gemflag is provided, use default gemflags: [biogem]
       warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
 
@@ -51,22 +52,28 @@ This example shows how to read in and plot time series data
 .. code-block:: Python
 
     from cgeniepy.model import GenieModel
+    import seaborn as sns
     import matplotlib.pyplot as plt
 
     model = GenieModel("/Users/yingrui/Science/lgm_foram_niche/model/muffin.CBE.worlg4.BASESFeTDTL.historical")
-    fig, ax = plt.subplots(1,2,figsize=(10,5))
+    fig, axs = plt.subplots(1,2,figsize=(8, 3), tight_layout=True)
 
-    model.get_ts("ocn_temp").plot(x='time (yr)',y='temperature (C)',ax=ax[0])
-    model.get_ts("ocn_O2").plot(x='time (yr)',y='global total O2 (mol)',ax=ax[1])
+    temp = model.get_ts("ocn_temp")
+    o2 = model.get_ts("ocn_O2")
 
-    ax[0].set_title("Ocean mean temperature")
-    ax[1].set_title("Global total ocean oxygen")
-    plt.show()
+    ## merge both
+    merged = temp.merge(o2, on="time (yr)")
+
+    ## use seaborn to plot
+    sns.set_theme(context='notebook', style='ticks', palette='deep')
+    sns.lineplot(data=merged, x="time (yr)", y="temperature (C)", ax=axs[0])
+    sns.lineplot(data=merged, x="time (yr)", y="global mean O2 (mol kg-1)", ax=axs[1])
+    sns.despine()
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.084 seconds)
+   **Total running time of the script:** (0 minutes 1.286 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_timeseries.py:
