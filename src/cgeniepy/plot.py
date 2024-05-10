@@ -15,6 +15,7 @@ from matplotlib.patheffects import Stroke, Normal
 import cartopy.mpl.geoaxes
 from cgeniepy.grid import GridOperation
 from .utils import efficient_log
+import warnings
 
 
 class GriddedDataVis:
@@ -539,9 +540,11 @@ class ScatterDataVis:
                 if hasattr(self, 'lat') and hasattr(self, 'lon'):
                     ## drop kind if it exsit in kwargs
                     del kwargs['kind']
+                    warnings.warn("kind is not used for map plotting")
                     return self._plot_map(var=var, *args, **kwargs)
                 elif hasattr(self, 'depth') and hasattr(self, 'lat'):
-                    del kwargs['kind']                    
+                    del kwargs['kind']
+                    warnings.warn("kind is not used for transect plotting")
                     return self._plot_transect(var=var,*args, **kwargs)
                 else:
                     raise ValueError("self.dim must be lat/lon or depth not real column name")
