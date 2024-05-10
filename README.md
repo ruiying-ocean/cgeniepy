@@ -3,7 +3,7 @@
 </p>
 
 [![Documentation Status](https://readthedocs.org/projects/cgeniepy/badge/?version=latest)](https://cgeniepy.readthedocs.io/en/latest/?badge=latest)
-![PyPI](https://img.shields.io/pypi/v/PACKAGE?label=pypi%20cgeniepy)
+[![PyPI version](https://badge.fury.io/py/cgeniepy.svg)](https://badge.fury.io/py/cgeniepy)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/cgeniepy)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![status](https://joss.theoj.org/papers/b08301b8ec79f1da9150cec224da8391/status.svg)](https://joss.theoj.org/papers/b08301b8ec79f1da9150cec224da8391)
