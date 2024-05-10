@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.abspath('../src/cgeniepy/'))
 project = 'cgeniepy'
 copyright = f"2024-{datetime.datetime.now().year}, Rui Ying"
 author = 'Rui Ying'
-release = '0.13.2'
+release = '0.13.3'
 
 
 # -- General configuration ---------------------------------------------------
