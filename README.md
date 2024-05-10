@@ -11,7 +11,7 @@
 
 `cgeniepy` is a Python package to analyse the output of [cGENIE Earth System Model](https://www.seao2.info/mymuffin.html). It aims to provide a set of convenient tools for the post-simulation work, including analysing the model output, plotting publication-quality figures, and conducting model-data comparison.
 
-⚠ `cgeniepy` is still in alpha phase and under active changes.
+⚠ `cgeniepy` is in beta stage with main functionalities being accompolished.
 
 
 
