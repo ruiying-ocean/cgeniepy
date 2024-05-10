@@ -19,15 +19,18 @@ What does this package provide?
 --------------------------------
 Here are the core features of this package:
 
-- **Python-based**: It is based on Python and many other packages that are open-source. It is easy and free to access compared to other commercial software (e.g., MATLAB). For example, you are reading this documentation online, which is powered by GitHub, Sphinx, and Read the doc.
-- **Essential functionalities**: You can read, compute, and plot the cGENIE model outputs using this package.
-- **Observational data support**: For wet lab scientists, you can use this package to deal with observational data (e.g., core data downloaded from pangea.de).
-- **Model-data comparison**: You can compare the cGENIE outputs with observational data using this package, including finding the nearest valid grid point, bin the observational data (gridded or scatter data), calculating the skill metric, plotting Taylor diagram.
+- **Easy to access**: It is based on Python ecosystem and included in the Python's package index pool (PyPI). You can download this software for free in any operating system, remotely or locally. You have a online documentation website with examples for you to use.
+  
+- **cGENIE analysis**: This package aims to analyse the cGENIE model outputs easily. This includes time slice, time series, and ensemble model results.
+
+- **Observational data**: You can compare the cGENIE outputs with observational data using this package, including finding the nearest valid grid point, bin the observational data (gridded or scatter data), calculating the skill metric, plotting Taylor diagram.
+  
+- **Independent functionality**: The package can be used without cGENIE knowledge. This includes the `GriddedData` and `ScatterData` classes.
 
 
 How was this package created?
-------------------------------
-I use cGENIE for my PhD research and I kept writing analysing codes in Python to implement ideas in my mind. I also want to make all my codes sustainable, reproducible, without losing performance. Finally, these codes become a package and I think it fun to share with the cGENIE community.
+--------------------------------
+I use cGENIE in my PhD and I have the highest demand to efficiently analyse the model results as my wish.
 
 
 Citation
