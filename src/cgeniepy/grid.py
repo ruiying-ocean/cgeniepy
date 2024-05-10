@@ -371,8 +371,8 @@ class GridOperation:
         has_depth = False
         has_time = False
 
-        lat_candidates = ['lat', 'latitude', 'y', 'lat_moc']
-        lon_candidates = ['lon', 'longitude', 'x']
+        lat_candidates = ['lat', 'latitude', 'y', 'lat_moc', 'lat_psi']
+        lon_candidates = ['lon', 'longitude', 'x', 'lon_psi']
         depth_candidates = ['depth', 'z', 'z_t', 'level', 'nlevel', 'lvl','lev', 'depth_1',
                             'elevation [m]', 'zt','depth_surface', 'zt_moc']
         time_candidates = ['time', 't', 'age', 'date', 'year', 'age [ka]', 'age [ka bp]']
@@ -409,8 +409,8 @@ class GridOperation:
             ['time', 't', 'age', 'date', 'year', 'age [ka]', 'age [ka bp]'],
             ['depth', 'z', 'z_t', 'level', 'nlevel', 'lvl', 'lev', 'depth_1',
                 'elevation [m]','zt', 'depth_surface','zt_moc'],
-            ['lat', 'latitude', 'y', 'lat_moc'],
-            ['lon', 'longitude', 'x']
+            ['lat', 'latitude', 'y', 'lat_moc', 'lat_psi'],
+            ['lon', 'longitude', 'x', 'lon_psi']
         ]
 
         for candidates in dim_candidates:

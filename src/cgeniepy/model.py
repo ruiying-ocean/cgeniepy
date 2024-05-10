@@ -13,6 +13,7 @@ import numpy as np
 
 from cgeniepy.utils import file_exists
 from cgeniepy.array import GriddedData
+from cgeniepy.table import ScatterData
 
 
 class GenieModel(object):
@@ -222,7 +223,7 @@ class GenieModel(object):
             tsvar_list = [f for f in all_bg_files.glob("*.res")]         
             return tsvar_list
 
-    def get_ts(self, var: str):
+    def get_ts(self, var: str, to_ScatterData=False):
         """
         read in time series output of GENIE
 
@@ -251,6 +252,11 @@ class GenieModel(object):
 
             ## add a column of model name
             df["model"] = self.model_path.split("/")[-1]
+
+            if to_ScatterData:
+                df = ScatterData(df, mutable=False)
+                df.set_index('time (yr)')
+            
             return df
         else:
             ## concatenate all models' data into one data frame
@@ -281,6 +287,10 @@ class GenieModel(object):
 
             ## concatenate by row
             all_df = pd.concat(df_list, axis=0)
+
+            if to_ScatterData:
+                all_df = ScatterData(df, mutable=False)
+                all_df.set_index('time (yr)')
 
             return all_df
 
