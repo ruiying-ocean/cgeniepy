@@ -9,12 +9,13 @@ The first step starts from getting data from the cluster. If it is in `tar.gz` f
 .. code-block:: console
 
    $ scp -r remote:cgenie_output/experiment_id ~/Downloads
-   
+
+For test, an example output is already attached with the package under directory `cgeniepy/src/data/muffin.CBE.worlg4.BASESFeTDTL.SPIN`. This is an modern configuration with ecosystem component enabled.
+
 
 Initialise a model instance
 -------------------------------
-The next step is to initialise a model experiment instance. Two parameters are needed: (1) the directory path; (2) the target sub-model (e.g., biogem or ecogem).
-The default of sub-model is biogem, but if you want to access more data, you can create of gemflag.
+The next step is to initialise a model experiment instance. Two parameters are needed: (1) the directory path (e.g., `muffin.CBE.worlg4.BASESFeTDTL.SPIN`); (2) the target sub-model (e.g., biogem or ecogem). The default of sub-model is biogem, but if you want to access more data, you can create of gemflag.
 
 .. code-block:: python
 
