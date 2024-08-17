@@ -32,15 +32,15 @@ Earth System Models (ESM) are the essential tool used to study the mechanism reg
 Despite the power of cGENIE, the analysis of its model output has relied on a collection of Matlab scripts developed by the cGENIE maintainer (https://github.com/derpycode/muffinplot). A systematic package has been long missing. Such gap could influence the efficiency and reproducibility of the research, in particular for users who are not familiar with the Matlab language or need to perform advanced analysis (e.g., model ensemble based analysis). Python is a popular open-source modern programming language that has built-in package management system, which makes it easy to install, use, and advertise. The *cgeniepy* package provides a starting point for the continuously growing cGENIE community to develop and maintain a set of convenient tools, as seen in the other general circulation models (e.g., @romain2023 for the NEMO model and @gael2023 for the MITgcm model).
 
 # Package Design
-This package first provides a class `model` to read the cGENIE model output (Figure @fig0). Then the data will in be stored in two data structure class (`GriddedData` and `ScatterData`). The two data structure classes are based on the `xarray.DataArray` and `pandas.DataFrame` respectively, which are common data structure used in the Python community. The two data structures can also be converted to each other easily using built-in methods.
+This package first provides a class `model` to read the cGENIE model output (Figure \autoref{fig:0}). Then the data will in be stored in two data structure class (`GriddedData` and `ScatterData`). The two data structure classes are based on the `xarray.DataArray` and `pandas.DataFrame` respectively, which are common data structure used in the Python community. The two data structures can also be converted to each other easily using built-in methods.
 
 Once the data classes are initialised (read from GENIE model or not), the users can perform basic operations as they do in `xarray.DataArray` and `pandas.DataFrame`. However, additional features are provided such as the publication-ready visualisation. The core of the visualisation is the `GriddedDataVis` and `ScatterDataVis` class, which contains various options to customise the plot. The visualisation is based on the `matplotlib` and `cartopy`.
 
-Another common demand for Earth system model users is the model-data comparison. Thus, I provided a`skill` module to conduct the skill score calculation including the correlation coefficient, root mean square error, and the Taylor diagram.
+Another common demand for Earth system model users is the model-data comparison. Thus, I provided a`skill` module to conduct the skill score calculation including the correlation coefficient, root mean square error, and the Taylor diagram (see the Examples).
 
-For cGENIE model specifically, its coarse model output can be interpolated using the  `Interpolator` class. This is a wrapper of the `scipy.interpolate` subpackage and its purpose is to help increase the grid resolution and create prettier figure. However, a long-term goal is to incorporate more advanced interpolation methods (e.g., the DIVA method) to make cGENIE model output more comparable to the high-resolution model/observational results.
+For cGENIE model specifically, its coarse model output can be interpolated using the  `Interpolator` class (Figure \autoref{fig:0}). This is a wrapper of the `scipy.interpolate` subpackage and its purpose is to help increase the grid resolution and create prettier figure. However, a long-term goal is to incorporate more advanced interpolation methods (e.g., the DIVA method) to make cGENIE model output more comparable to the high-resolution model/observational results.
 
-![A schematic figure showing the structure of `cgeniepy` package and its functionalities. It helps users to access the model output and operate the visualisation and analysis including interpolation, model-data comparison. \label{fig1}](fig0.png){width=65%}
+![A schematic figure showing the structure of `cgeniepy` package and its functionalities. It helps users to access the model output and operate the visualisation and analysis including interpolation, model-data comparison. \label{fig:0}](fig0.png){width=65%}
 
 # Examples
 
@@ -48,7 +48,7 @@ In this section, I provide two examples to show the core functionalities of `cge
 
 ## Access, analyse and visualise the cGENIE model output
 
-The following codes will be mostly used by the cGENIE users. It initialise the cGENIE model instance, read the sea surface temperature data, and plot the last time slice as map. The data is adapted from @ying2023b and @gutjahr2017. The users can easily change the variable name to access other model output.
+The following codes will be mostly used by the cGENIE users. It initialise the cGENIE model instance, read the sea surface temperature data, and plot the last time slice as map. The data is adapted from @ying2023b and @gutjahr2017 (Figure \autoref{fig:1}). The users can easily change the variable name to access other model output.
 
 ```python
 ## import the package
@@ -63,11 +63,11 @@ ocn_sst = model.get_var("ocn_surf_temp")
 ## plot the last time slice
 ocn_sst.isel(time=-1).plot()
 ```
-![The simulated sea surface temperature in the Modern (left) and Paleogene-Eocene Thermal Maximum event (right) in cGENIE and visualised by `cgeniepy`. The data is adapted from @ying2023b and @gutjahr2017 respectively. \label{fig1}](fig1.png)
+![The simulated sea surface temperature in the Modern (left) and Paleogene-Eocene Thermal Maximum event (right) in cGENIE and visualised by `cgeniepy`. The data is adapted from @ying2023b and @gutjahr2017 respectively. \label{fig:1}](fig1.png)
 
 ## Model-data comparison
 
-In this example, I read the carbon isotope data from the Last Glacial Maximum (21 ka) model, the corresponding data compilation from @peterson2014. Then I find the model data for each core location and add it to the dataframe. Finally, I conduct the model-data comparison and plot the 1:1 lineplot. Multiple metrics are calculated and showed in the figure.
+In this example, I read the carbon isotope data from the Last Glacial Maximum (21 ka) model, the corresponding data compilation from @peterson2014. Then I find the model data for each core location and add it to the dataframe. Finally, I conduct the model-data comparison and plot the 1:1 lineplot (Figure \autoref{fig:2}). Multiple metrics are calculated and showed in the figure (Figure \autoref{fig:2}).
 
 ```python
 from cgeniepy.model import GenieModel
@@ -101,7 +101,7 @@ proxy_d13C.data.rename(columns={"LGM":"Observational d13C"}, inplace=True)
 proxy_d13C.compare("GENIE_d13C","LGM").plot()
 ```
 
-![A `cgeniepy` example of model-data comparison for the Last Glacial Maximum carbon isotope data. The model output is adapted from @ying2023b and the data is from @peterson2014. \label{fig2}](fig2.png)
+![A `cgeniepy` example of model-data comparison for the Last Glacial Maximum carbon isotope data. The model output is adapted from @ying2023b and the data is from @peterson2014. \label{fig:2}](fig2.png)
 
 # Acknowledgements
 R.Y. acknowledges financial support from China Scholarship Council (202006380070). R.Y. also thanks Shao Jun for his suggestions on the package.
