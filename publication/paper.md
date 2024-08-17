@@ -32,7 +32,7 @@ Earth System Models (ESM) are the essential tool used to study the mechanism reg
 Despite the power of cGENIE, the analysis of its model output has relied on a collection of Matlab scripts developed by the cGENIE maintainer (https://github.com/derpycode/muffinplot). A systematic package has been long missing. Such gap could influence the efficiency and reproducibility of the research, in particular for users who are not familiar with the Matlab language or need to perform advanced analysis (e.g., model ensemble based analysis). Python is a popular open-source modern programming language that has built-in package management system, which makes it easy to install, use, and advertise. The *cgeniepy* package provides a starting point for the continuously growing cGENIE community to develop and maintain a set of convenient tools, as seen in the other general circulation models (e.g., @romain2023 for the NEMO model and @gael2023 for the MITgcm model).
 
 # Package Design
-This package first provides a class `model` to read the cGENIE model output. Then the data will in be stored in two data structure class (`GriddedData` and `ScatterData`). The two data structure classes are based on the `xarray.DataArray` and `pandas.DataFrame` respectively, which are common data structure used in the Python community. The two data structures can also be converted to each other easily using built-in methods.
+This package first provides a class `model` to read the cGENIE model output (Figure @fig0). Then the data will in be stored in two data structure class (`GriddedData` and `ScatterData`). The two data structure classes are based on the `xarray.DataArray` and `pandas.DataFrame` respectively, which are common data structure used in the Python community. The two data structures can also be converted to each other easily using built-in methods.
 
 Once the data classes are initialised (read from GENIE model or not), the users can perform basic operations as they do in `xarray.DataArray` and `pandas.DataFrame`. However, additional features are provided such as the publication-ready visualisation. The core of the visualisation is the `GriddedDataVis` and `ScatterDataVis` class, which contains various options to customise the plot. The visualisation is based on the `matplotlib` and `cartopy`.
 
@@ -40,7 +40,7 @@ Another common demand for Earth system model users is the model-data comparison.
 
 For cGENIE model specifically, its coarse model output can be interpolated using the  `Interpolator` class. This is a wrapper of the `scipy.interpolate` subpackage and its purpose is to help increase the grid resolution and create prettier figure. However, a long-term goal is to incorporate more advanced interpolation methods (e.g., the DIVA method) to make cGENIE model output more comparable to the high-resolution model/observational results.
 
-![A schematic figure showing the structure of `cgeniepy` package and its functionalities. It helps users to access the model output and operate the visualisation and analysis including interpolation, model-data comparison.](fig0.png){width=65%}
+![A schematic figure showing the structure of `cgeniepy` package and its functionalities. It helps users to access the model output and operate the visualisation and analysis including interpolation, model-data comparison. \label{fig1}](fig0.png){width=65%}
 
 # Examples
 
