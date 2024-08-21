@@ -39,9 +39,9 @@ This package first provides a class `model` to read the cGENIE model output (\au
 
 Once the data classes are initialised (read from GENIE model or not), the users can perform basic operations as they do in `xarray.DataArray` and `pandas.DataFrame`. However, additional features are provided such as the publication-ready visualisation achived by the `GriddedDataVis` and `ScatterDataVis` class. Both contain various options to customise the plot based on the `matplotlib` and `cartopy` packages.
 
-Another common demand for Earth system model users is the model-data comparison. Thus, I provided a`skill` module to conduct the skill score calculation including the correlation coefficient, root mean square error, and the Taylor diagram (see the Examples).
+Another common demand for Earth system model users is the model-data comparison. Thus, I provided a `skill` module to conduct the skill score calculation including the correlation coefficient, root mean square error, and the Taylor diagram (see the Examples).
 
-For cGENIE model specifically, its coarse model output can be interpolated using the  `Interpolator` class (Figure \autoref{fig:0}). This is a wrapper of the `scipy.interpolate` subpackage and its purpose is to help increase the grid resolution and create prettier figure. However, a long-term goal is to incorporate more advanced interpolation methods (e.g., the DIVA method) to make cGENIE model output more comparable to the high-resolution model/observational results.
+For cGENIE model specifically, its coarse model output can be interpolated using the  `Interpolator` class (\autoref{fig:0}). This is a wrapper of the `scipy.interpolate` subpackage and its purpose is to help increase the grid resolution and create prettier figure. However, a long-term goal is to incorporate more advanced interpolation methods (e.g., the DIVA method) to make cGENIE model output more comparable to the high-resolution model/observational results.
 
 ![A schematic figure showing the structure of `cgeniepy` package and its functionalities. It helps users to access the model output and operate the visualisation and analysis including interpolation, model-data comparison. \label{fig:0}](fig0.png){width=65%}
 
