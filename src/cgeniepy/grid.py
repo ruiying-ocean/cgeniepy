@@ -45,10 +45,10 @@ class GridOperation:
             return lat
 
     def get_genie_depth(self, edge=False):
-        """hard coded cGENIE vertical depth in 16 levels
-
-        No idea how it is calculated yet.
+        """hard coded cGENIE vertical depth in 16 levels        
         """
+        
+        # No idea how it is calculated yet.
         z_edge = np.array(
             [
                 0.0000,
@@ -371,8 +371,8 @@ class GridOperation:
         has_depth = False
         has_time = False
 
-        lat_candidates = ['lat', 'latitude', 'y', 'lat_moc', 'lat_psi']
-        lon_candidates = ['lon', 'longitude', 'x', 'lon_psi']
+        lat_candidates = ['lat', 'latitude', 'y', 'lat_moc', 'lat_psi', 'lat_opsi']
+        lon_candidates = ['lon', 'longitude', 'x', 'lon_psi', 'lon_opsi']
         depth_candidates = ['depth', 'z', 'z_t', 'level', 'nlevel', 'lvl','lev', 'depth_1',
                             'elevation [m]', 'zt','depth_surface', 'zt_moc']
         time_candidates = ['time', 't', 'age', 'date', 'year', 'age [ka]', 'age [ka bp]']

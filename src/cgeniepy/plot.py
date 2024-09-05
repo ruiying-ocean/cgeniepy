@@ -182,12 +182,13 @@ class GriddedDataVis:
         x_name = self.data.dims[lon_order]  ## lon
         y_name = self.data.dims[lat_order]  ## lat
 
-        x_arr = self.data[x_name]
-        y_arr = self.data[y_name]
+        x_arr = self.data[x_name].values
+        y_arr = self.data[y_name].values
 
         x_min = x_arr.min()
         x_max = x_arr.max()
         x_res = x_arr[1] - x_arr[0]
+        print(x_min,x_max,x_res)
         x_edge = np.linspace(x_min-x_res/2, x_max+x_res/2, x_arr.size + 1)
 
 
@@ -322,8 +323,8 @@ class GriddedDataVis:
         x_name = self.data.dims[lat_order]  ## lat
         y_name = self.data.dims[zt_order]  ## zt
 
-        x_arr = self.data[x_name]
-        y_arr = self.data[y_name]
+        x_arr = self.data[x_name].values
+        y_arr = self.data[y_name].values
 
         x_edge = np.rad2deg(np.arcsin(np.linspace(-1, 1, x_arr.size + 1)))
         ## get y edge coordinates (starting from 0)
