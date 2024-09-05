@@ -188,7 +188,6 @@ class GriddedDataVis:
         x_min = x_arr.min()
         x_max = x_arr.max()
         x_res = x_arr[1] - x_arr[0]
-        print(x_min,x_max,x_res)
         x_edge = np.linspace(x_min-x_res/2, x_max+x_res/2, x_arr.size + 1)
 
 
