@@ -28,8 +28,16 @@ python3 -m pip install cgeniepy
 ```bash
 python3 -m pip install git+https://github.com/ruiying-ocean/cgeniepy.git@master
 ```
+## Quickstart
 
-## How to use
+```python
+import cgeniepy
+
+model = cgeniepy.sample_model()
+model.get_var('ocn_sur_temp').isel(time=-1).plot(colorbar=True)
+```
+
+## Full documentation
 
 [Here is the documentation with examples](https://cgeniepy.readthedocs.io/en/latest/)
 
