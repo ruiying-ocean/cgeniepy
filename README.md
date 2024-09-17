@@ -28,7 +28,9 @@ python3 -m pip install cgeniepy
 ```bash
 python3 -m pip install git+https://github.com/ruiying-ocean/cgeniepy.git@master
 ```
+
 ## Quickstart
+I have uploaded a sample model run, which is a preindustrial spinup configuration with marine ecosystem and biogeochemistry enabled.
 
 ```python
 import cgeniepy
@@ -36,6 +38,9 @@ import cgeniepy
 model = cgeniepy.sample_model()
 model.get_var('ocn_sur_temp').isel(time=-1).plot(colorbar=True)
 ```
+
+If you want to try other model runs, I have uploaded some in zenodo (https://zenodo.org/records/10575295). However, not all cGENIE model experiments are publicly available because many different research teams use cGENIE. Therefore, this is not what this package can resolve.
+
 
 ## Full documentation
 
