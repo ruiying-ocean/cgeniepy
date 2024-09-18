@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_plot_d13C_comp.py>`
-        to download the full example code
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -22,7 +22,7 @@
 Search the nearest grid point for a given location
 =======================================================
 
-This example is a combination of ScatterData and GriddedData to search the nearest grid point for a given location. I use CESM model output and LGM d13C data from Peterson et al. 2014 (https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2013PA002552) as an example.
+This example is a combination of ScatterData and GriddedData to search the nearest grid point for a given location. I use CESM model output(You can download them from https://zenodo.org/records/13786014) and LGM d13C data from Peterson et al. 2014 (https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2013PA002552) as an example.
 
 .. GENERATED FROM PYTHON SOURCE LINES 8-41
 
@@ -76,7 +76,7 @@ This example is a combination of ScatterData and GriddedData to search the neare
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 31.951 seconds)
+   **Total running time of the script:** (0 minutes 32.458 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_d13C_comp.py:
@@ -92,6 +92,10 @@ This example is a combination of ScatterData and GriddedData to search the neare
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_d13C_comp.py <plot_d13C_comp.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: plot_d13C_comp.zip <plot_d13C_comp.zip>`
 
 
 .. only:: html

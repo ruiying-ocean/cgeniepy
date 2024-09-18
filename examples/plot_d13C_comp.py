@@ -3,7 +3,7 @@
 Search the nearest grid point for a given location
 =======================================================
 
-This example is a combination of ScatterData and GriddedData to search the nearest grid point for a given location. I use CESM model output and LGM d13C data from Peterson et al. 2014 (https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2013PA002552) as an example.
+This example is a combination of ScatterData and GriddedData to search the nearest grid point for a given location. I use CESM model output(You can download them from https://zenodo.org/records/13786014) and LGM d13C data from Peterson et al. 2014 (https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2013PA002552) as an example.
 """
 
 from cgeniepy.table import ScatterData

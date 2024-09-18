@@ -3,7 +3,8 @@
 Plot Other Models' output
 =============================
 
-This example shows how to use cgeniepy to plot gridded data from other models.
+This example shows how to use cgeniepy to plot gridded data from other models (CESM and HadCM3 here).
+You can download them from https://zenodo.org/records/13786014.
 """
 from cgeniepy.array import GriddedData
 import xarray as xr

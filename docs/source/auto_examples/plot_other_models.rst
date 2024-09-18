@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_plot_other_models.py>`
-        to download the full example code
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -22,9 +22,10 @@
 Plot Other Models' output
 =============================
 
-This example shows how to use cgeniepy to plot gridded data from other models.
+This example shows how to use cgeniepy to plot gridded data from other models (CESM and HadCM3 here).
+You can download them from https://zenodo.org/records/13786014.
 
-.. GENERATED FROM PYTHON SOURCE LINES 8-35
+.. GENERATED FROM PYTHON SOURCE LINES 9-36
 
 
 
@@ -39,7 +40,7 @@ This example shows how to use cgeniepy to plot gridded data from other models.
  .. code-block:: none
 
 
-    <matplotlib.colorbar.Colorbar object at 0x323cb3eb0>
+    <matplotlib.colorbar.Colorbar object at 0x1612946b0>
 
 
 
@@ -80,7 +81,7 @@ This example shows how to use cgeniepy to plot gridded data from other models.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 4.470 seconds)
+   **Total running time of the script:** (0 minutes 4.552 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_other_models.py:
@@ -96,6 +97,10 @@ This example shows how to use cgeniepy to plot gridded data from other models.
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_other_models.py <plot_other_models.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: plot_other_models.zip <plot_other_models.zip>`
 
 
 .. only:: html

@@ -16,6 +16,8 @@ This example uses many features from the cgeniepy package, including:
 #. Visualisation based on cgeniepy's customised plotting functions
 
 #. Compare model and observational data
+
+The GLODAPV2 data is from https://glodap.info/index.php/mapped-data-product/.
 """
 import xarray as xr
 import numpy as np

@@ -22,7 +22,7 @@
 Extract and Plot cGENIE Time Series data
 ==============================================
 
-This example shows how to read in and plot cGENIE time series data
+This example shows how to read in and plot cGENIE time series data. The example historical run (1750-2022) is available from https://zenodo.org/records/10575295.
 
 .. GENERATED FROM PYTHON SOURCE LINES 8-24
 
@@ -41,7 +41,7 @@ This example shows how to read in and plot cGENIE time series data
     /Users/yingrui/cgeniepy/src/cgeniepy/model.py:51: UserWarning: No gemflag is provided, use default gemflags: [biogem]
       warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
 
-    <matplotlib.collections.PathCollection object at 0x16ce5c860>
+    [<matplotlib.lines.Line2D object at 0x15088fbc0>]
 
 
 
@@ -65,13 +65,13 @@ This example shows how to read in and plot cGENIE time series data
     ## merge both and convert to ScatterData format
     ts_data = ScatterData(temp.merge(o2, on="time (yr)"))
     ts_data.set_index("time (yr)")
-    ts_data.plot(var="temperature (C)", ax=axs[0])
-    ts_data.plot(var="surface O2 (mol kg-1)", ax=axs[1])
+    ts_data.plot(var="temperature (C)", ax=axs[0], kind='line')
+    ts_data.plot(var="surface O2 (mol kg-1)", ax=axs[1], kind='line')
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 4.310 seconds)
+   **Total running time of the script:** (0 minutes 1.511 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_timeseries.py:

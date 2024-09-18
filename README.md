@@ -39,12 +39,14 @@ model = cgeniepy.sample_model()
 model.get_var('ocn_sur_temp').isel(time=-1).plot(colorbar=True)
 ```
 
-If you want to try other model runs, I have uploaded some to zenodo (https://zenodo.org/records/10575295). However, not all cGENIE model experiments are publicly available because many different research teams use cGENIE. Therefore, this is not what this package can resolve.
+* If you want to try other cGENIE model runs, you may go to this zenodo record (https://zenodo.org/records/10575295). 
+* If you want to try non-cGENIE model, I have also uploaded two example files to here (https://zenodo.org/records/13786014). 
 
 
-## Full documentation
+## Documentation
 
-[Here is the documentation with examples](https://cgeniepy.readthedocs.io/en/latest/)
+[An online documentation is hosted in readthedoc.](https://cgeniepy.readthedocs.io/en/latest/)
+
 
 
 ## Citation

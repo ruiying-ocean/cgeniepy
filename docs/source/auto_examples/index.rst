@@ -100,23 +100,6 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to read in and plot cGENIE time series data">
-
-.. only:: html
-
-  .. image:: /auto_examples/images/thumb/sphx_glr_plot_timeseries_thumb.png
-    :alt:
-
-  :ref:`sphx_glr_auto_examples_plot_timeseries.py`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">Extract and Plot cGENIE Time Series data</div>
-    </div>
-
-
-.. raw:: html
-
     <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to customise the 2D map including the projection, the color map, which is used as the logo of this package.">
 
 .. only:: html
@@ -129,6 +112,23 @@ Below is a gallery of examples
 .. raw:: html
 
       <div class="sphx-glr-thumbnail-title">Customise the 2D map projection</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to read in and plot cGENIE time series data. The example historical run (1750-2022) is available from https://zenodo.org/records/10575295.">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_timeseries_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_timeseries.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Extract and Plot cGENIE Time Series data</div>
     </div>
 
 
@@ -219,7 +219,7 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to use cgeniepy to plot gridded data from other models.">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to use cgeniepy to plot gridded data from other models (CESM and HadCM3 here). You can download them from https://zenodo.org/records/13786014.">
 
 .. only:: html
 
@@ -236,7 +236,7 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example is a combination of ScatterData and GriddedData to search the nearest grid point for a given location. I use CESM model output and LGM d13C data from Peterson et al. 2014 (https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2013PA002552) as an example.">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example is a combination of ScatterData and GriddedData to search the nearest grid point for a given location. I use CESM model output(You can download them from https://zenodo.org/records/13786014) and LGM d13C data from Peterson et al. 2014 (https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2013PA002552) as an example.">
 
 .. only:: html
 
@@ -283,8 +283,8 @@ Below is a gallery of examples
    /auto_examples/plot_coastal_data
    /auto_examples/plot_sst_map
    /auto_examples/plot_scatter_map
-   /auto_examples/plot_timeseries
    /auto_examples/plot_logo
+   /auto_examples/plot_timeseries
    /auto_examples/plot_PO4_distribution
    /auto_examples/plot_multiple_vars
    /auto_examples/plot_taylor_diagram
