@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:01.369** total execution time for 15 files **from auto_examples**:
+**00:01.839** total execution time for 15 files **from auto_examples**:
 
 .. container::
 
@@ -32,8 +32,8 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_plot_scatter_map.py` (``plot_scatter_map.py``)
-     - 00:01.369
+   * - :ref:`sphx_glr_auto_examples_plot_multiple_vars.py` (``plot_multiple_vars.py``)
+     - 00:01.839
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_PO4_distribution.py` (``plot_PO4_distribution.py``)
      - 00:00.000
@@ -53,9 +53,6 @@ Computation times
    * - :ref:`sphx_glr_auto_examples_plot_logo.py` (``plot_logo.py``)
      - 00:00.000
      - 0.0
-   * - :ref:`sphx_glr_auto_examples_plot_multiple_vars.py` (``plot_multiple_vars.py``)
-     - 00:00.000
-     - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_other_models.py` (``plot_other_models.py``)
      - 00:00.000
      - 0.0
@@ -63,6 +60,9 @@ Computation times
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_regridded_data.py` (``plot_regridded_data.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_scatter_map.py` (``plot_scatter_map.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_scatterdata.py` (``plot_scatterdata.py``)

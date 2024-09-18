@@ -18,12 +18,11 @@ The following features in the package are used:
 #. Customise the plotting details
 """
 
-from cgeniepy.model import GenieModel
+import cgeniepy
 from cgeniepy.plot import CommunityPalette
 import matplotlib.pyplot as plt
 
-model = GenieModel("/Users/yingrui/Science/lgm_foram_niche/model/muffin.CBE.worlg4.BASESFeTDTL.SPIN")
-ocn_po4 = model.get_var("ocn_PO4").isel(time=-1)
+model = cgeniepy.sample_model()
 
 fig, axs=plt.subplots(nrows=3, ncols=1, figsize=(6,9), tight_layout=True)
 

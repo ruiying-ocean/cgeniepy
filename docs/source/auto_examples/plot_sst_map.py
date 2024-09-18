@@ -6,10 +6,10 @@ Plot 2D global map from the model output
 Here use the sea surface temperature as an example to plot the 2D global map from the model output.
 """
 
-from cgeniepy.model import GenieModel
+import cgeniepy
 import matplotlib.pyplot as plt
 
-model = GenieModel("/Users/yingrui/Science/lgm_foram_niche/model/muffin.CBE.worlg4.BASESFeTDTL.SPIN")
+model = cgeniepy.sample_model()
 sst = model.get_var("ocn_sur_temp").isel(time=-1)
 
 ## start to plot with customised cmap

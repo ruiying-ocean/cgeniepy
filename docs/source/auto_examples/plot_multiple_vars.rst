@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_plot_multiple_vars.py>`
-        to download the full example code
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -48,7 +48,8 @@ The following features are particularly demonstrated:
 
  .. code-block:: none
 
-    <frozen importlib._bootstrap>:241: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
+    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:51: UserWarning: No gemflag is provided, use default gemflags: [biogem]
+      warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
 
 
 
@@ -63,14 +64,14 @@ The following features are particularly demonstrated:
 
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
-    from cgeniepy.model import GenieModel
+    import cgeniepy
     from cgeniepy.plot import CommunityPalette
 
     fig, axs = plt.subplots(2, 2, figsize=(10, 8), subplot_kw={'projection': ccrs.PlateCarree()})
 
-    pi_model = GenieModel("/Users/yingrui/Science/lgm_foram_niche/model/muffin.CBE.worlg4.BASESFeTDTL.SPIN", gemflag='biogem')
+    pi_model = cgeniepy.sample_model()
 
-    variable = ['ocn_sur_temp', 'bio_export_POC', 'ocn_sur_PO4','ocn_sur_O2']
+    variable = ['ocn_sur_temp', 'bio_fexport_POC', 'ocn_sur_PO4','ocn_sur_O2']
     cmap = ['ocean_temp', 'tol_rainbow', 'WtBuGnYlRd','kovesi_rainbow']
 
     for i in range(4):
@@ -84,7 +85,7 @@ The following features are particularly demonstrated:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 2.422 seconds)
+   **Total running time of the script:** (0 minutes 1.839 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_multiple_vars.py:
@@ -100,6 +101,10 @@ The following features are particularly demonstrated:
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_multiple_vars.py <plot_multiple_vars.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: plot_multiple_vars.zip <plot_multiple_vars.zip>`
 
 
 .. only:: html

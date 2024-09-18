@@ -11,6 +11,7 @@ Below is a gallery of examples
 
     <div class="sphx-glr-thumbnails">
 
+.. thumbnail-parent-div-open
 
 .. raw:: html
 
@@ -31,7 +32,7 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="Plot the model variable for a spficic basin, here we use sea surface temperature in the Atlanti...">
+    <div class="sphx-glr-thumbcontainer" tooltip="Plot the model variable for a spficic basin, here we use sea surface temperature in the Atlantic Ocean as an example.">
 
 .. only:: html
 
@@ -65,7 +66,7 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="Here use the sea surface temperature as an example to plot the 2D global map from the model out...">
+    <div class="sphx-glr-thumbcontainer" tooltip="Here use the sea surface temperature as an example to plot the 2D global map from the model output.">
 
 .. only:: html
 
@@ -82,7 +83,7 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to plot the 2D ScatterData object. I use a LGM d13C data from Peterson e...">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to plot the 2D ScatterData object. I use a LGM d13C data from Peterson et al. 2014 (https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2013PA002552) as an example.">
 
 .. only:: html
 
@@ -99,7 +100,7 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to read in and plot time series data">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to read in and plot cGENIE time series data">
 
 .. only:: html
 
@@ -110,13 +111,13 @@ Below is a gallery of examples
 
 .. raw:: html
 
-      <div class="sphx-glr-thumbnail-title">Plot Time Series</div>
+      <div class="sphx-glr-thumbnail-title">Extract and Plot cGENIE Time Series data</div>
     </div>
 
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to customise the 2D map including the projection, the color map, which i...">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to customise the 2D map including the projection, the color map, which is used as the logo of this package.">
 
 .. only:: html
 
@@ -150,6 +151,23 @@ Below is a gallery of examples
 
 .. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to plot multiple variables from a GenieModel object. I use a modern model run as an example and plot the surface temperature, PO4, Fe, and O2.">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_multiple_vars_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_multiple_vars.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Plot multiple variables</div>
+    </div>
+
+
+.. raw:: html
+
     <div class="sphx-glr-thumbcontainer" tooltip="This example uses fake data and fitted model prediction to plot taylor diagram">
 
 .. only:: html
@@ -167,7 +185,7 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to plot the 1D ScatterData object. I use a CO2 data file from the Antarc...">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to plot the 1D ScatterData object. I use a CO2 data file from the Antarctic EDC ice core (https://doi.pangaea.de/10.1594/PANGAEA.472488) as an example.">
 
 .. only:: html
 
@@ -184,24 +202,7 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to plot multiple variables from a GenieModel object. I use a modern mode...">
-
-.. only:: html
-
-  .. image:: /auto_examples/images/thumb/sphx_glr_plot_multiple_vars_thumb.png
-    :alt:
-
-  :ref:`sphx_glr_auto_examples_plot_multiple_vars.py`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">Plot multiple variables</div>
-    </div>
-
-
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="I created a class called CommunityPalette for accessing those pretty color palettes that are wi...">
+    <div class="sphx-glr-thumbcontainer" tooltip="I created a class called CommunityPalette for accessing those pretty color palettes that are widely seen in oceanography but not directly available in Python. This can be from Ocean Data View (ODV), NCL, Ferret, etc.">
 
 .. only:: html
 
@@ -212,7 +213,7 @@ Below is a gallery of examples
 
 .. raw:: html
 
-      <div class="sphx-glr-thumbnail-title">Additional cmap</div>
+      <div class="sphx-glr-thumbnail-title">Get additional color palettes</div>
     </div>
 
 
@@ -235,7 +236,7 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example is a combination of ScatterData and GriddedData to search the nearest grid point f...">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example is a combination of ScatterData and GriddedData to search the nearest grid point for a given location. I use CESM model output and LGM d13C data from Peterson et al. 2014 (https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2013PA002552) as an example.">
 
 .. only:: html
 
@@ -252,7 +253,7 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to regrid observational data to cGENIE grids and compare with cGENIE out...">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to regrid observational data to cGENIE grids and compare with cGENIE output.">
 
 .. only:: html
 
@@ -266,6 +267,8 @@ Below is a gallery of examples
       <div class="sphx-glr-thumbnail-title">Regrid observational data and compare with cGENIE output</div>
     </div>
 
+
+.. thumbnail-parent-div-close
 
 .. raw:: html
 
@@ -283,9 +286,9 @@ Below is a gallery of examples
    /auto_examples/plot_timeseries
    /auto_examples/plot_logo
    /auto_examples/plot_PO4_distribution
+   /auto_examples/plot_multiple_vars
    /auto_examples/plot_taylor_diagram
    /auto_examples/plot_scatterdata
-   /auto_examples/plot_multiple_vars
    /auto_examples/plot_additional_cmap
    /auto_examples/plot_other_models
    /auto_examples/plot_d13C_comp

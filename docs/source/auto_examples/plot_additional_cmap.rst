@@ -11,16 +11,16 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_plot_additional_cmap.py>`
-        to download the full example code
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
 .. _sphx_glr_auto_examples_plot_additional_cmap.py:
 
 
-================
-Additional cmap
-================
+=================================
+Get additional color palettes
+=================================
 
 I created a class called `CommunityPalette` for accessing those pretty color palettes that are widely seen in oceanography but not directly available in Python.
 This can be from Ocean Data View (ODV), NCL, Ferret, etc.
@@ -39,18 +39,8 @@ can be found in https://ferret.pmel.noaa.gov/Ferret/faq/ferret-color-palettes
    :class: sphx-glr-single-img
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    <frozen importlib._bootstrap>:241: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
 
 
-
-
-
-
-|
 
 .. code-block:: Python
 
@@ -90,7 +80,7 @@ can be found in https://ferret.pmel.noaa.gov/Ferret/faq/ferret-color-palettes
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.891 seconds)
+   **Total running time of the script:** (0 minutes 0.299 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_additional_cmap.py:
@@ -106,6 +96,10 @@ can be found in https://ferret.pmel.noaa.gov/Ferret/faq/ferret-color-palettes
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_additional_cmap.py <plot_additional_cmap.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: plot_additional_cmap.zip <plot_additional_cmap.zip>`
 
 
 .. only:: html

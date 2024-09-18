@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_plot_PO4_distribution.py>`
-        to download the full example code
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -36,7 +36,7 @@ The following features in the package are used:
 
 #. Customise the plotting details
 
-.. GENERATED FROM PYTHON SOURCE LINES 20-43
+.. GENERATED FROM PYTHON SOURCE LINES 20-42
 
 
 
@@ -50,7 +50,7 @@ The following features in the package are used:
 
  .. code-block:: none
 
-    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:50: UserWarning: No gemflag is provided, use default gemflags: [biogem]
+    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:51: UserWarning: No gemflag is provided, use default gemflags: [biogem]
       warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
 
 
@@ -63,12 +63,11 @@ The following features in the package are used:
 .. code-block:: Python
 
 
-    from cgeniepy.model import GenieModel
+    import cgeniepy
     from cgeniepy.plot import CommunityPalette
     import matplotlib.pyplot as plt
 
-    model = GenieModel("/Users/yingrui/Science/lgm_foram_niche/model/muffin.CBE.worlg4.BASESFeTDTL.SPIN")
-    ocn_po4 = model.get_var("ocn_PO4").isel(time=-1)
+    model = cgeniepy.sample_model()
 
     fig, axs=plt.subplots(nrows=3, ncols=1, figsize=(6,9), tight_layout=True)
 
@@ -89,7 +88,7 @@ The following features in the package are used:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.064 seconds)
+   **Total running time of the script:** (0 minutes 0.552 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_PO4_distribution.py:
@@ -105,6 +104,10 @@ The following features in the package are used:
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_PO4_distribution.py <plot_PO4_distribution.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: plot_PO4_distribution.zip <plot_PO4_distribution.zip>`
 
 
 .. only:: html

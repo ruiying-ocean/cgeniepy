@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_plot_coastal_data.py>`
-        to download the full example code
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -38,8 +38,10 @@ This example shows how to plot the PO4 distribution in each basin.
 
  .. code-block:: none
 
+    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:51: UserWarning: No gemflag is provided, use default gemflags: [biogem]
+      warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
 
-    <matplotlib.collections.QuadMesh object at 0x32aa43ca0>
+    <matplotlib.collections.QuadMesh object at 0x1436b70e0>
 
 
 
@@ -51,18 +53,18 @@ This example shows how to plot the PO4 distribution in each basin.
 
 
     import xarray as xr
-    from cgeniepy.model import GenieModel
+    import cgeniepy
     import numpy as np
 
-    pi_model = GenieModel("/Users/yingrui/Science/lgm_bcp/model/muffin.CB.worlg4.BASESFeTDTL.SPIN", gemflag='biogem')
+    model = cgeniepy.sample_model()
 
-    sst = pi_model.get_var('ocn_sur_temp').isel(time=-1)
+    sst = model.get_var('ocn_sur_temp').isel(time=-1)
 
     ## grid category is a pre-defined 2D data
     ## 0: coastal
     ## 1: land
     ## 2: open ocean
-    gc = pi_model.grid_category()
+    gc = model.grid_category()
 
     ## coastal region
     xr.where(gc == 0, sst.data.values, np.nan).plot()
@@ -70,7 +72,7 @@ This example shows how to plot the PO4 distribution in each basin.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.183 seconds)
+   **Total running time of the script:** (0 minutes 0.072 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_coastal_data.py:
@@ -86,6 +88,10 @@ This example shows how to plot the PO4 distribution in each basin.
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_coastal_data.py <plot_coastal_data.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: plot_coastal_data.zip <plot_coastal_data.zip>`
 
 
 .. only:: html

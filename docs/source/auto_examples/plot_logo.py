@@ -5,12 +5,12 @@ Customise the 2D map projection
 
 This example shows how to customise the 2D map including the projection, the color map, which is used as the logo of this package.
 """
-from cgeniepy.model import GenieModel
+import cgeniepy
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 
 ## Read in the model
-model = GenieModel("/Users/yingrui/Science/lgm_foram_niche/model/muffin.CBE.worlg4.BASESFeTDTL.SPIN")
+model = cgeniepy.sample_model()
 sst = model.get_var("ocn_sur_temp").isel(time=-1)
 
 ## use the Orthographic projection

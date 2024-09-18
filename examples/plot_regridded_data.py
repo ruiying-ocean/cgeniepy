@@ -22,6 +22,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 
+import cgeniepy
 from cgeniepy.table import ScatterData
 from cgeniepy.grid import GridOperation
 from cgeniepy.array import GriddedData

@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_plot_sst_map.py>`
-        to download the full example code
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -38,7 +38,7 @@ Here use the sea surface temperature as an example to plot the 2D global map fro
 
  .. code-block:: none
 
-    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:50: UserWarning: No gemflag is provided, use default gemflags: [biogem]
+    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:51: UserWarning: No gemflag is provided, use default gemflags: [biogem]
       warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
 
 
@@ -51,10 +51,10 @@ Here use the sea surface temperature as an example to plot the 2D global map fro
 .. code-block:: Python
 
 
-    from cgeniepy.model import GenieModel
+    import cgeniepy
     import matplotlib.pyplot as plt
 
-    model = GenieModel("/Users/yingrui/Science/lgm_foram_niche/model/muffin.CBE.worlg4.BASESFeTDTL.SPIN")
+    model = cgeniepy.sample_model()
     sst = model.get_var("ocn_sur_temp").isel(time=-1)
 
     ## start to plot with customised cmap
@@ -67,7 +67,7 @@ Here use the sea surface temperature as an example to plot the 2D global map fro
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.449 seconds)
+   **Total running time of the script:** (0 minutes 0.351 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_sst_map.py:
@@ -83,6 +83,10 @@ Here use the sea surface temperature as an example to plot the 2D global map fro
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_sst_map.py <plot_sst_map.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: plot_sst_map.zip <plot_sst_map.zip>`
 
 
 .. only:: html

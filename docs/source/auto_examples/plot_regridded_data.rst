@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_plot_regridded_data.py>`
-        to download the full example code
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -36,7 +36,7 @@ This example uses many features from the cgeniepy package, including:
 
 #. Compare model and observational data
 
-.. GENERATED FROM PYTHON SOURCE LINES 20-59
+.. GENERATED FROM PYTHON SOURCE LINES 20-60
 
 
 
@@ -50,9 +50,9 @@ This example uses many features from the cgeniepy package, including:
 
  .. code-block:: none
 
-    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:50: UserWarning: No gemflag is provided, use default gemflags: [biogem]
+    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:51: UserWarning: No gemflag is provided, use default gemflags: [biogem]
       warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
-    M-score of sea surface temperature 0.8211028102365528
+    M-score of sea surface temperature 0.8293330621285011
 
 
 
@@ -68,6 +68,7 @@ This example uses many features from the cgeniepy package, including:
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
+    import cgeniepy
     from cgeniepy.table import ScatterData
     from cgeniepy.grid import GridOperation
     from cgeniepy.array import GriddedData
@@ -84,8 +85,8 @@ This example uses many features from the cgeniepy package, including:
     glodap_temp = glodap_temp.to_geniebin(var='temperature').to_xarray()['temperature']
 
     ## This is cGENIE output
-    model = GenieModel("/Users/yingrui/Science/lgm_foram_niche/model/muffin.CBE.worlg4.BASESFeTDTL.SPIN")
-    worlg4_sst = model.get_var('ocn_sur_temp').isel(time=-1).normalise_longitude(method='g2n')
+    model = cgeniepy.sample_model()
+    genie_sst = model.get_var('ocn_sur_temp').isel(time=-1).normalise_longitude(method='g2n')
 
     ## The binned GLODAP data does not consider how land-sea mask is in cGENIE
     ## here just lightly mask the glodap data for better looking
@@ -98,15 +99,15 @@ This example uses many features from the cgeniepy package, including:
     ## plot both data
     fig, axs = plt.subplots(1,2,subplot_kw={"projection": ccrs.Mollweide()})
     masked_glodap_temp.plot(ax=axs[0], outline=True, colorbar=True)
-    worlg4_sst.plot(ax=axs[1], outline=True, colorbar=True)
+    genie_sst.plot(ax=axs[1], outline=True, colorbar=True)
 
     ## calculate the skill score
-    print("M-score of sea surface temperature",ArrComparison(glodap_temp.values, worlg4_sst.data.values).mscore())
+    print("M-score of sea surface temperature",ArrComparison(glodap_temp.values, genie_sst.data.values).mscore())
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.541 seconds)
+   **Total running time of the script:** (0 minutes 1.227 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_regridded_data.py:
@@ -122,6 +123,10 @@ This example uses many features from the cgeniepy package, including:
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_regridded_data.py <plot_regridded_data.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: plot_regridded_data.zip <plot_regridded_data.zip>`
 
 
 .. only:: html

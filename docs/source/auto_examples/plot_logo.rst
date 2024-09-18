@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_plot_logo.py>`
-        to download the full example code
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -38,7 +38,7 @@ This example shows how to customise the 2D map including the projection, the col
 
  .. code-block:: none
 
-    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:50: UserWarning: No gemflag is provided, use default gemflags: [biogem]
+    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:51: UserWarning: No gemflag is provided, use default gemflags: [biogem]
       warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
 
 
@@ -50,12 +50,12 @@ This example shows how to customise the 2D map including the projection, the col
 
 .. code-block:: Python
 
-    from cgeniepy.model import GenieModel
+    import cgeniepy
     import cartopy.crs as ccrs
     import matplotlib.pyplot as plt
 
     ## Read in the model
-    model = GenieModel("/Users/yingrui/Science/lgm_foram_niche/model/muffin.CBE.worlg4.BASESFeTDTL.SPIN")
+    model = cgeniepy.sample_model()
     sst = model.get_var("ocn_sur_temp").isel(time=-1)
 
     ## use the Orthographic projection
@@ -72,7 +72,7 @@ This example shows how to customise the 2D map including the projection, the col
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.249 seconds)
+   **Total running time of the script:** (0 minutes 0.188 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_logo.py:
@@ -88,6 +88,10 @@ This example shows how to customise the 2D map including the projection, the col
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_logo.py <plot_logo.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: plot_logo.zip <plot_logo.zip>`
 
 
 .. only:: html

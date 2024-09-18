@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_plot_pac_sst.py>`
-        to download the full example code
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -38,11 +38,10 @@ Plot the model variable for a spficic basin, here we use sea surface temperature
 
  .. code-block:: none
 
-    <frozen importlib._bootstrap>:241: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
-    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:50: UserWarning: No gemflag is provided, use default gemflags: [biogem]
+    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:51: UserWarning: No gemflag is provided, use default gemflags: [biogem]
       warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
 
-    <cartopy.mpl.geocollection.GeoQuadMesh object at 0x31b32fb80>
+    <cartopy.mpl.geocollection.GeoQuadMesh object at 0x1434f84a0>
 
 
 
@@ -53,9 +52,9 @@ Plot the model variable for a spficic basin, here we use sea surface temperature
 .. code-block:: Python
 
 
-    from cgeniepy.model import GenieModel
+    import cgeniepy
 
-    model = GenieModel("/Users/yingrui/Science/lgm_foram_niche/model/muffin.CBE.worlg4.BASESFeTDTL.SPIN")
+    model = cgeniepy.sample_model()
     sst = model.get_var('ocn_sur_temp').isel(time=-1)
     ## plot the sea surface temperature in the Atlantic Ocean only
     sst.sel_modern_basin(['NAO','EAO','SAO']).plot(outline=True, colorbar=True)
@@ -63,7 +62,7 @@ Plot the model variable for a spficic basin, here we use sea surface temperature
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.364 seconds)
+   **Total running time of the script:** (0 minutes 1.224 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_pac_sst.py:
@@ -79,6 +78,10 @@ Plot the model variable for a spficic basin, here we use sea surface temperature
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_pac_sst.py <plot_pac_sst.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: plot_pac_sst.zip <plot_pac_sst.zip>`
 
 
 .. only:: html

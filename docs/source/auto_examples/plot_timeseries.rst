@@ -11,18 +11,18 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_plot_timeseries.py>`
-        to download the full example code
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
 .. _sphx_glr_auto_examples_plot_timeseries.py:
 
 
-====================
-Plot Time Series
-====================
+==============================================
+Extract and Plot cGENIE Time Series data
+==============================================
 
-This example shows how to read in and plot time series data
+This example shows how to read in and plot cGENIE time series data
 
 .. GENERATED FROM PYTHON SOURCE LINES 8-24
 
@@ -38,11 +38,10 @@ This example shows how to read in and plot time series data
 
  .. code-block:: none
 
-    <frozen importlib._bootstrap>:241: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
-    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:50: UserWarning: No gemflag is provided, use default gemflags: [biogem]
+    /Users/yingrui/cgeniepy/src/cgeniepy/model.py:51: UserWarning: No gemflag is provided, use default gemflags: [biogem]
       warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
 
-    [<matplotlib.lines.Line2D object at 0x31abb0f70>]
+    <matplotlib.collections.PathCollection object at 0x16ce5c860>
 
 
 
@@ -72,7 +71,7 @@ This example shows how to read in and plot time series data
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.450 seconds)
+   **Total running time of the script:** (0 minutes 4.310 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_timeseries.py:
@@ -88,6 +87,10 @@ This example shows how to read in and plot time series data
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_timeseries.py <plot_timeseries.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: plot_timeseries.zip <plot_timeseries.zip>`
 
 
 .. only:: html
