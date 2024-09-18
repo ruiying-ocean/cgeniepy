@@ -38,8 +38,8 @@ glodap_temp = ScatterData(glodap_temp.isel(depth_surface=0).to_dataframe())
 glodap_temp = glodap_temp.to_geniebin(var='temperature').to_xarray()['temperature']
 
 ## This is cGENIE output
-model = GenieModel("/Users/yingrui/Science/lgm_foram_niche/model/muffin.CBE.worlg4.BASESFeTDTL.SPIN")
-worlg4_sst = model.get_var('ocn_sur_temp').isel(time=-1).normalise_longitude(method='g2n')
+model = cgeniepy.sample_model()
+genie_sst = model.get_var('ocn_sur_temp').isel(time=-1).normalise_longitude(method='g2n')
 
 ## The binned GLODAP data does not consider how land-sea mask is in cGENIE
 ## here just lightly mask the glodap data for better looking
@@ -52,7 +52,7 @@ masked_glodap_temp.attrs['units'] = 'deg C'
 ## plot both data
 fig, axs = plt.subplots(1,2,subplot_kw={"projection": ccrs.Mollweide()})
 masked_glodap_temp.plot(ax=axs[0], outline=True, colorbar=True)
-worlg4_sst.plot(ax=axs[1], outline=True, colorbar=True)
+genie_sst.plot(ax=axs[1], outline=True, colorbar=True)
 
 ## calculate the skill score
-print("M-score of sea surface temperature",ArrComparison(glodap_temp.values, worlg4_sst.data.values).mscore())
+print("M-score of sea surface temperature",ArrComparison(glodap_temp.values, genie_sst.data.values).mscore())

@@ -19,12 +19,12 @@ The following features are particularly demonstrated:
 
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
-from cgeniepy.model import GenieModel
+import cgeniepy
 from cgeniepy.plot import CommunityPalette
 
 fig, axs = plt.subplots(2, 2, figsize=(10, 8), subplot_kw={'projection': ccrs.PlateCarree()})
 
-pi_model = GenieModel("/Users/yingrui/Science/lgm_foram_niche/model/muffin.CBE.worlg4.BASESFeTDTL.SPIN", gemflag='biogem')
+pi_model = cgeniepy.sample_model()
 
 variable = ['ocn_sur_temp', 'bio_export_POC', 'ocn_sur_PO4','ocn_sur_O2']
 cmap = ['ocean_temp', 'tol_rainbow', 'WtBuGnYlRd','kovesi_rainbow']
