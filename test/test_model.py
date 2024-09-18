@@ -1,136 +1,17 @@
-from cgeniepy.model import GenieModel
-from importlib.resources import files
+import cgeniepy
 
 def test_model_getvar():
-    model_path = str(files("data").joinpath("muffin.CBE.worlg4.BASESFeTDTL.SPIN"))
-    model = GenieModel(model_path, gemflag=['ecogem'])
-    data= model.get_var('eco2D_Plankton_C_Total').isel(time=-1).mean().data.item()
-    assert data  == 1.690475344657898
+    model = cgeniepy.sample_model()
+    assert model.get_var("ocn_sur_temp").mean().data.values.item() == 18.055744171142578
+    
+def test_eco_pft():
+    model = cgeniepy.sample_model(model_type='EcoModel',gemflag=['ecogem'])
+    ## 1st PFT
+    data = model.get_pft(1).isel(time=-1).mean().data.values.item()
+    assert data  == 0.12259095907211304
 
-def tets_model_ncvardict():
-    model_path = str(files("data").joinpath("muffin.CBE.worlg4.BASESFeTDTL.SPIN"))
-    model = GenieModel(model_path, gemflag=['ecogem'])
-
-    data = model._ncvar_dict
-    baseline = {'./muffin.CBE.worlg4.BASESFeTDTL.SPIN/ecogem/fields_ecogem_2d.nc': ['time',
-    'year',
-    'lon',
-    'lat',
-    'zt',
-    'lon_edges',
-    'lat_edges',
-    'zt_edges',
-    'grid_level',
-    'grid_mask',
-    'grid_topo',
-    'eco2D_Plankton_C_001',
-    'eco2D_Plankton_C_002',
-    'eco2D_Plankton_C_003',
-    'eco2D_Plankton_C_004',
-    'eco2D_Plankton_C_005',
-    'eco2D_Plankton_C_006',
-    'eco2D_Plankton_C_007',
-    'eco2D_Plankton_C_008',
-    'eco2D_Plankton_C_009',
-    'eco2D_Plankton_C_010',
-    'eco2D_Plankton_C_011',
-    'eco2D_Plankton_C_012',
-    'eco2D_Plankton_C_013',
-    'eco2D_Plankton_C_014',
-    'eco2D_Plankton_C_015',
-    'eco2D_Plankton_C_016',
-    'eco2D_Plankton_C_017',
-    'eco2D_Plankton_C_018',
-    'eco2D_Plankton_C_019',
-    'eco2D_Plankton_C_Total',
-    'eco2D_Uptake_Fluxes_C',
-    'eco2D_Plankton_P_001',
-    'eco2D_xGamma_P_001',
-    'eco2D_Plankton_P_002',
-    'eco2D_xGamma_P_002',
-    'eco2D_Plankton_P_003',
-    'eco2D_xGamma_P_003',
-    'eco2D_Plankton_P_004',
-    'eco2D_xGamma_P_004',
-    'eco2D_Plankton_P_005',
-    'eco2D_xGamma_P_005',
-    'eco2D_Plankton_P_006',
-    'eco2D_xGamma_P_006',
-    'eco2D_Plankton_P_007',
-    'eco2D_xGamma_P_007',
-    'eco2D_Plankton_P_008',
-    'eco2D_xGamma_P_008',
-    'eco2D_Plankton_P_009',
-    'eco2D_Plankton_P_010',
-    'eco2D_Plankton_P_011',
-    'eco2D_Plankton_P_012',
-    'eco2D_Plankton_P_013',
-    'eco2D_Plankton_P_014',
-    'eco2D_Plankton_P_015',
-    'eco2D_Plankton_P_016',
-    'eco2D_Plankton_P_017',
-    'eco2D_Plankton_P_018',
-    'eco2D_xGamma_P_018',
-    'eco2D_Plankton_P_019',
-    'eco2D_xGamma_P_019',
-    'eco2D_Plankton_P_Total',
-    'eco2D_Uptake_Fluxes_P',
-    'eco2D_Plankton_Fe_001',
-    'eco2D_xGamma_Fe_001',
-    'eco2D_Plankton_Fe_002',
-    'eco2D_xGamma_Fe_002',
-    'eco2D_Plankton_Fe_003',
-    'eco2D_xGamma_Fe_003',
-    'eco2D_Plankton_Fe_004',
-    'eco2D_xGamma_Fe_004',
-    'eco2D_Plankton_Fe_005',
-    'eco2D_xGamma_Fe_005',
-    'eco2D_Plankton_Fe_006',
-    'eco2D_xGamma_Fe_006',
-    'eco2D_Plankton_Fe_007',
-    'eco2D_xGamma_Fe_007',
-    'eco2D_Plankton_Fe_008',
-    'eco2D_xGamma_Fe_008',
-    'eco2D_Plankton_Fe_009',
-    'eco2D_Plankton_Fe_010',
-    'eco2D_Plankton_Fe_011',
-    'eco2D_Plankton_Fe_012',
-    'eco2D_Plankton_Fe_013',
-    'eco2D_Plankton_Fe_014',
-    'eco2D_Plankton_Fe_015',
-    'eco2D_Plankton_Fe_016',
-    'eco2D_Plankton_Fe_017',
-    'eco2D_Plankton_Fe_018',
-    'eco2D_xGamma_Fe_018',
-    'eco2D_Plankton_Fe_019',
-    'eco2D_xGamma_Fe_019',
-    'eco2D_Plankton_Fe_Total',
-    'eco2D_Uptake_Fluxes_Fe',
-    'eco2D_Plankton_Chl_001',
-    'eco2D_Plankton_Chl_002',
-    'eco2D_Plankton_Chl_003',
-    'eco2D_Plankton_Chl_004',
-    'eco2D_Plankton_Chl_005',
-    'eco2D_Plankton_Chl_006',
-    'eco2D_Plankton_Chl_007',
-    'eco2D_Plankton_Chl_008',
-    'eco2D_Plankton_Chl_018',
-    'eco2D_Plankton_Chl_019',
-    'eco2D_Plankton_Chl_Total',
-    'eco2D_xGamma_T',
-    'eco2D_Nutrients_DIC',
-    'eco2D_Nutrients_PO4',
-    'eco2D_Nutrients_Fe',
-    'eco2D_Size_Mean',
-    'eco2D_Size_Stdev',
-    'eco2D_Size_Minimum',
-    'eco2D_Size_Maximum',
-    'eco2D_Diversity_Threshold',
-    'eco2D_Diversity_Shannon',
-    'eco2D_Diversity_Simpson',
-    'eco2D_Diversity_Berger',
-    'eco2D_Size_Frac_Pico_Chl',
-    'eco2D_Size_Frac_Nano_Chl',
-    'eco2D_Size_Frac_Micro_Chl']}
-    assert data == baseline
-        
+def test_eco_multipft():
+    model = cgeniepy.sample_model(model_type='EcoModel',gemflag=['ecogem'])
+    ## 1st and 2nd PFT
+    data = model.get_pft([1,2]).isel(time=-1).sum(dim='variable').mean().data.values.item()
+    assert data  == 0.16739805042743683

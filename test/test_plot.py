@@ -1,34 +1,27 @@
-from cgeniepy.array import GriddedData
-import numpy as np
-import xarray as xr
-import cartopy.crs as ccrs
 from matplotlib.testing.decorators import image_comparison
-import matplotlib.pyplot as plt
 from cgeniepy.table import ScatterData
 from importlib.resources import files
+import cgeniepy
+import matplotlib.pyplot as plt
+import cartopy.crs as ccrs
 
-
-def create_testdata():
-    lat = np.linspace(-89.5,89.5,180)
-    lon = np.linspace(0,359,360)
-    np.random.seed(12349)
-    data = np.random.rand(lat.size,lon.size)
-    xdata = xr.DataArray(data, coords=[('lat',lat),('lon',lon)],
-                         attrs={'long_name':'random data', 'units':'uniteless'})   
-    return GriddedData(xdata,False, attrs=xdata.attrs)
+def create_sample_data():
+    model = cgeniepy.sample_model()
+    return model.get_var('ocn_sur_temp').isel(time=-1)
 
 @image_comparison(baseline_images=['test_map'], remove_text=True,
                   extensions=['png'], style='mpl20')
-def test_map():
-    data = create_testdata()
+def test_map():    
     fig, ax = plt.subplots(subplot_kw={'projection': ccrs.Mollweide()})
+    data = create_sample_data()
     data.plot(ax=ax)
+    
     return fig
 
 @image_comparison(baseline_images=['test_line'], remove_text=True,
                   extensions=['png'], style='mpl20')
 def test_line():
-    data = create_testdata()
+    data = create_sample_data()
     fig, ax = plt.subplots()
     data.mean(dim='lon').plot(ax=ax)
     return fig
