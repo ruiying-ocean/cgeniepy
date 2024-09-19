@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_plot_scatter_map.py>`
-        to download the full example code
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -24,7 +24,7 @@ Plot the 2D ScatterData
 
 This example shows how to plot the 2D ScatterData object. I use a LGM d13C data from Peterson et al. 2014 (https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2013PA002552) as an example.
 
-.. GENERATED FROM PYTHON SOURCE LINES 8-20
+.. GENERATED FROM PYTHON SOURCE LINES 8-25
 
 
 
@@ -38,7 +38,8 @@ This example shows how to plot the 2D ScatterData object. I use a LGM d13C data 
 
  .. code-block:: none
 
-    <frozen importlib._bootstrap>:241: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
+    /Users/yingrui/cgeniepy/src/cgeniepy/plot.py:543: UserWarning: kind is not used for map plotting
+      warnings.warn("kind is not used for map plotting")
 
 
 
@@ -53,8 +54,13 @@ This example shows how to plot the 2D ScatterData object. I use a LGM d13C data 
     from cgeniepy.table import ScatterData
     from cgeniepy.plot import CommunityPalette
     import matplotlib.pyplot as plt
+    import subprocess
 
-    proxy_d13C = ScatterData("~/Science/lgm_bcp/data/LGM_d13c_CLEAN.txt", delimiter="\t", header=None)
+    ## Download necessary files, you need to install zenodo_get first
+    ## by `pip install zenodo_get`, or, just download it from the link above
+    subprocess.call(["zenodo_get", "10.5281/zenodo.13786013", "-o", "~/Downloads/"])
+
+    proxy_d13C = ScatterData("~/Downloads/LGM_d13c_CLEAN.txt", delimiter="\t", header=None)
     proxy_d13C.data.columns = ["Longitude", "Latitude", "Depth", "d13C","Event"]
     proxy_d13C.set_index(["Latitude", "Longitude"])
     cmap = CommunityPalette("BuDaRd18").colormap
@@ -65,7 +71,7 @@ This example shows how to plot the 2D ScatterData object. I use a LGM d13C data 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.369 seconds)
+   **Total running time of the script:** (0 minutes 4.752 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_scatter_map.py:
@@ -81,6 +87,10 @@ This example shows how to plot the 2D ScatterData object. I use a LGM d13C data 
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_scatter_map.py <plot_scatter_map.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: plot_scatter_map.zip <plot_scatter_map.zip>`
 
 
 .. only:: html
