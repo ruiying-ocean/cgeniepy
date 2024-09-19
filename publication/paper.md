@@ -18,7 +18,7 @@ affiliations:
  - name: School of Earth Sciences, University of Bristol, UK
    index: 1  
 
-date: 17 August 2024
+date: 19 Sep 2024
 bibliography: paper.bib
 ---
 
@@ -27,7 +27,7 @@ bibliography: paper.bib
 cGENIE is an numerical model that simulates the Earth system (e.g., atmosphere, ocean, land, biosphere, ice sheet, and their interactions) in different geological ages [@ridgwell2007]. It has been widely used in studying and reconstructing the past ocean and climate states. Here, I provide a Python package *cgeniepy* for reading, analysing, and visualising the cGENIE model output, and performing the model-data comparison. The package is designed to facilitate the post-simulation analysis for all cGENIE users, as used in my recent studies [@ying2023;@ying2023b]. The package is designed as object-oriented, thus many features are standalone and can be used without cGENIE background.
 
 # Statement of need
-Earth System Models are the essential tool used to study the mechanism regulating the complex climate and their impacts. cGENIE is such a model with reduced model complexity and enhanced running speed that strengthen its application in paleoceanography studies. For instance, @henehan2019 used the model to study the impact of an extreme climatic event (Cretaceous-Paleogene massive extinction in 66 Million years ago). @pohl2022 used it to study the long-term evolution of ocean oxygen in the past 550 million years. The application of this model has provided invaluable implication to study the evolution of climate and life.
+Earth System Models are the essential tool used to study the mechanism regulating the complex climate and their impacts. cGENIE is such a model with intermediate model complexity that strengthens its application in paleoceanography studies. For instance, @henehan2019 used the model to study the impact of an extreme climatic event (Cretaceous-Paleogene massive extinction in 66 Million years ago). @pohl2022 used it to study the long-term evolution of ocean oxygen in the past 550 million years. The application of this model has promoted our understanding of climate change in the geological past.
 
 Despite the power of cGENIE, the analysis of its model output has relied on a collection of MATLAB scripts developed by the cGENIE maintainer (https://github.com/derpycode/muffinplot). A systematic package has been long missing. Such gap might hamper the efficiency of the research, in particular for users who are not familiar with MATLAB or need to perform customised analysis (e.g., model ensemble based analysis). 
 
@@ -58,7 +58,7 @@ The following codes will be mostly used by the cGENIE users. It initialises the 
 from cgeniepy.model import GenieModel
 
 ## initialise a model instance bu providing the path to the model output
-model = GenieModel("/Users/foo/Downloads/model_experiment_id")
+model = GenieModel("/Users/foo/model_experiment_id")
 
 ## get the time-slice variable
 ocn_sst = model.get_var("ocn_surf_temp")
@@ -70,19 +70,23 @@ ocn_sst.isel(time=-1).plot()
 
 ## Model-data comparison
 
-In this example, I read the carbon isotope data from the Last Glacial Maximum (21 ka) model, the corresponding data compilation from @peterson2014. Then I find the model data for each core location and add it to the dataframe. Finally, I conduct the model-data comparison and plot the 1:1 lineplot (\autoref{fig:2}). Multiple metrics are calculated and showed in the figure (\autoref{fig:2}).
+In this example, I read the carbon isotope data from the Last Glacial Maximum (21 ka) model, the corresponding data compilation from @peterson2014. Then I find the model data for each core location and add it to the dataframe. Finally, I conduct the model-data comparison and plot the 1:1 lineplot (\autoref{fig:2}). Multiple metrics are calculated and shown in the figure (\autoref{fig:2}).
 
 ```python
 from cgeniepy.model import GenieModel
 from cgeniepy.table import ScatterData
 
+## The example model and data are archived in
+## https://zenodo.org/records/13786013 and
+## https://zenodo.org/records/8189647
+
 ## initialise a model instance
-lgm_model = GenieModel("/Users/yingrui/Science/lgm_foram_niche/model/muffin.CBE.GIteiiva.BASESFeTDTL_rb.SPIN", gemflag='biogem')
+lgm_model = GenieModel("path/to/the/model/")
 ## get the variable and select the last time slice of the spin-up model
 lgm_d13C = lgm_model.get_var("ocn_DIC_13C").isel(time=-1)
 
 ## read in the proxy data and construct ScatterData object
-proxy_d13C = ScatterData("~/Science/lgm_bcp/data/lgm_d13C.xlsx")
+proxy_d13C = ScatterData("path/to/the/data")
 proxy_d13C.set_index(["Lat", "Lon", "Depth"])
 
 ## find the model data for each core location
