@@ -5,6 +5,8 @@ from shapely.geometry import Point
 import pandas as pd
 
 from io import StringIO
+import re
+from typing import Union
 
 from cgeniepy.grid import Interpolator, GridOperation
 
@@ -12,40 +14,63 @@ from cgeniepy.plot import ScatterDataVis
 from cgeniepy.grid import GridOperation
 import cgeniepy.array as ca
 from importlib.resources import files
-    
+
 
 class ScatterData:
-    """ScatterData is a class to store non-gridded data with columns of coordinates.
-    """
+    """ScatterData is a class to store non-gridded data with columns of coordinates."""
 
-    def __init__(self, data, mutable=False, *args, **kwargs):
+    def __init__(self, data: Union[pd.DataFrame, int, str], mutable: bool = False, **kwargs):
         """
         Initialize a ScatterData object.
 
         Parameters:
-        data: The path to the file or the data.
-        coord_cols (dict): A dictionary specifying the coordinate columns.
+        data: The path to the file, the data, or a PanDataSet ID.
+        mutable: Whether the data is mutable.
+        **kwargs: Additional keyword arguments for pandas read functions.
         """
-        ## if already a dataframe
-        if isinstance(data, pd.DataFrame):
-            self.data = data
-
         self.mutable = mutable
+        self.data = self._process_data(data, **kwargs)
 
-        ## if a file path then read the file into a dataframe
-        if isinstance(data, str):
-            if data.endswith(".tab"):
-                data = self._parse_tab_file(data)
-                self.data= pd.read_csv(StringIO(data), *args, **kwargs)
-            elif data.endswith("xlsx"):
-                self.data = pd.read_excel(data, *args, **kwargs)                
-            else:
-                self.data = pd.read_csv(data, *args, **kwargs)
-
-        ## if the index is already set in the data, then set the coordinates
+        # if the index is already set in the data, then set the coordinates
         if not isinstance(self.data.index, pd.core.indexes.range.RangeIndex):
             self.index= list(self.data.index.names)
             GridOperation().set_coordinates(obj=self, index=self.index)
+
+    def _process_data(self, data: Union[pd.DataFrame, int, str], **kwargs) -> pd.DataFrame:
+        if isinstance(data, pd.DataFrame):
+            return data
+        if isinstance(data, int):
+            try:
+                from pangaeapy.pandataset import PanDataSet
+                return PanDataSet(data).data
+            except ImportError:
+                print("Unable to import PanDataSet from pangaeapy. Please make sure the package is installed.")                            
+        if isinstance(data, str):
+            return self._process_string_data(data, **kwargs)
+        raise ValueError("Unsupported data type. Expected DataFrame, int, or str.")
+
+    def _process_string_data(self, data: str, **kwargs) -> pd.DataFrame:
+        if data.endswith(".tab"):
+            return pd.read_csv(StringIO(self._parse_tab_file(data)), **kwargs)
+        if data.endswith(".xlsx"):
+            return pd.read_excel(data, **kwargs)
+        if "PANGAEA" in data:
+            try:
+                from pangaeapy.pandataset import PanDataSet
+            except ImportError:
+                print("Unable to import PanDataSet from pangaeapy. Please make sure the package is installed.")   
+
+            doi = self._extract_doi(data)
+            return PanDataSet(doi).data
+        return pd.read_csv(data, **kwargs)
+
+    @staticmethod
+    def _extract_doi(url: str) -> str:
+        doi_pattern = r"10\.\d{4,9}/[-._;()/:A-Z0-9]+"
+        doi_match = re.search(doi_pattern, url, re.IGNORECASE)
+        if doi_match:
+            return doi_match.group(0)
+        raise ValueError("No valid DOI found in the URL.")
 
     def __repr__(self):
         prefix = "ScatterData\n"
@@ -57,22 +82,6 @@ class ScatterData:
             index = ""
 
         return prefix + columns + index + rows
-
-
-    def set_index(self, index):
-        """Tell the object which columns are the coordinates.        
-        """
-        self.data.set_index(index, inplace=True)
-        self.index= index
-        GridOperation().set_coordinates(obj=self, index=self.index)
-
-
-    def reset_index(self):
-        if self.mutable:
-            self.data = self.data.reset_index()
-            return self
-        else:
-            return self.data.reset_index()
 
     def _parse_tab_file(self, filename, begin_cmt = '/*', end_cmt = '*/'):
         """
@@ -101,7 +110,7 @@ class ScatterData:
                     lines.append(line.rstrip('\n'))
 
         data = '\n'.join(lines)
-        return data
+        return data    
 
     def __getitem__(self, item):
         return self.data[item]
@@ -118,6 +127,22 @@ class ScatterData:
             if col not in self.data.columns:
                 raise ValueError(f"{col} not found in the dataframe")
 
+
+    def set_index(self, index):
+        """Tell the object which columns are the coordinates.        
+        """
+        self.data.set_index(index, inplace=True)
+        self.index= index
+        GridOperation().set_coordinates(obj=self, index=self.index)
+
+
+    def reset_index(self):
+        if self.mutable:
+            self.data = self.data.reset_index()
+            return self
+        else:
+            return self.data.reset_index()
+        
     def detect_basin(self):
         """use point-in-polygon strategy to detect modern ocean basin according to lon/lat column
 
