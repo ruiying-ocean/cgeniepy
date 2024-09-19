@@ -78,7 +78,7 @@ The GLODAPV2 data is from https://glodap.info/index.php/mapped-data-product/.
     from cgeniepy.skill import ArrComparison
 
     ## load GLODAP temperature data
-    glodap_temp = xr.load_dataset("/Users/yingrui/Science/GLODAPv2.2016b_MappedClimatologies/GLODAPv2.2016b.temperature.nc")['temperature']
+    glodap_temp = xr.load_dataset("~/cgeniepy/examples/GLODAPv2.2016b.temperature.nc")['temperature']
     ## convert to normal longitude from eastern longitude
     glodap_temp = GridOperation().xr_e2n(glodap_temp)
     ## convert to ScatterData
@@ -109,7 +109,7 @@ The GLODAPV2 data is from https://glodap.info/index.php/mapped-data-product/.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.275 seconds)
+   **Total running time of the script:** (0 minutes 2.471 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_regridded_data.py:

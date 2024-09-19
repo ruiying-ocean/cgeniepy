@@ -100,6 +100,23 @@ Below is a gallery of examples
 
 .. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to read in and plot cGENIE time series data.">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_timeseries_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_timeseries.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Extract and Plot cGENIE Time Series data</div>
+    </div>
+
+
+.. raw:: html
+
     <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to customise the 2D map including the projection, the color map, which is used as the logo of this package.">
 
 .. only:: html
@@ -117,18 +134,18 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to read in and plot cGENIE time series data. The example historical run (1750-2022) is available from https://zenodo.org/records/10575295.">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to plot the 1D ScatterData object. I use a CO2 data file from the Antarctic EDC ice core (https://doi.pangaea.de/10.1594/PANGAEA.472488) as an example.">
 
 .. only:: html
 
-  .. image:: /auto_examples/images/thumb/sphx_glr_plot_timeseries_thumb.png
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_scatterdata_thumb.png
     :alt:
 
-  :ref:`sphx_glr_auto_examples_plot_timeseries.py`
+  :ref:`sphx_glr_auto_examples_plot_scatterdata.py`
 
 .. raw:: html
 
-      <div class="sphx-glr-thumbnail-title">Extract and Plot cGENIE Time Series data</div>
+      <div class="sphx-glr-thumbnail-title">Plot the 1D ScatterData</div>
     </div>
 
 
@@ -185,23 +202,6 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to plot the 1D ScatterData object. I use a CO2 data file from the Antarctic EDC ice core (https://doi.pangaea.de/10.1594/PANGAEA.472488) as an example.">
-
-.. only:: html
-
-  .. image:: /auto_examples/images/thumb/sphx_glr_plot_scatterdata_thumb.png
-    :alt:
-
-  :ref:`sphx_glr_auto_examples_plot_scatterdata.py`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">Plot the 1D ScatterData</div>
-    </div>
-
-
-.. raw:: html
-
     <div class="sphx-glr-thumbcontainer" tooltip="I created a class called CommunityPalette for accessing those pretty color palettes that are widely seen in oceanography but not directly available in Python. This can be from Ocean Data View (ODV), NCL, Ferret, etc.">
 
 .. only:: html
@@ -236,7 +236,7 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example is a combination of ScatterData and GriddedData to search the nearest grid point for a given location. I use CESM model output(You can download them from https://zenodo.org/records/13786014) and LGM d13C data from Peterson et al. 2014 (https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2013PA002552) as an example.">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example is a combination of ScatterData and GriddedData to search the nearest grid point for a given location. I use CESM model output(You can download them from https://zenodo.org/records/13786013) and LGM d13C data from Peterson et al. 2014 (https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2013PA002552) as an example.">
 
 .. only:: html
 
@@ -283,12 +283,12 @@ Below is a gallery of examples
    /auto_examples/plot_coastal_data
    /auto_examples/plot_sst_map
    /auto_examples/plot_scatter_map
-   /auto_examples/plot_logo
    /auto_examples/plot_timeseries
+   /auto_examples/plot_logo
+   /auto_examples/plot_scatterdata
    /auto_examples/plot_PO4_distribution
    /auto_examples/plot_multiple_vars
    /auto_examples/plot_taylor_diagram
-   /auto_examples/plot_scatterdata
    /auto_examples/plot_additional_cmap
    /auto_examples/plot_other_models
    /auto_examples/plot_d13C_comp

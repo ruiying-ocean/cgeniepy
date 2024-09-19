@@ -25,7 +25,7 @@ Plot Other Models' output
 This example shows how to use cgeniepy to plot gridded data from other models (CESM and HadCM3 here).
 You can download them from https://zenodo.org/records/13786014.
 
-.. GENERATED FROM PYTHON SOURCE LINES 9-36
+.. GENERATED FROM PYTHON SOURCE LINES 9-41
 
 
 
@@ -40,7 +40,7 @@ You can download them from https://zenodo.org/records/13786014.
  .. code-block:: none
 
 
-    <matplotlib.colorbar.Colorbar object at 0x1612946b0>
+    <matplotlib.colorbar.Colorbar object at 0x163fe75f0>
 
 
 
@@ -54,14 +54,19 @@ You can download them from https://zenodo.org/records/13786014.
     import xarray as xr
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
+    import subprocess
+
+    ## Download necessary files, you need to install zenodo_get first
+    ## by `pip install zenodo_get`, or, just download it from the link above
+    subprocess.call(["zenodo_get", "10.5281/zenodo.13786013", "-o", "~/Downloads/"])
 
     ## read in the data
-    cesm_lgm = xr.load_dataset("/Users/yingrui/cgeniepy/examples/CESM_LGM_var_regrid.nc")
+    cesm_lgm = xr.load_dataset("~/Downloads/CESM_LGM_var_regrid.nc")
     ## construct GriddedData object
     cesm_temp = GriddedData(cesm_lgm['TEMP'], mutable=False, attrs=cesm_lgm['TEMP'].attrs)
 
     ## same for HadCM3L
-    hadcm3_lgm=  xr.load_dataset("/Users/yingrui/cgeniepy/examples/teitu_020_o.pgclann.nc", decode_times=False)
+    hadcm3_lgm=  xr.load_dataset("~/Downloads/teitu_020_o.pgclann.nc", decode_times=False)
     hadcm3_temp = GriddedData(hadcm3_lgm['temp_ym_dpth'], mutable=False, attrs=hadcm3_lgm['temp_ym_dpth'].attrs)
 
     fig, axs = plt.subplots(1, 2, figsize=(10, 5), subplot_kw={'projection': ccrs.Robinson()})
@@ -81,7 +86,7 @@ You can download them from https://zenodo.org/records/13786014.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 4.552 seconds)
+   **Total running time of the script:** (0 minutes 6.258 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_other_models.py:

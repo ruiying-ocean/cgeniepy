@@ -32,7 +32,7 @@ from cgeniepy.model import GenieModel
 from cgeniepy.skill import ArrComparison
 
 ## load GLODAP temperature data
-glodap_temp = xr.load_dataset("/Users/yingrui/Science/GLODAPv2.2016b_MappedClimatologies/GLODAPv2.2016b.temperature.nc")['temperature']
+glodap_temp = xr.load_dataset("~/cgeniepy/examples/GLODAPv2.2016b.temperature.nc")['temperature']
 ## convert to normal longitude from eastern longitude
 glodap_temp = GridOperation().xr_e2n(glodap_temp)
 ## convert to ScatterData

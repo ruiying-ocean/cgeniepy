@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:37.010** total execution time for 15 files **from auto_examples**:
+**00:31.225** total execution time for 15 files **from auto_examples**:
 
 .. container::
 
@@ -33,10 +33,7 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_auto_examples_plot_d13C_comp.py` (``plot_d13C_comp.py``)
-     - 00:32.458
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_plot_other_models.py` (``plot_other_models.py``)
-     - 00:04.552
+     - 00:31.225
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_PO4_distribution.py` (``plot_PO4_distribution.py``)
      - 00:00.000
@@ -54,6 +51,9 @@ Computation times
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_multiple_vars.py` (``plot_multiple_vars.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_other_models.py` (``plot_other_models.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_pac_sst.py` (``plot_pac_sst.py``)

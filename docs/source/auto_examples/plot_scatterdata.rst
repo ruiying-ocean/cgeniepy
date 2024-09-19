@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_plot_scatterdata.py>`
-        to download the full example code
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -34,7 +34,7 @@ The following features are used:
 
 #. Plot the rolling averaged data
 
-.. GENERATED FROM PYTHON SOURCE LINES 18-46
+.. GENERATED FROM PYTHON SOURCE LINES 18-42
 
 
 
@@ -48,7 +48,26 @@ The following features are used:
 
  .. code-block:: none
 
-    <frozen importlib._bootstrap>:241: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
+    /Users/yingrui/miniforge3/lib/python3.12/site-packages/pangaeapy/pandataset.py:1025: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '1993-01-01T00:00:00' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+      self.data.loc[(self.data['Event']== pevent.label) & (self.data['Date/Time'].isnull()),['Date/Time']]=str(self.events[iev].datetime)
+    /Users/yingrui/miniforge3/lib/python3.12/site-packages/pangaeapy/pandataset.py:1086: FutureWarning: Downcasting behavior in `replace` is deprecated and will be removed in a future version. To retain the old behavior, explicitly call `result.infer_objects(copy=False)`. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+      tmp_qc_series.replace(to_replace=self.quality_flag_replace, inplace=True)
+    /Users/yingrui/miniforge3/lib/python3.12/site-packages/pangaeapy/pandataset.py:1086: FutureWarning: Downcasting behavior in `replace` is deprecated and will be removed in a future version. To retain the old behavior, explicitly call `result.infer_objects(copy=False)`. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+      tmp_qc_series.replace(to_replace=self.quality_flag_replace, inplace=True)
+    /Users/yingrui/miniforge3/lib/python3.12/site-packages/pangaeapy/pandataset.py:1086: FutureWarning: Downcasting behavior in `replace` is deprecated and will be removed in a future version. To retain the old behavior, explicitly call `result.infer_objects(copy=False)`. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+      tmp_qc_series.replace(to_replace=self.quality_flag_replace, inplace=True)
+    /Users/yingrui/miniforge3/lib/python3.12/site-packages/pangaeapy/pandataset.py:1086: FutureWarning: Downcasting behavior in `replace` is deprecated and will be removed in a future version. To retain the old behavior, explicitly call `result.infer_objects(copy=False)`. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+      tmp_qc_series.replace(to_replace=self.quality_flag_replace, inplace=True)
+    /Users/yingrui/miniforge3/lib/python3.12/site-packages/pangaeapy/pandataset.py:1086: FutureWarning: Downcasting behavior in `replace` is deprecated and will be removed in a future version. To retain the old behavior, explicitly call `result.infer_objects(copy=False)`. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+      tmp_qc_series.replace(to_replace=self.quality_flag_replace, inplace=True)
+    /Users/yingrui/miniforge3/lib/python3.12/site-packages/pangaeapy/pandataset.py:1086: FutureWarning: Downcasting behavior in `replace` is deprecated and will be removed in a future version. To retain the old behavior, explicitly call `result.infer_objects(copy=False)`. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+      tmp_qc_series.replace(to_replace=self.quality_flag_replace, inplace=True)
+    /Users/yingrui/miniforge3/lib/python3.12/site-packages/pangaeapy/pandataset.py:1086: FutureWarning: Downcasting behavior in `replace` is deprecated and will be removed in a future version. To retain the old behavior, explicitly call `result.infer_objects(copy=False)`. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+      tmp_qc_series.replace(to_replace=self.quality_flag_replace, inplace=True)
+    /Users/yingrui/miniforge3/lib/python3.12/site-packages/pangaeapy/pandataset.py:1086: FutureWarning: Downcasting behavior in `replace` is deprecated and will be removed in a future version. To retain the old behavior, explicitly call `result.infer_objects(copy=False)`. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+      tmp_qc_series.replace(to_replace=self.quality_flag_replace, inplace=True)
+    /Users/yingrui/miniforge3/lib/python3.12/site-packages/pangaeapy/pandataset.py:1046: FutureWarning: errors='ignore' is deprecated and will raise in a future version. Use to_numeric without passing `errors` and catch exceptions explicitly instead
+      self.data = self.data.apply(pd.to_numeric, errors='ignore')
 
 
 
@@ -64,26 +83,22 @@ The following features are used:
     import matplotlib.pyplot as plt
 
     # Load data
-    edc_co2 = ScatterData("/Users/yingrui/cgeniepy/src/data/EDC_CO2.tab", sep='\t')
-    edc_co2.set_index(['Age [ka BP]'])
+    url = "https://doi.pangaea.de/10.1594/PANGAEA.472488"
+    edc_co2 = ScatterData(url)
+    edc_co2.set_index(['Gas age'])
 
     fig = plt.figure(figsize=(5, 4))
     ax = fig.add_subplot(111)
 
     # Plot the raw data
-    edc_co2.plot(var='CO2 [ppmv]', ax=ax, 
+    edc_co2.plot(var='CO2', ax=ax, 
             label='Raw Data', kind='scatter',
             edgecolor='black', facecolor='none', marker='o')
 
     # # Plot the interpolated data (based on cubic spline interpolation)
-    interpolated_data = edc_co2.interpolate(var='CO2 [ppmv]')
+    interpolated_data = edc_co2.interpolate(var='CO2')
     interpolated_data = ScatterData(interpolated_data)
-    interpolated_data.plot(var='CO2 [ppmv]', ax=ax, label='Interpolated', kind='line')
-
-    # # Use rolling mean to smooth the data
-    smoothed_data = edc_co2.rolling(window=2).mean()
-    smoothed_data = ScatterData(smoothed_data)
-    smoothed_data.plot(var='CO2 [ppmv]', ax=ax, label='Smoothed', kind='line')
+    interpolated_data.plot(var='CO2', ax=ax, label='Interpolated', kind='line')
 
     ax.legend()
     plt.show()
@@ -91,7 +106,7 @@ The following features are used:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.838 seconds)
+   **Total running time of the script:** (0 minutes 1.258 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_scatterdata.py:
@@ -107,6 +122,10 @@ The following features are used:
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_scatterdata.py <plot_scatterdata.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: plot_scatterdata.zip <plot_scatterdata.zip>`
 
 
 .. only:: html
