@@ -29,6 +29,12 @@ python3 -m pip install cgeniepy
 python3 -m pip install git+https://github.com/ruiying-ocean/cgeniepy.git@master
 ```
 
+3. Install extra dependency
+```bash
+python3 -m pip install "cgeniepy[extra]"
+```
+
+
 ## Quickstart
 I have uploaded a sample model run, which is a preindustrial spinup configuration with marine ecosystem and biogeochemistry enabled.
 
