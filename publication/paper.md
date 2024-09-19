@@ -41,9 +41,9 @@ Once the data classes are initialised (read from GENIE model or not), the users 
 
 Another common demand for Earth system model users is the model-data comparison. Thus, I provided a `skill` module to conduct the skill score calculation including the correlation coefficient, root mean square error, and the Taylor diagram (see the Examples).
 
-For cGENIE model specifically, its coarse model output can be interpolated using the  `Interpolator` class (\autoref{fig:0}). This is a wrapper of the `scipy.interpolate` subpackage and its purpose is to help increase the grid resolution and create prettier figure. However, a long-term goal is to incorporate more advanced interpolation methods (e.g., the DIVA method) to make cGENIE model output more comparable to the high-resolution model/observational results.
+For cGENIE model specifically, its coarse model output can be interpolated using the  `Interpolator` class (\autoref{fig:0}). This is a wrapper of the `scipy.interpolate` subpackage and its purpose is to help increase the grid resolution and create prettier figures. However, a long-term goal is to incorporate more advanced interpolation methods (e.g., the DIVA method) to make cGENIE model output more comparable to the high-resolution model/observational results.
 
-![A schematic figure showing the structure of `cgeniepy` package and its functionalities. It helps users to access the model output and operate the visualisation and analysis including interpolation, model-data comparison. \label{fig:0}](fig0.png){width=65%}
+![A schematic figure showing the structure of the `cgeniepy` package and its functionalities. `cgeniepy` helps users to access the model output and operate the visualisation and analysis, including interpolation and model-data comparison. \label{fig:0}](fig0.png){width=65%}
 
 # Examples
 
@@ -51,7 +51,7 @@ In this section, I provide two examples to show the core functionalities of `cge
 
 ## Access, analyse and visualise the cGENIE model output
 
-The following codes will be mostly used by the cGENIE users. It initialises the cGENIE model instance, read the sea surface temperature data, and plot the last time slice as map. The data is adapted from @ying2023b and @gutjahr2017 (\autoref{fig:1}). The users can easily change the variable name to access other model output.
+The following code example will be mostly used by the cGENIE users. It initialises the cGENIE model instance, read the sea surface temperature data, and plot the last time slice as map. The data is adapted from @ying2023b and @gutjahr2017 (\autoref{fig:1}). The users can easily change the variable name to access other model outputs.
 
 ```python
 ## import the package
