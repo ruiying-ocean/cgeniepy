@@ -27,11 +27,11 @@ bibliography: paper.bib
 cGENIE is an numerical model that simulates the Earth system (e.g., atmosphere, ocean, land, biosphere, ice sheet, and their interactions) in different geological ages [@ridgwell2007]. It has been widely used in studying and reconstructing the past ocean and climate states. Here, I provide a Python package *cgeniepy* for reading, analysing, and visualising the cGENIE model output, and performing the model-data comparison. The package is designed to facilitate the post-simulation analysis for all cGENIE users, as used in my recent studies [@ying2023;@ying2023b]. The package is designed as object-oriented, thus many features are standalone and can be used without cGENIE background.
 
 # Statement of need
-Earth System Models are the essential tool used to study the mechanism regulating the complex climate and their impacts. cGENIE is such a model with intermediate model complexity that strengthens its application in paleoceanography studies. For instance, @henehan2019 used the model to study the impact of an extreme climatic event (Cretaceous-Paleogene massive extinction in 66 Million years ago). @pohl2022 used it to study the long-term evolution of ocean oxygen in the past 550 million years. The application of this model has promoted our understanding of climate change in the geological past.
+Earth System Models are the essential tool used to study the mechanisms regulating the complex climate and their impacts. cGENIE is such a model with intermediate model complexity that strengthens its application in paleoceanography studies. For instance, @henehan2019 used the model to study the impact of an extreme climatic event (Cretaceous-Paleogene massive extinction in 66 Million years ago). @pohl2022 used it to study the long-term evolution of ocean oxygen in the past 550 million years. The application of this model has promoted our understanding of climate change in the geological past.
 
 Despite the power of cGENIE, the analysis of its model output has relied on a collection of MATLAB scripts developed by the cGENIE maintainer (https://github.com/derpycode/muffinplot). A systematic package has been long missing. Such gap might hamper the efficiency of the research, in particular for users who are not familiar with MATLAB or need to perform customised analysis (e.g., model ensemble based analysis). 
 
-Python is a popular open-source programming language that has built-in package management system. Therefore, relative to MATLAB, Python packages can be easier to install, use, and demonstrate across platforms. So far, many Earth System Models have their own Python package support (e.g., @romain2023 for the NEMO model and @gael2023 for the MITgcm model). As such, it is useful to develop a similar one for the growing cGENIE community.
+Python is a popular open-source programming language that has a built-in package management system. Therefore, relative to MATLAB, Python packages can be easier to install, use, and demonstrate across platforms. So far, many Earth System Models have their own Python package support (e.g., @romain2023 for the NEMO model and @gael2023 for the MITgcm model). As such, it is useful to develop a similar one for the growing cGENIE community.
 
 
 # Package Design
@@ -41,9 +41,9 @@ Once the data classes are initialised (read from GENIE model or not), the users 
 
 Another common demand for Earth system model users is the model-data comparison. Thus, I provided a `skill` module to conduct the skill score calculation including the correlation coefficient, root mean square error, and the Taylor diagram (see the Examples).
 
-For cGENIE model specifically, its coarse model output can be interpolated using the  `Interpolator` class (\autoref{fig:0}). This is a wrapper of the `scipy.interpolate` subpackage and its purpose is to help increase the grid resolution and create prettier figure. However, a long-term goal is to incorporate more advanced interpolation methods (e.g., the DIVA method) to make cGENIE model output more comparable to the high-resolution model/observational results.
+For cGENIE model specifically, its coarse model output can be interpolated using the  `Interpolator` class (\autoref{fig:0}). This is a wrapper of the `scipy.interpolate` subpackage and its purpose is to help increase the grid resolution and create prettier figures. However, a long-term goal is to incorporate more advanced interpolation methods (e.g., the DIVA method) to make cGENIE model output more comparable to the high-resolution model/observational results.
 
-![A schematic figure showing the structure of `cgeniepy` package and its functionalities. It helps users to access the model output and operate the visualisation and analysis including interpolation, model-data comparison. \label{fig:0}](fig0.png){width=65%}
+![A schematic figure showing the structure of the `cgeniepy` package and its functionalities. `cgeniepy` helps users to access the model output and operate the visualisation and analysis, including interpolation and model-data comparison. \label{fig:0}](fig0.png){width=65%}
 
 # Examples
 
@@ -51,7 +51,7 @@ In this section, I provide two examples to show the core functionalities of `cge
 
 ## Access, analyse and visualise the cGENIE model output
 
-The following codes will be mostly used by the cGENIE users. It initialises the cGENIE model instance, read the sea surface temperature data, and plot the last time slice as map. The data is adapted from @ying2023b and @gutjahr2017 (\autoref{fig:1}). The users can easily change the variable name to access other model output.
+The following code example will be mostly used by the cGENIE users. It initialises the cGENIE model instance, read the sea surface temperature data, and plot the last time slice as map. The data is adapted from @ying2023b and @gutjahr2017 (\autoref{fig:1}). The users can easily change the variable name to access other model outputs.
 
 ```python
 ## import the package
