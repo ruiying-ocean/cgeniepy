@@ -31,7 +31,7 @@ Earth System Models are the essential tool used to study the mechanisms regulati
 
 Despite the power of cGENIE, the analysis of its model output has relied on a collection of MATLAB scripts developed by the cGENIE maintainer (https://github.com/derpycode/muffinplot). A systematic package has been long missing. Such gap might hamper the efficiency of the research, in particular for users who are not familiar with MATLAB or need to perform customised analysis (e.g., model ensemble based analysis). 
 
-Python is a popular open-source programming language that has a built-in package management system. Therefore, relative to MATLAB, Python packages can be easier to install, use, and demonstrate across platforms. So far, many Earth System Models have their own Python package support (e.g., @romain2023 for the NEMO model and @gael2023 for the MITgcm model). As such, it is useful to develop a similar one for the growing cGENIE community.
+Python is a popular open-source programming language that has a built-in package management system. Therefore, relative to MATLAB, Python packages can be easier to install, use, and demonstrate across platforms based on jupyter notebook/quarto. So far, many climate and ocean Models have their own Python package support (e.g., @romain2023 for the NEMO model and @gael2023 for the MITgcm model). As such, it is useful to develop a similar one for the growing cGENIE community.
 
 
 # Package Design
@@ -51,7 +51,7 @@ In this section, I provide two examples to show the core functionalities of `cge
 
 ## Access, analyse and visualise the cGENIE model output
 
-The following code example will be mostly used by the cGENIE users. It initialises the cGENIE model instance, read the sea surface temperature data, and plot the last time slice as map. The data is adapted from @ying2023b and @gutjahr2017 (\autoref{fig:1}). The users can easily change the variable name to access other model outputs.
+The following code example demonstrates using `cgeniepy` in a common use case for cGENIE users. It initialises the cGENIE model instance, read the sea surface temperature data, and plot the last time slice as map. The data is adapted from @ying2023b and @gutjahr2017 (\autoref{fig:1}). The users can easily change the variable name to access other model outputs.
 
 ```python
 ## import the package
@@ -70,7 +70,7 @@ ocn_sst.isel(time=-1).plot()
 
 ## Model-data comparison
 
-In this example, I read the carbon isotope data from the Last Glacial Maximum (21 ka) model, the corresponding data compilation from @peterson2014. Then I find the model data for each core location and add it to the dataframe. Finally, I conduct the model-data comparison and plot the 1:1 lineplot (\autoref{fig:2}). Multiple metrics are calculated and shown in the figure (\autoref{fig:2}).
+In this example, I demonstrate how to conduct a model-data comparison using `cgeniepy`. I compare the ocean carbon isotope in sediment cores (i.e., observation) [@peterson2014] with cGENIE model ouptputs [@ying2023b] in the Last Glacial Maximum (21 ka).  First, both observations and model results are read by the `cgeniepy` package. Then I search the nearest cGENIE model grid boxes for each sediment core and append the matched results to the existing dataframe. Finally, I visualise the model-data comparison by plotting the scatter plot with multiple metrics calculated (\autoref{fig:2}).
 
 ```python
 from cgeniepy.model import GenieModel
