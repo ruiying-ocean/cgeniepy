@@ -173,6 +173,21 @@ class GriddedData:
             sum_array.attrs = self.attrs
         return sum_array
 
+    def __radd__(self, other):
+        """
+        Allow a number or another GriddedData to be added to this GriddedData
+        """
+        sum_array = GriddedData()
+        if hasattr(other, "data"):
+            sum_array.data = other.data + self.data
+            ## check all the attributes
+            np.testing.assert_equal(self.attrs, other.attrs)
+            sum_array.attrs = self.attrs
+        else:
+            sum_array.data = other + self.data
+            sum_array.attrs = self.attrs
+        return sum_array
+
     def __sub__(self, other):
         """
         Allow GriddedData to be subtracted by a number or another GriddedData
@@ -223,6 +238,21 @@ class GriddedData:
         quotient.data = xr.DataArray(quotient_array)
         return quotient
 
+    def __rtruediv__(self, other):
+        """
+        Allow a number or another GriddedData to be divided by this GriddedData
+        """
+        quotient_array = np.zeros_like(self.data)
+        if isinstance(other, GriddedData):
+            quotient_array = np.divide(other.data, self.data)
+        else:
+            # Handle division by a scalar
+            quotient_array = np.divide(other, self.data)
+
+        quotient = GriddedData()
+        quotient.data = xr.DataArray(quotient_array)
+        return quotient
+
     def __mul__(self, other):
         """
         Allow GriddedData to be multiplied by a number or another GriddedData
@@ -233,6 +263,21 @@ class GriddedData:
         else:
             try:
                 product.data = self.data * other
+            except ValueError:
+                print("Sorry, only number and GriddedData are accepted")
+
+        return product
+
+    def __rmul__(self, other):
+        """
+        Allow a number or another GriddedData to be multiplied by this GriddedData
+        """
+        product = GriddedData()
+        if hasattr(other, "data"):
+            product.data = other.data * self.data
+        else:
+            try:
+                product.data = other * self.data
             except ValueError:
                 print("Sorry, only number and GriddedData are accepted")
 
