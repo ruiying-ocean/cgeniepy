@@ -12,19 +12,39 @@ authors:
     orcid: 0000-0001-5811-2388
     corresponding: true
     email: rui.ying@bristol.ac.uk
-    affiliation: 1
+    affiliation: School of Earth Sciences, University of Bristol, UK
 
-affiliations:
- - name: School of Earth Sciences, University of Bristol, UK
-   index: 1  
-
-date: 19 Sep 2024
 bibliography: paper.bib
+
+#if use quarto
+
+format:
+  pdf:
+    documentclass: article
+    colorlinks: true
+    papersize: letter
+    template-partials: 
+      - title.tex    
+    include-in-header:
+      - text: |
+          \usepackage{fancyhdr}
+          \pagestyle{fancy}
+          \usepackage[noblocks]{authblk}
+          \renewcommand*{\Authsep}{, }
+          \renewcommand*{\Authand}{, }
+          \renewcommand*{\Authands}{, }
+          \renewcommand\Affilfont{\small}          
 ---
+
+::: {.callout-note title="Note"}
+This manuscript has been peer reviewed and published in the Journal of Open Source Software (https://doi.org/xxxx).
+:::
 
 # Summary
 
 cGENIE is a numerical model that simulates the Earth system (e.g., atmosphere, ocean, land, biosphere, ice sheet, and their interactions) in different geological ages [@ridgwell2007]. It has been widely used in studying and reconstructing the past ocean and climate states. Here, I provide a Python package *cgeniepy* for reading, analysing, and visualising the cGENIE model output, and performing the model-data comparison. The package is designed to facilitate the post-simulation analysis for all cGENIE users, as used in my recent studies [@ying2023;@ying2023b]. The package is designed as object-oriented, thus many features are standalone and can be used without cGENIE background.
+
+
 
 # Statement of need
 Earth System Models are the essential tool used to study the mechanisms regulating the complex climate and their impacts. cGENIE is such a model with intermediate model complexity that strengthens its application in paleoceanography studies. For instance, @henehan2019 used the model to study the impact of an extreme climatic event (Cretaceous-Paleogene massive extinction in 66 Million years ago). @pohl2022 used it to study the long-term evolution of ocean oxygen in the past 550 million years. The application of this model has promoted our understanding of climate change in the geological past.
@@ -47,7 +67,7 @@ For cGENIE model specifically, its coarse model output can be interpolated using
 
 # Examples
 
-In this section, I provide two examples to show the core functionalities of `cgeniepy`. More examples however can be found in the package documentation website (https://cgeniepy.readthedocs.io/en/latest/).
+In this section, I provide two examples to show the core functionalities of `cgeniepy`. More examples however can be found in the [package documentation website](https://cgeniepy.readthedocs.io/en/latest/).
 
 ## Access, analyse and visualise the cGENIE model output
 
