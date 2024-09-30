@@ -238,7 +238,7 @@ class GriddedDataVis:
                 **self.aes_dict["pcolormesh_kwargs"],
             )
             if colorbar:
-                cbar = self._add_colorbar(p_pcolormesh, orientation="horizontal")
+                cbar = self._add_colorbar(p_pcolormesh, orientation="horizontal", **self.aes_dict["colorbar_kwargs"])
                 self._add_colorbar_label(cbar, **self.aes_dict["colorbar_label_kwargs"])
 
         if contour:
