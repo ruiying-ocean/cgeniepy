@@ -37,7 +37,7 @@ format:
 ---
 
 ::: {.callout-note title="Note"}
-This manuscript has been peer reviewed and published in the Journal of Open Source Software (https://doi.org/xxxx).
+This manuscript has been peer reviewed and published in the Journal of Open Source Software (https://doi.org/10.21105/joss.06762).
 :::
 
 # Summary

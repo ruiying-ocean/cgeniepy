@@ -5,14 +5,13 @@
 [![Documentation Status](https://readthedocs.org/projects/cgeniepy/badge/?version=latest)](https://cgeniepy.readthedocs.io/en/latest/?badge=latest)
 [![PyPI version](https://badge.fury.io/py/cgeniepy.svg)](https://badge.fury.io/py/cgeniepy)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/cgeniepy)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.06762/status.svg)](https://doi.org/10.21105/joss.06762)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13799838.svg)](https://doi.org/10.5281/zenodo.13799838)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![status](https://joss.theoj.org/papers/b08301b8ec79f1da9150cec224da8391/status.svg)](https://joss.theoj.org/papers/b08301b8ec79f1da9150cec224da8391)
-
 
 `cgeniepy` is a Python package to analyse the output of [cGENIE Earth System Model](https://www.seao2.info/mymuffin.html). It aims to provide a set of convenient tools for the post-simulation work, including analysing the model output, plotting publication-quality figures, and conducting model-data comparison.
 
 ⚠ `cgeniepy` is in beta stage with main functionalities being accompolished.
-
 
 
 ## Installation
@@ -40,8 +39,12 @@ I have uploaded a sample model run, which is a preindustrial spinup configuratio
 
 ```python
 import cgeniepy
+from cgeniepy.model import GenieModel
 
 model = cgeniepy.sample_model()
+## for your own model experiment
+model = GenieModel("directory_to_your_model_output")
+
 model.get_var('ocn_sur_temp').isel(time=-1).plot(colorbar=True)
 ```
 

@@ -1,0 +1,35 @@
+cff-version: "1.2.0"
+authors:
+- email: rui.ying@bristol.ac.uk
+  family-names: Ying
+  given-names: Rui
+  orcid: "https://orcid.org/0000-0001-5811-2388"
+contact:
+- email: rui.ying@bristol.ac.uk
+  family-names: Ying
+  given-names: Rui
+  orcid: "https://orcid.org/0000-0001-5811-2388"
+doi: 10.5281/zenodo.13835532
+message: If you use this software, please cite our article in the
+  Journal of Open Source Software.
+preferred-citation:
+  authors:
+  - email: rui.ying@bristol.ac.uk
+    family-names: Ying
+    given-names: Rui
+    orcid: "https://orcid.org/0000-0001-5811-2388"
+  date-published: 2024-09-30
+  doi: 10.21105/joss.06762
+  issn: 2475-9066
+  issue: 101
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 6762
+  title: "cgeniepy: A Python package for analysing cGENIE Earth System
+    Model output"
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.06762"
+  volume: 9
+title: "cgeniepy: A Python package for analysing cGENIE Earth System
+  Model output"
