@@ -75,6 +75,17 @@ class GriddedDataVis:
         """
         plt.rcParams['font.family'] = 'sans-serif'
 
+        ## try to update pcolor_kwargs
+        if 'vmin' in kwargs:
+                self.aes_dict['pcolormesh_kwargs']['vmin'] = kwargs['vmin']
+        if 'vmax' in kwargs:
+            self.aes_dict['pcolormesh_kwargs']['vmax'] = kwargs['vmax']
+        if 'cmap' in kwargs:
+            self.aes_dict['pcolormesh_kwargs']['cmap'] = kwargs['cmap']
+
+                   
+        
+
         if self.data.ndim == 1:
             return self._plot_1d(*args, **kwargs)
         elif self.data.ndim == 2:
