@@ -295,6 +295,26 @@ class GriddedData:
             return GriddedData(self.data ** other, mutable=False, attrs=self.attrs)
 
 
+    ## allow comparison
+    def __lt__(self, other):
+        return self.data < other
+
+    def __le__(self, other):
+        return self.data <= other
+
+    def __gt__(self, other):
+        return self.data > other
+            
+    def __ge__(self, other):
+        return self.data >= other
+
+    def __eq__(self, other):
+        return self.data == other
+            
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+
     def max(self, *args, **kwargs):
         """compute the maximum value of the array
         """
