@@ -180,9 +180,10 @@ class ArrComparison:
         
         return p
 
-    def plot(self, diagonly=True, savefig_name=None, *args, **kwargs):
+    def plot(self, ax=None, diagonal=True,title="Model vs Observation", savefig_name=None, metric=['rmse', 'r2', 'm', 'p'], *args, **kwargs):
         ## a x-y plot
-        fig, ax = plt.subplots()
+        if not ax:
+            fig, ax = plt.subplots()
         plt.rcParams['font.family'] = 'sans-serif'
         ax.grid(True, linestyle='--', alpha=0.5)
         ax.scatter(self.model, self.data, zorder=2,*args, **kwargs)
@@ -191,17 +192,28 @@ class ArrComparison:
         ax.set_xlabel(self.model_name)
         ax.set_ylabel(self.obs_name)
         ## add 1:1 line
-        if diagonly:
-            ax.plot([0, 1], [0, 1], transform=ax.transAxes, ls="--", color='k')
+        if diagonal:
+            ## add real 1:1 line
+            ax.plot([self.model.min(), self.model.max()], [self.model.min(), self.model.max()], color='k', ls='--')
         
-        ## add metrics        
-        ax.text(0.05, 0.85, "Pearson R: {:.3f}".format(self.pearson_r()),transform = ax.transAxes)
-        ax.text(0.05, 0.9, "p-value: {:.4f}".format(self.lm_pvalue()),transform = ax.transAxes)
-        ax.text(0.05, 0.75, "M-score: {:.3f}".format(self.mscore()),transform = ax.transAxes)
-        ax.text(0.05, 0.8, "RMSE: {:.3f}".format(self.rmse()), transform = ax.transAxes)
+        ## add metrics
+        if 'rmse' in metric:
+            ax.text(0.05, 0.8, "RMSE: {:.3f}".format(self.rmse()), transform = ax.transAxes)
+            
+        if 'r2' in metric:                 
+             ax.text(0.05, 0.85, "Pearson R: {:.3f}".format(self.pearson_r()),transform = ax.transAxes)
+                
+        if 'm' in metric:
+            ax.text(0.05, 0.75, "M-score: {:.3f}".format(self.mscore()),transform = ax.transAxes)
+            
+        if 'p' in metric:
+            ax.text(0.05, 0.9, "p-value: {:.4f}".format(self.lm_pvalue()),transform = ax.transAxes)
+            
+            
+        
                 
 
-        ax.set_title("Model vs Observation", loc='left', fontweight='bold', fontsize=12)
+        ax.set_title(title, loc='left', fontweight='bold', fontsize=12)
 
         if savefig_name:
             fig.savefig(savefig_name)
