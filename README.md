@@ -45,6 +45,7 @@ model = cgeniepy.sample_model()
 ## for your own model experiment
 model = GenieModel("directory_to_your_model_output")
 
+## select variable -> select coordinate -> operation like mean or plot
 model.get_var('ocn_sur_temp').isel(time=-1).plot(colorbar=True)
 ```
 
