@@ -272,10 +272,11 @@ class ScatterData:
 
     def compare(self, var1, var2, model_name=None, obs_name=None):
         "compare two ScatterData objects"
-        if model_name is None:
-            model_name = var1
-        if obs_name is None:
+        if not model_name:
+            model_name = var1            
+        if not obs_name:
             obs_name = var2
+            
         return DFComparison(self.data, var1, var2, model_name=model_name, obs_name=obs_name)
 
     def rolling(self, window, *args, **kwargs):

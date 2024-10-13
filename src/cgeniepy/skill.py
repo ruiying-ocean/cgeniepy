@@ -213,10 +213,10 @@ class DFComparison(ArrComparison):
     Quantitatively compare similarity metrics between two columns in a dataframe-like objects
     """
 
-    def __init__(self, df, model_col, observation_col, model_name="Model", obs_name="Observation"):
+    def __init__(self, df, model_col, observation_col, *args, **kwargs):
         self.model = df[model_col].to_numpy()
         self.data = df[observation_col].to_numpy()
-        super().__init__(self.model, self.data, model_name=model_col, obs_name=observation_col)
+        super().__init__(self.model, self.data, *args, **kwargs)
 
  
 class TaylorDiagram(object):
