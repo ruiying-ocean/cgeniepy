@@ -6,10 +6,6 @@ What is this package (cgeniepy)?
 
 This package provides a handful of tools in Python for dealing with the cGENIE model outputs, similar to the existing `MATLAB scripts <https://github.com/derpycode/muffinplot>`_.
 
-.. note::
-
-   This project is under continuous development.
-
 What is cGENIE?
 ----------------
 cGENIE is an Earth System Model that simulate the climate and element cycle of Earth. It is for scientists to study the different component of the Earth System, such as the ocean, atmosphere, and land, and their complex interactions, particularly in the long-term scale. The model is used and developed by scientists from around the world. Therefore, it is important to have a package that can deal with the cGENIE model outputs in a consistent and reproducible way.
@@ -30,9 +26,11 @@ Here are the core features of this package:
 
 How was this package created?
 --------------------------------
-I use cGENIE in my PhD and I have the highest demand to efficiently analyse the model results as my wish.
+I used cGENIE in my PhD and I needed to efficiently analyse the model results as my wish.
 
 
 Citation
 ------------------
-You can cite this preprint (https://www.researchsquare.com/article/rs-3967633/v1).
+You can cite this peer-reviewed paper:
+
+Ying, R. (2024). cgeniepy: A Python package for analysing cGENIE Earth System Model output. Journal of Open Source Software, 9(101), 6762. https://doi.org/10.21105/joss.06762

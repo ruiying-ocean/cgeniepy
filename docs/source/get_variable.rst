@@ -1,5 +1,5 @@
-Get time-slice and time-series data
-=========================================
+Extract simulated time-slice and time-series data
+========================================================
 
 Once initialised the GenieModel object, it will use the model path and gemflag to find netcdf/timeseries file. Then it stores all the available variables and corresponding path in the attribute `nc_vardict` and `ts_varlist`. By such, users can forget about the model path and focus on the target variable to analyse.
 

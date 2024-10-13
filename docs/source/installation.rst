@@ -35,9 +35,10 @@ Alternatively, we can directly download the developing version from GitHub:
        $ python3 -m pip install git+https://github.com/ruiying-ocean/cgeniepy.git@master
 
 
-(Optional) Install dependencies       
+       
+(optional) Install dependencies       
 ---------------------------------
-cgeniepy is not a standalone software. It is built on other excellent packages (so called "dependencies"). Although installing cgeniepy will automatically download the related dependent packages, sometime it could fail. Using the blow command can manually avoid this.
+In very rare case,  the installation might fail due to "wrong version" of dependent packages, or conflicts with other packages. Using the blow command *might* (not necessarily always) avoid this.
 
 .. code-block:: console
 
@@ -51,6 +52,15 @@ This also touches the most famous Python data science-related packages:
 - **pandas**: A fast, powerful, flexible and easy to use open source data analysis and data manipulation library built on top of Python. It is the core of cgeniepy.ScatterData and used to deal with the cGENIE timeseries output.
 - **scipy**: A Python-based ecosystem of open-source software for mathematics, science, and engineering.
 
+  
+(Optional) Extra dependencies
+-----------------------------------------------------
+In some cases, you might need to install extra package to use some feature in `cgeniepy`. In current version, this feature is the direct interface to Pangaea.de in ScatterData class. i.e., you don't need to download the file yourself and cgeniepy will call pangaeapy to do that for you.
+
+.. code-block:: console
+		
+       $ python3 -m pip install "cgeniepy[extra]"
+  
 
 (Optional) Verify the installation
 -------------------------------------

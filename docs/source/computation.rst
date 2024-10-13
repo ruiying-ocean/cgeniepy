@@ -1,4 +1,4 @@
-Computational analysis of time-slice data
+Basic computation of time-slice data
 ===============================================================
 
 Basic concept
