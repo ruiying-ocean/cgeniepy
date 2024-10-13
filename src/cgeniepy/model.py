@@ -223,6 +223,48 @@ class GenieModel(object):
             tsvar_list = [f for f in all_bg_files.glob("*.res")]         
             return tsvar_list
 
+    def get_config(self, config_name='data_BIOGEM'):
+        file = join(self.model_path, config_name)
+        return self._parse_namelist(file)
+
+    def _parse_namelist(self, file_path):
+        namelist = {}
+        current_group = None
+
+        with open(file_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                # Skip empty lines and comments
+                if not line or line.startswith('!'):
+                    continue
+
+                # Check for the start of a namelist group
+                if line.startswith('&'):
+                    current_group = line[1:].strip()  # Remove the '&' and get the group name
+                    namelist[current_group] = {}
+                # Check for the end of a namelist group
+                elif line.startswith('/'):
+                    current_group = None
+                elif '=' in line:
+                    # Parse the key-value pairs within the group
+                    key, value = [item.strip() for item in line.split('=', 1)]
+
+                    # Convert Fortran logicals (.true., .false.) and numeric values
+                    if value.lower() in ['.true.', 't']:
+                        value = True
+                    elif value.lower() in ['.false.', 'f']:
+                        value = False
+                    else:
+                        try:
+                            value = float(value) if '.' in value or 'e' in value.lower() else int(value)
+                        except ValueError:
+                            pass  # Keep as string if it's not a number
+
+                    if current_group:
+                        namelist[current_group][key] = value
+
+        return namelist
+
     def get_ts(self, var: str, to_ScatterData=False):
         """
         read in time series output of GENIE
