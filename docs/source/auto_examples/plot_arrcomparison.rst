@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_plot_arrcomparison.py>`
-        to download the full example code
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -34,18 +34,8 @@ This example shows how to build the ArrComparison class plot the comparison.
    :class: sphx-glr-single-img
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    <frozen importlib._bootstrap>:241: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
 
 
-
-
-
-
-|
 
 .. code-block:: Python
 
@@ -53,9 +43,9 @@ This example shows how to build the ArrComparison class plot the comparison.
     from cgeniepy.skill import ArrComparison
     import numpy as np
 
-    np.random.seed(1923)
+    np.random.seed(2024)
     x = np.random.rand(100)
-    y = x + np.random.rand(100)
+    y = x + np.random.normal(0, 0.1, 100)
 
     ## calculate skill score
     ac = ArrComparison(x, y)
@@ -64,7 +54,7 @@ This example shows how to build the ArrComparison class plot the comparison.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.548 seconds)
+   **Total running time of the script:** (0 minutes 1.181 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_arrcomparison.py:
@@ -80,6 +70,10 @@ This example shows how to build the ArrComparison class plot the comparison.
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_arrcomparison.py <plot_arrcomparison.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: plot_arrcomparison.zip <plot_arrcomparison.zip>`
 
 
 .. only:: html

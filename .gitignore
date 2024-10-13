@@ -4,3 +4,4 @@ docs/build/*
 .Rproj.user
 docs/build/*
 docs/source/auto_examples/*
+.aider*
