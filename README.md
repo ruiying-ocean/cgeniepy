@@ -60,7 +60,7 @@ model.get_var('ocn_sur_temp').isel(time=-1).plot(colorbar=True)
 
 ## Citation
 
-Rui Ying. cgeniepy: A Python package for analysing cGENIE Earth System Model output, 20 February 2024, PREPRINT (Version 1) available at Research Square [https://doi.org/10.21203/rs.3.rs-3967633/v1]
+Ying, R. (2024). cgeniepy: A Python package for analysing cGENIE Earth System Model output. Journal of Open Source Software, 9(101), 6762. https://doi.org/10.21105/joss.06762
 
 ## Logo
 
