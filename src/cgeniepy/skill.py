@@ -211,7 +211,10 @@ class ArrComparison:
             
             
         
-                
+        if self.label:
+            title = title + " ({})".format(self.label)
+            
+            
 
         ax.set_title(title, loc='left', fontweight='bold', fontsize=12)
 
