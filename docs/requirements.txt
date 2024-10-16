@@ -4,4 +4,4 @@ pydata_sphinx_theme==0.15.2
 sphinx-gallery==0.15.0
 sphinx-design==0.5.0
 sphinx-autoapi==3.0.0
-matplotlib=3.9.2
+matplotlib==3.9.2
