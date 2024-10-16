@@ -8,7 +8,6 @@ from matplotlib.projections import PolarAxes
 import mpl_toolkits.axisartist.floating_axes as fa
 import mpl_toolkits.axisartist.grid_finder as gf
 
-import warnings
 
 class ArrComparison:
     
@@ -42,11 +41,12 @@ class ArrComparison:
         self.obs_name = obs_name
         self.label = label
 
-        ## check data type, if not float, convert to float
-        if self.model.dtype != np.float64:
-            self.model = self.model.astype(np.float64)
-        if self.data.dtype != np.float64:
-            self.data = self.data.astype(np.float64)
+        ## if is not numeric, convert to numeric
+        if not np.issubdtype(self.model.dtype, np.number):
+            self.model = self.model.astype(float)
+        if not np.issubdtype(self.data.dtype, np.number):
+            self.data = self.data.astype(float)
+            
         
 
     def safe_unveil(self, array):
@@ -259,15 +259,15 @@ class TaylorDiagram(object):
 
         if not self.mult_comp:        
             self.corr = self.ac.pearson_r()
-            self.model_std = np.std(self.ac.model)
-            self.obs_std = np.std(self.ac.data)
+            self.model_std = np.nanstd(self.ac.model)
+            self.obs_std = np.nanstd(self.ac.data)
             self.label = self.ac.label
         else:
             corr, model_std, obs_std, label = [],[],[],[]
             for ac_i in self.ac:
                 corr.append(ac_i.pearson_r())
-                model_std.append(np.std(ac_i.model))
-                obs_std.append(np.std(ac_i.data))
+                model_std.append(np.nanstd(ac_i.model))
+                obs_std.append(np.nanstd(ac_i.data))
                 label.append(ac_i.label)                
 
             self.corr = corr
@@ -363,7 +363,7 @@ class TaylorDiagram(object):
 
 
     def add_point(self, correlation, std, *args, **kwargs):
-        ## x->theta, y->radiance
+        ## x->theta, y->radiance        
         self.ax.scatter(np.arccos(correlation), std,*args, **kwargs)        
 
     def plot(self):
