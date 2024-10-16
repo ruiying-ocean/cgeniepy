@@ -366,16 +366,21 @@ class TaylorDiagram(object):
         ## x->theta, y->radiance        
         self.ax.scatter(np.arccos(correlation), std,*args, **kwargs)        
 
-    def plot(self, *args, **kwargs):
+    def plot(self, cmap=None, *args, **kwargs):
         if not self.mult_comp:
             ## add model point
             self.add_point(self.corr, self.model_std, edgecolor='k', label=self.label, *args, **kwargs)
         else:
+            if not cmap:
+                color_list = plt.cm.get_cmap('tab10', len(self.ac)).colors
+            else:
+                color_list = cmap.colors
+            
             
             for i in range(len(self.ac)):
                 ## normalised std
                 self.add_point(self.corr[i], self.model_std[i]/self.obs_std[i], label=self.label[i],
-                               edgecolor='k', *args, **kwargs)
+                               edgecolor='k', c=color_list[i],  *args, **kwargs)
         self.ax.legend()
 
     def savefig(self, *args, **kwargs):
