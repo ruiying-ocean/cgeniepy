@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_plot_taylor_diagram.py>`
-        to download the full example code
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -27,7 +27,7 @@ This example uses fake data and fitted model prediction to plot taylor diagram
 The R package open-air has provided a nice explanation on what taylor diagram is:
      https://bookdown.org/david_carslaw/openair/sections/model-evaluation/taylor-diagram.html (Figure 20.2)
 
-.. GENERATED FROM PYTHON SOURCE LINES 11-47
+.. GENERATED FROM PYTHON SOURCE LINES 11-49
 
 
 
@@ -45,6 +45,7 @@ The R package open-air has provided a nice explanation on what taylor diagram is
     import numpy as np
     from scipy.optimize import curve_fit
     from cgeniepy.skill import ArrComparison, TaylorDiagram
+    import matplotlib.pyplot as plt
 
     def generate_data(x, a, b, c, noise=0.5):
         y = a * np.exp(-b * x) + c  # Exponential function
@@ -77,12 +78,13 @@ The R package open-air has provided a nice explanation on what taylor diagram is
     ## Create TaylorDiagram instance
     diagram = TaylorDiagram([ac1, ac2])
     diagram.setup_ax(crmse_contour=True)
-    diagram.plot()
+    diagram.plot(s=20)
+    plt.show()
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.074 seconds)
+   **Total running time of the script:** (0 minutes 0.140 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_taylor_diagram.py:
@@ -98,6 +100,10 @@ The R package open-air has provided a nice explanation on what taylor diagram is
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_taylor_diagram.py <plot_taylor_diagram.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: plot_taylor_diagram.zip <plot_taylor_diagram.zip>`
 
 
 .. only:: html

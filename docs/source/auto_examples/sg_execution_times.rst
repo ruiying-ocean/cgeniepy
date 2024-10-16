@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:01.181** total execution time for 15 files **from auto_examples**:
+**00:02.284** total execution time for 16 files **from auto_examples**:
 
 .. container::
 
@@ -32,13 +32,19 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_examples_plot_arrcomparison.py` (``plot_arrcomparison.py``)
-     - 00:01.181
+   * - :ref:`sphx_glr_auto_examples_plot_evaluation.py` (``plot_evaluation.py``)
+     - 00:02.144
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_taylor_diagram.py` (``plot_taylor_diagram.py``)
+     - 00:00.140
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_PO4_distribution.py` (``plot_PO4_distribution.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_additional_cmap.py` (``plot_additional_cmap.py``)
+     - 00:00.000
+     - 0.0
+   * - :ref:`sphx_glr_auto_examples_plot_arrcomparison.py` (``plot_arrcomparison.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_coastal_data.py` (``plot_coastal_data.py``)
@@ -69,9 +75,6 @@ Computation times
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_sst_map.py` (``plot_sst_map.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_examples_plot_taylor_diagram.py` (``plot_taylor_diagram.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_timeseries.py` (``plot_timeseries.py``)

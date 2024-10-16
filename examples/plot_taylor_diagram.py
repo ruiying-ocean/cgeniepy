@@ -11,6 +11,7 @@ The R package open-air has provided a nice explanation on what taylor diagram is
 import numpy as np
 from scipy.optimize import curve_fit
 from cgeniepy.skill import ArrComparison, TaylorDiagram
+import matplotlib.pyplot as plt
 
 def generate_data(x, a, b, c, noise=0.5):
     y = a * np.exp(-b * x) + c  # Exponential function
@@ -43,4 +44,5 @@ ac2 = ArrComparison(y, fit2, 'exponential')
 ## Create TaylorDiagram instance
 diagram = TaylorDiagram([ac1, ac2])
 diagram.setup_ax(crmse_contour=True)
-diagram.plot()
+diagram.plot(s=20)
+plt.show()

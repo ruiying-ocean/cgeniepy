@@ -23,4 +23,12 @@ def sample_model(model_type='GenieModel', *args, **kwargs):
         raise ValueError('model_type must be either GenieModel or EcoModel')    
 
     return model
+
+def load_obs(grid='worjh2'):
+    file_path=str(files('data').joinpath(grid+'_obs.nc'))
+    import xarray as xr
+    obs_data= xr.load_dataset(file_path)
+    return obs_data
+    
+
     

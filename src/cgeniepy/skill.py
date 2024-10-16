@@ -315,7 +315,7 @@ class TaylorDiagram(object):
 
         ## create figure
         if not fig:
-            self.fig = plt.figure()
+            self.fig = plt.figure(dpi=300)
         else:
             self.fig = fig
             
@@ -366,16 +366,16 @@ class TaylorDiagram(object):
         ## x->theta, y->radiance        
         self.ax.scatter(np.arccos(correlation), std,*args, **kwargs)        
 
-    def plot(self):
+    def plot(self, *args, **kwargs):
         if not self.mult_comp:
             ## add model point
-            self.add_point(self.corr, self.model_std, edgecolor='k', label=self.label)
+            self.add_point(self.corr, self.model_std, edgecolor='k', label=self.label, *args, **kwargs)
         else:
             
             for i in range(len(self.ac)):
                 ## normalised std
                 self.add_point(self.corr[i], self.model_std[i]/self.obs_std[i], label=self.label[i],
-                               edgecolor='k')
+                               edgecolor='k', *args, **kwargs)
         self.ax.legend()
 
     def savefig(self, *args, **kwargs):
