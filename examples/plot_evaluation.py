@@ -16,8 +16,8 @@ import matplotlib.pyplot as plt
 sample_model = cgeniepy.sample_model()
 bgc_data = cgeniepy.load_obs('worjh2')
 
-genie_var  = ['ocn_O2', 'ocn_ALK','ocn_PO4', 'ocn_temp', 'ocn_sal', 'ocn_SiO2']
-obs_var = ['o2', 'alk', 'po4', 'temp', 'sal', 'si']
+genie_var  = ['ocn_O2', 'ocn_ALK','ocn_PO4', 'ocn_temp', 'ocn_sal', 'ocn_SiO2', 'ocn_DIC']
+obs_var = ['o2', 'alk', 'po4', 'temp', 'sal', 'si', 'dic']
 
 arr_comps = []
 for x,y in zip(genie_var, obs_var):
