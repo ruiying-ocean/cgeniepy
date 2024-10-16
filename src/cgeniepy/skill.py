@@ -192,9 +192,16 @@ class ArrComparison:
         ax.set_xlabel(self.model_name)
         ax.set_ylabel(self.obs_name)
         ## add 1:1 line
-        if diagonal:
+        if diagonal:            
             ## add real 1:1 line
-            ax.plot([self.model.min(), self.model.max()], [self.model.min(), self.model.max()], color='k', ls='--')
+            model_min, model_max = np.nanmin(self.model), np.nanmax(self.model)
+            data_min, data_max = np.nanmin(self.data), np.nanmax(self.data)
+            plt_min = np.max([model_min, data_min])
+            plt_max = np.min([model_max, data_max])
+            ax.plot([plt_min, plt_max], [plt_min, plt_max], color='k', linestyle='--')
+
+            
+            
         
         ## add metrics
         if 'rmse' in metric:
