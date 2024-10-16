@@ -35,7 +35,7 @@ python3 -m pip install "cgeniepy[extra]"
 
 
 ## Quickstart
-I have uploaded a sample model run, which is a preindustrial spinup configuration with marine ecosystem and biogeochemistry enabled.
+I have uploaded a sample model run, which is a [preindustrial spinup configuration](https://doi.org/10.5194/gmd-17-1729-2024) with marine ecosystem and biogeochemistry enabled (C, P, Fe, Si, O). 
 
 ```python
 import cgeniepy
