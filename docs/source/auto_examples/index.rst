@@ -134,23 +134,6 @@ Below is a gallery of examples
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example uses WOA13/GLODAP data to evaluate the performance of cGENIE model.">
-
-.. only:: html
-
-  .. image:: /auto_examples/images/thumb/sphx_glr_plot_evaluation_thumb.png
-    :alt:
-
-  :ref:`sphx_glr_auto_examples_plot_evaluation.py`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">Evaluation of 3D ocean biogeochemistry</div>
-    </div>
-
-
-.. raw:: html
-
     <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to plot the 1D ScatterData object. I use a CO2 data file from the Antarctic EDC ice core (https://doi.pangaea.de/10.1594/PANGAEA.472488) as an example.">
 
 .. only:: html
@@ -163,6 +146,23 @@ Below is a gallery of examples
 .. raw:: html
 
       <div class="sphx-glr-thumbnail-title">Plot the 1D ScatterData</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example uses WOA13/GLODAP data to evaluate the performance of a modern cGENIE experiment.">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_evaluation_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_evaluation.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Evaluation of 3D ocean biogeochemistry</div>
     </div>
 
 
@@ -302,8 +302,8 @@ Below is a gallery of examples
    /auto_examples/plot_timeseries
    /auto_examples/plot_logo
    /auto_examples/plot_scatter_map
-   /auto_examples/plot_evaluation
    /auto_examples/plot_scatterdata
+   /auto_examples/plot_evaluation
    /auto_examples/plot_PO4_distribution
    /auto_examples/plot_multiple_vars
    /auto_examples/plot_taylor_diagram

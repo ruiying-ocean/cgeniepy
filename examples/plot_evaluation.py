@@ -3,7 +3,7 @@
 Evaluation of 3D ocean biogeochemistry
 ======================================================
 
-This example uses WOA13/GLODAP data to evaluate the performance of cGENIE model.
+This example uses WOA13/GLODAP data to evaluate the performance of a modern cGENIE experiment.
 
 The regridded data is downloaded from https://www.seao2.info/mymuffin.html
 """

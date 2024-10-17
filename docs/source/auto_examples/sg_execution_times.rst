@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:02.063** total execution time for 16 files **from auto_examples**:
+**00:03.843** total execution time for 16 files **from auto_examples**:
 
 .. container::
 
@@ -33,7 +33,7 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_auto_examples_plot_evaluation.py` (``plot_evaluation.py``)
-     - 00:02.063
+     - 00:03.843
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_PO4_distribution.py` (``plot_PO4_distribution.py``)
      - 00:00.000
