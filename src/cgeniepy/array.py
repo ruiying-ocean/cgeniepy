@@ -485,14 +485,14 @@ class GriddedData:
             return GriddedData(output, mutable=False, attrs=attr)
 
 
-    @cache
+    
     def ocn_only_data(self, index=False):
         """
         remove the NA grid (i.e., land definition)
         :param index: return GeoIndex if True or real value if false
         """
 
-        stacked_data = self.data.stack(x=self.data.dims)            
+        stacked_data = self.data.stack(x=self.data.dims)
         stacked_ocn_mask =~np.isnan(stacked_data)
         ocn_only_data = stacked_data[stacked_ocn_mask]
         
