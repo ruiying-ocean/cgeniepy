@@ -1,7 +1,7 @@
 from typing import Union
 import numpy as np
 from scipy.spatial import distance
-from scipy.stats import pearsonr
+from scipy.stats import pearsonr, spearmanr
 import matplotlib.pyplot as plt
 
 from matplotlib.projections import PolarAxes
@@ -110,6 +110,18 @@ class ArrComparison:
 
         return corr
 
+    def spearman_r(self):
+        """
+        calculate spearman correlation
+        """
+        indx = self.intersect_index()
+        sub_data1 = self.model[indx]
+        sub_data2 = self.data[indx]
+
+        corr, _ = spearmanr(sub_data1, sub_data2)
+
+        return corr
+
     def mae(self):
         """
         Mean Absolute Error (MAE)
@@ -153,6 +165,19 @@ class ArrComparison:
 
         return rmse
 
+    def mse(self):
+        """
+        Mean Squared Error (MSE)
+        """
+        data1 = self.model
+        data2 = self.data
+
+        error_2d = data1 - data2
+        error_1d = error_2d.ravel()[~np.isnan(error_2d.ravel())]
+        mse = np.square(error_1d).mean()
+
+        return mse
+
     def nrmse(self):
         "Normalised RMSE facilitating the comparison between datasets or models with different scales"
 
@@ -181,7 +206,7 @@ class ArrComparison:
 
         return crmse
     
-    def lm_pvalue(self):
+    def lm_pvalue(self, method='pearson'):
         """
         get p-value from linear regression
         """
@@ -189,8 +214,14 @@ class ArrComparison:
         indx = self.intersect_index()
         sub_data1 = self.model[indx].ravel()
         sub_data2 = self.data[indx].ravel()        
+
+        if method == 'pearson':
+            _, p = pearsonr(sub_data1, sub_data2)
+        elif method == 'spearman':
+            _, p = spearmanr(sub_data1, sub_data2)
+        else:
+            raise ValueError("method should be either 'pearson' or 'spearman'")            
         
-        r, p = pearsonr(sub_data1, sub_data2)
         
         return p
 
