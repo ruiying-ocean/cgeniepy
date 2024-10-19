@@ -110,6 +110,20 @@ class ArrComparison:
 
         return corr
 
+    def mae(self):
+        """
+        Mean Absolute Error (MAE)
+        """
+        # get common set
+        indx = self.intersect_index()
+        
+        sub_data1 = self.model[indx]
+        sub_data2 = self.data[indx]
+
+        mae = np.abs(sub_data1 - sub_data2).mean()
+
+        return mae
+
     def cos_similarity(self):
         """
         Cosine similarity that ignores the magnitude of data, but focuses on the direction
