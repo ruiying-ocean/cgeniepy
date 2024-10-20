@@ -239,13 +239,7 @@ class ArrComparison:
         ## add 1:1 line
         if diagonal:            
             ## add real 1:1 line
-            model_min, model_max = np.nanmin(self.model), np.nanmax(self.model)
-            data_min, data_max = np.nanmin(self.data), np.nanmax(self.data)
-            plt_min = np.max([model_min, data_min])
-            plt_max = np.min([model_max, data_max])
-            ax.plot([plt_min, plt_max], [plt_min, plt_max], color='k', linestyle='--')
-
-            
+            ax.plot(ax.get_xlim(), ax.get_xlim(), ls="-", c=".3")            
             
         
         ## add metrics
