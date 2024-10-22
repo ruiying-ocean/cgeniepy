@@ -390,12 +390,17 @@ class GriddedData:
         else:
             return sem(self.data, nan_policy="omit", axis=None, *args, **kwargs)
 
-    def weighted_mean(self, weights, *args, **kwargs):
+    def weighted(self, weights, *args, **kwargs):
         """
-        compute the weighted average of the array (e.g., ocean volume)
+        assign weights to the data
         """
-        array_ma = self.data.to_masked_array()
-        return np.ma.average(array_ma, weights=weights, *args, **kwargs)        
+        ## using xarray's API
+        if self.mutable:
+            self.data = self.data.weighted(weights, *args, **kwargs)
+            return self
+        else:
+            return self.data.weighted(weights, *args, **kwargs)
+
     
     def sel_modern_basin(self, basin, norm_lon_method='g2n'):
         """
