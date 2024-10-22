@@ -156,7 +156,7 @@ class GenieModel(object):
             combined_ds.coords["model"] = self.model_path
             return combined_ds
 
-    def get_var(self, var: Union[str, List, Tuple], attrs=None, mutable=True):
+    def get_var(self, var: Union[str, List, Tuple], attrs=None):
         """
         Get the data of target variable.
         A list of variables is supported as well.
@@ -192,9 +192,9 @@ class GenieModel(object):
 
         ## initialise GriddedData object
         if not attrs:
-            return GriddedData(array, mutable=mutable, attrs=array.attrs)
+            return GriddedData(array, attrs=array.attrs)
         else:
-            return GriddedData(array, mutable=mutable, attrs=attrs)
+            return GriddedData(array, attrs=attrs)
             
 
     def _tsvar_list(self):
@@ -455,7 +455,7 @@ class GenieModel(object):
         either calculated from existing data or using biogem.grid_mask
         """
         try:
-            grid_mask = self.get_var("grid_mask", mutable=False).data
+            grid_mask = self.get_var("grid_mask")
             return grid_mask
         except ValueError:
             print("grid_mask not found!")
