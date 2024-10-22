@@ -7,37 +7,36 @@ from cgeniepy.grid import Interpolator, GridOperation
 from cgeniepy.plot import GriddedDataVis
 from cgeniepy.chem import Chemistry
 import cgeniepy.table as ct
-from functools import cache
 
 import warnings
 
-
 class GriddedData:
+
+    modify_in_place = True ## modify the data in place
+    keep_attrs = True ## keep the attributes during operations
+    
     """
     GriddedData is a class to store and compute GENIE netcdf data.
 
     It stores data in xarray.DataArray format, and provides optimalised methods for GENIE model output to compute statistics.    
     """
     
-    def __init__(self, array=np.nan, mutable=False, attrs={}):
+    def __init__(self, array=np.nan, attrs={}):
         """
         Initialise an instance of GriddedData
 
-        
         :param array: a xarray.DataArray object
-        :param mutable: whether the data is mutable in place, default is False
         :param attrs: a dictionary of attributes, default is empty
 
         -----------
         Example
         -----------
-        data = xr.DataArray(np.random.randn(2, 3), dims=("x", "y"), coords={"x": [10, 20]}, attrs={"units": "unitless""})
-        dg = GriddedData(data, mutable=False)
+        data = xr.DataArray(np.random.randn(2, 3), dims=("x", "y"), coords={"x": [10, 20]}, attrs={"units": "unitless"})
+        dg = GriddedData(data)
         """
         
         # set data
         self.data = array
-        self.mutable = mutable
         self.attrs = attrs
 
         ## formatting the unit
@@ -45,7 +44,7 @@ class GriddedData:
             self.attrs['units'] = Chemistry().format_unit(self.attrs['units'])
 
     def __repr__(self):
-        return f"GriddedData\ndata={self.data}\nmutable:\n    {self.mutable}"
+        return f"GriddedData\ndata={self.data}\n"
 
     def __getitem__(self, item):
         "make GriddedData subscriptable like xarray.DataArray"
@@ -71,14 +70,16 @@ class GriddedData:
         coords = tuple([self.data[dim].values for dim in self.data.dims])
         values = self.data.values
         dims = self.data.dims
-        output = Interpolator(dims, coords,values, *args, **kwargs).to_xarray()
+        output = Interpolator(dims, coords, values, *args, **kwargs).to_xarray()
+
+        output_attrs = self.attrs if GriddedData.keep_attrs else {}
         
-        if self.mutable:
+        if GriddedData.modify_in_place:
             self.data = output
-            self.attrs = self.attrs            
-            return self            
-        else:
-            return GriddedData(output, mutable=False, attrs=self.attrs)
+            self.attrs = output_attrs
+            return self
+        else:            
+            return GriddedData(output, attrs=output_attrs)
         
 
     def sel(self, *args, **kwargs):
@@ -95,12 +96,13 @@ class GriddedData:
         >>> var.search_grid(lon=XX, lat=XX, zt=XX, method='nearest')
         """
 
-        if self.mutable:
-            self.data = self.data.sel(*args, **kwargs)
-            return self
-        else:
-            return GriddedData(self.data.sel(*args, **kwargs))
+        output_attrs = self.attrs if GriddedData.keep_attrs else {}
 
+        if GriddedData.modify_in_place:
+            self.data = self.data.sel(*args, **kwargs)
+            self.attrs = output_attrs
+        else:
+            return GriddedData(self.data.sel(*args, **kwargs), attrs=output_attrs)
 
     def isel(self, *args, **kwargs):
         """select grid points based on the given index
@@ -113,11 +115,13 @@ class GriddedData:
         >>> var = model.get_var(target_var)
         >>> var.isel(lon=XX, lat=XX, zt=XX)
         """
-        if self.mutable:
+        output_attrs = self.attrs if GriddedData.keep_attrs else {}
+        if GriddedData.modify_in_place:
             self.data = self.data.isel(*args, **kwargs)
+            self.attrs = output_attrs
             return self
         else:
-            return GriddedData(self.data.isel(*args, **kwargs), mutable=False, attrs=self.attrs)
+            return GriddedData(self.data.isel(*args, **kwargs), attrs=self.attrs)
     
     def normalise_longitude(self, method='g2n', *args, **kwargs):
         """Normalise GENIE's longitude (eastern degree) to normal longitude (-180, 180)
@@ -151,11 +155,14 @@ class GriddedData:
                 warnings.warn("No change applied because of invalid method")
                 output = self.data
 
-        if self.mutable:
+        output_attrs = self.attrs if GriddedData.keep_attrs else {}
+        if GriddedData.modify_in_place:
             self.data = output
-            return self        
+            self.attrs = output_attrs
+            return self
         else:
-             return GriddedData(output, mutable=False, attrs=self.attrs)
+            return GriddedData(output, attrs=output_attrs)
+        
                     
 
     def __add__(self, other):
@@ -288,11 +295,11 @@ class GriddedData:
         Allow GriddedData to be raised to a power
         """
 
-        if self.mutable:
+        if xr.get_options()['keep_attrs']:
             self.data = self.data ** other
             return self
         else:
-            return GriddedData(self.data ** other, mutable=False, attrs=self.attrs)
+            return GriddedData(self.data ** other, attrs=self.attrs)
 
 
     ## allow comparison
@@ -319,87 +326,122 @@ class GriddedData:
         """compute the maximum value of the array
         """
         
-        self.data = self.data.max(*args, **kwargs)
-        return self
+        output = self.data.max(*args, **kwargs)
+        output_attrs = self.attrs if GriddedData.keep_attrs else {}
+        if GriddedData.modify_in_place:
+            self.data = output
+            self.attrs = output_attrs
+            return self
+        else:
+            return GriddedData(output, attrs=output_attrs)
 
 
     def min(self, *args, **kwargs):
         """compute the minimal value of the array
         """        
-        if self.mutable:
-            self.data = self.data.min(*args, **kwargs)
+        output = self.data.min(*args, **kwargs)
+        
+        output_attrs = self.attrs if GriddedData.keep_attrs else {}
+        if GriddedData.modify_in_place:
+            self.data = output
+            self.attrs = output_attrs
             return self
         else:
-            return GriddedData(self.data.min(*args, **kwargs), mutable=False, attrs=self.attrs)
+            return GriddedData(output, attrs=output_attrs)
 
 
     def sum(self, *args, **kwargs):
         """ compute the sum of the array
         """
         
-        if self.mutable:
-            self.data = self.data.sum(*args, **kwargs)
+        output = self.data.sum(*args, **kwargs)
+        output_attrs = self.attrs if GriddedData.keep_attrs else {}
+        if GriddedData.modify_in_place:
+            self.data = output
+            self.attrs = output_attrs
             return self
         else:
-            return GriddedData(self.data.sum(*args, **kwargs), mutable=False, attrs=self.attrs)
+            return GriddedData(output, attrs=output_attrs)
 
 
     def mean(self, *args, **kwargs):
         """compute the mean of the array.
         Note this is not weighted mean, for weighted mean, use `weighted_mean` method
         """
-        if self.mutable:
-            self.data = self.data.mean(*args, **kwargs)
+        output = self.data.mean(*args, **kwargs)
+        output_attrs = self.attrs if GriddedData.keep_attrs else {}
+        if GriddedData.modify_in_place:
+            self.data = output
+            self.attrs = output_attrs
             return self
         else:
-            return GriddedData(self.data.mean(*args, **kwargs), mutable=False, attrs=self.attrs)
+            return GriddedData(output, attrs=output_attrs)
     
 
     def median(self, *args, **kwargs):
         """compute the median of the array
         """
         
-        if self.mutable:
-            self.data = self.data.median(*args, **kwargs)
+        output= self.data.median(*args, **kwargs)
+        output_attrs = self.attrs if GriddedData.keep_attrs else {}
+        if GriddedData.modify_in_place:
+            self.data = output
+            self.attrs = output_attrs
             return self
         else:
-            return GriddedData(self.data.median(*args, **kwargs), mutable=False, attrs=self.attrs)
+            return GriddedData(output, attrs=output_attrs)
 
     def sd(self, *args, **kwargs):        
         "compute the standard deviation of the mean"
-        if self.mutable:
-            self.data = np.std(self.data, *args, **kwargs)
+        
+        output = np.std(self.data, *args, **kwargs)
+        output_attrs = self.attrs if GriddedData.keep_attrs else {}
+        if GriddedData.modify_in_place:
+            self.data = output
+            self.attrs = output_attrs
             return self
         else:
-            return np.std(self.data, *args, **kwargs)
+            return GriddedData(output, attrs=output_attrs)
 
 
     def variance(self, *args, **kwargs):
         "compute the variance of the array"
-        if self.mutable:
-            self.data = np.var(self.data, *args, **kwargs)
+
+        output = np.var(self.data, *args, **kwargs)
+        output_attrs = self.attrs if GriddedData.keep_attrs else {}
+        if GriddedData.modify_in_place:
+            self.data = output
+            self.attrs = output_attrs
             return self
         else:
-            return np.var(self.data, *args, **kwargs)
+            return GriddedData(output, attrs=output_attrs)
 
     def se(self, *args, **kwargs):
         "compute the standard error of the mean"
-        if self.mutable:
-            self.data = sem(self.data, nan_policy="omit", axis=None, *args, **kwargs)
+        output = sem(self.data, nan_policy="omit", axis=None, *args, **kwargs)
+        output_attrs = self.attrs if GriddedData.keep_attrs else {}
+        if GriddedData.modify_in_place:
+            self.data = output
+            self.attrs = output_attrs
             return self
         else:
-            return sem(self.data, nan_policy="omit", axis=None, *args, **kwargs)
-
+            return GriddedData(output, attrs=output_attrs)
+                
     def weighted(self, weights, *args, **kwargs):
         """
         assign weights to the data
         """
         ## using xarray's API
-        if self.mutable:
-            self.data = self.data.weighted(weights, *args, **kwargs)
+
+        output= self.data.weighted(weights, *args, **kwargs)
+        output_attrs = self.attrs if GriddedData.keep_attrs else {}
+        if GriddedData.modify_in_place:
+            self.data = output
+            self.attrs = output_attrs
             return self
         else:
-            return self.data.weighted(weights, *args, **kwargs)
+            return GriddedData(output, attrs=output_attrs)
+
 
     
     def sel_modern_basin(self, basin, norm_lon_method='g2n'):
@@ -448,12 +490,14 @@ class GriddedData:
         else:
             cond = mask == target_ocean_index
 
-
-        if self.mutable:
-            self.data = self.normalise_longitude(method=norm_lon_method).data.where(cond)                    
+        output = self.normalise_longitude(method=norm_lon_method).data.where(cond)                    
+        output_attrs = self.attrs if GriddedData.keep_attrs else {}
+        if GriddedData.modify_in_place:
+            self.data = output
+            self.attrs = output_attrs
             return self
         else:
-            return GriddedData(self.normalise_longitude(method=norm_lon_method).data.where(cond), mutable=False, attrs=self.attrs)
+            return GriddedData(output, attrs=output_attrs)        
 
 
     def mask_basin(self, base, basin, subbasin):
@@ -481,15 +525,13 @@ class GriddedData:
 
         output = xr.DataArray(mask_data, dims=data.dims, coords=data.coords)
 
-
-        if self.mutable:
+        output_attrs = self.attrs if GriddedData.keep_attrs else {}
+        if GriddedData.modify_in_place:
             self.data = output
-            self.attrs = attr        
+            self.attrs = output_attrs
             return self
         else:
-            return GriddedData(output, mutable=False, attrs=attr)
-
-
+            return GriddedData(output, attrs=output_attrs)
     
     def ocn_only_data(self, index=False):
         """
