@@ -48,7 +48,7 @@ genie_sst = model.get_var('ocn_sur_temp').isel(time=-1).normalise_longitude(meth
 ## here just lightly mask the glodap data for better looking
 worlg4_mask = np.isnan(model.get_var('grid_mask').normalise_longitude(method='g2n').data)
 masked_glodap_temp = glodap_temp.where(~worlg4_mask)
-masked_glodap_temp = GriddedData(masked_glodap_temp, mutable=False, attrs=glodap_temp.attrs)
+masked_glodap_temp = GriddedData(masked_glodap_temp, attrs=glodap_temp.attrs)
 masked_glodap_temp.attrs['long_name'] = 'GLODAPv2.2016b temperature'
 masked_glodap_temp.attrs['units'] = 'deg C'
 

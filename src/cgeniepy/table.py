@@ -17,18 +17,19 @@ from importlib.resources import files
 
 
 class ScatterData:
+
+    modify_in_place = True
+    
     """ScatterData is a class to store non-gridded data with columns of coordinates."""
 
-    def __init__(self, data: Union[pd.DataFrame, int, str], mutable: bool = False, **kwargs):
+    def __init__(self, data: Union[pd.DataFrame, int, str], **kwargs):
         """
         Initialize a ScatterData object.
 
         Parameters:
         data: The path to the file, the data, or a PanDataSet ID.
-        mutable: Whether the data is mutable.
         **kwargs: Additional keyword arguments for pandas read functions.
         """
-        self.mutable = mutable
         self.data = self._process_data(data, **kwargs)
 
         # if the index is already set in the data, then set the coordinates
@@ -137,7 +138,7 @@ class ScatterData:
 
 
     def reset_index(self):
-        if self.mutable:
+        if ScatterData.modify_in_place:
             self.data = self.data.reset_index()
             return self
         else:
@@ -174,7 +175,7 @@ class ScatterData:
         
 
         ## add to self.data
-        if self.mutable:
+        if ScatterData.modify_in_place:
             self.data['basin'] = result
             return self
         else:        
@@ -211,7 +212,7 @@ class ScatterData:
         else:
             output= Interpolator(dims, coords, values, 200, 'ir-linear')
 
-        if self.mutable:
+        if ScatterData.modify_in_place:
             self.data = output
             return self
         else:
@@ -281,7 +282,7 @@ class ScatterData:
 
     def rolling(self, window, *args, **kwargs):
         "apply rolling to the data"
-        if self.mutable:
+        if ScatterData.modify_in_place:
             self.data = self.data.rolling(window, *args, **kwargs)
             return self
         else:

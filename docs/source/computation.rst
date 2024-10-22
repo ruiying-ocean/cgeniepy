@@ -43,12 +43,12 @@ Weighted mean
 
 Selecting data
 -----------------------
-The selection of data can be done by using the `sel` method or `isel` method. The `sel` method is used to select the data by the coordinate value, while the `isel` method is used to select the data by the index. Note that the selection and any computation of data can be inplace or not. If you want to keep the original data, you need to change the attribute `mutable` to `False`.
+The selection of data can be done by using the `sel` method or `isel` method. The `sel` method is used to select the data by the coordinate value, while the `isel` method is used to select the data by the index. Note that the selection and any computation of data can be inplace or not.
 
 
 .. code-block:: python
 
-    sst = model.get_var("ocn_sur_temp", mutable=False)
+    sst = model.get_var("ocn_sur_temp")
     sst.isel(time=-1) ## -> select the last time slice
     sst.sel(sst.data.lat > 0) ## -> select the data in the northern hemisphere
 
@@ -73,7 +73,7 @@ Similar to the selection of data by coordinate (time, lat, long etc), you can ma
 
 .. code-block:: python
 
-    sst = model.get_var("ocn_sur_temp", mutable=False)
+    sst = model.get_var("ocn_sur_temp")
     sst.mask_basin(base="worjh2", basin='Atlantic') ## -> mask the other oceans except Atlantic basin
 
 
@@ -82,13 +82,13 @@ The other way is to use `sel_modern_basin` method. As the name suggests, it only
 
 .. code-block:: python
 
-    sst = model.get_var("ocn_sur_temp", mutable=False)
+    sst = model.get_var("ocn_sur_temp")
     sst.sel_modern_basin('NPO') ## -> select the North Pacific Ocean
 
 
 Chain computation
 -----------------------
-All the methods can be done in a chain. For example, you can select the data, calculate the mean value and plot it in a single line. The only thing to remember is that it change the data in place if the attribute `mutable` is `True`.
+All the methods can be done in a chain. For example, you can select the data, calculate the mean value and plot it in a single line. 
 
 
 .. code-block:: python

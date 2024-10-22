@@ -296,7 +296,7 @@ class GenieModel(object):
             df["model"] = self.model_path.split("/")[-1]
 
             if to_ScatterData:
-                df = ScatterData(df, mutable=False)
+                df = ScatterData(df)
                 df.set_index('time (yr)')
             
             return df
@@ -331,7 +331,7 @@ class GenieModel(object):
             all_df = pd.concat(df_list, axis=0)
 
             if to_ScatterData:
-                all_df = ScatterData(df, mutable=False)
+                all_df = ScatterData(df)
                 all_df.set_index('time (yr)')
 
             return all_df
