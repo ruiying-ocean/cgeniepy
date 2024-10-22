@@ -9,7 +9,7 @@ def create_testdata():
     data = np.random.rand(lat.size,lon.size)
     xdata = xr.DataArray(data, coords=[('lat',lat),('lon',lon)],
                          attrs={'long_name':'random data', 'units':'uniteless'})   
-    return GriddedData(xdata,False, attrs=xdata.attrs)
+    return GriddedData(xdata, attrs=xdata.attrs)
 
 def test_mean():
     data = create_testdata()
