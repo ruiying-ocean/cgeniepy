@@ -32,6 +32,19 @@ class GriddedDataVis:
         """
         self.data = gd.data
         self.attrs = gd.attrs
+
+        ## if long name and units are not provided
+        if 'long_name' not in self.attrs:
+            self.plot_name = ''
+        else:
+            self.plot_name = self.attrs['long_name']
+            
+        if 'units' not in self.attrs:
+            self.plot_units = ''
+        else:
+            self.plot_units = self.attrs['units']
+
+        colourbar_label = f"{self.plot_name}\n{self.plot_units}"
         
         ## aesthetic parameters
         self.aes_dict = {
@@ -56,7 +69,7 @@ class GriddedDataVis:
             },
             "contourf_kwargs": {"levels": 15},
             "colorbar_label_kwargs": {
-                "label": f"{self.attrs['long_name']}\n({self.attrs['units']})",
+                "label": colourbar_label,
                 "size": 10,
                 "labelpad": 10,
             },
@@ -115,7 +128,7 @@ class GriddedDataVis:
         local_ax.minorticks_on()
         local_ax.tick_params(axis='both', which='both', direction='in', top=True, right=True)        
         local_ax.set_xlabel(dim.name)
-        local_ax.set_ylabel(f"{self.attrs['long_name']} ({self.attrs['units']})")
+        local_ax.set_ylabel(f"{self.plot_name} ({self.plot_units})")
 
         return p
 
@@ -164,7 +177,7 @@ class GriddedDataVis:
                     ax.set_visible(False)
 
             # Add a common colorbar to the figure
-            fig.colorbar(im, ax=axs.tolist(), orientation='horizontal', label=f"{self.attrs['long_name']} ({self.attrs['units']})",
+            fig.colorbar(im, ax=axs.tolist(), orientation='horizontal', label=f"{self.plot_name} ({self.plot_units})",
                          fraction=0.046, pad=0.05)            
         else:            
             raise ValueError("Not support 3D plot iterating over other dimension than time and depth")
