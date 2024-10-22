@@ -25,7 +25,7 @@ Plot Other Models' output
 This example shows how to use cgeniepy to plot gridded data from other models (CESM and HadCM3 here).
 You can download them from https://zenodo.org/records/13786014.
 
-.. GENERATED FROM PYTHON SOURCE LINES 9-41
+.. GENERATED FROM PYTHON SOURCE LINES 9-42
 
 
 
@@ -39,8 +39,10 @@ You can download them from https://zenodo.org/records/13786014.
 
  .. code-block:: none
 
+    /Users/yingrui/miniforge3/lib/python3.12/site-packages/pyproj/network.py:59: UserWarning: pyproj unable to set PROJ database path.
+      _set_context_ca_bundle_path(ca_bundle_path)
 
-    <matplotlib.colorbar.Colorbar object at 0x163fe75f0>
+    <matplotlib.colorbar.Colorbar object at 0x304313320>
 
 
 
@@ -59,6 +61,7 @@ You can download them from https://zenodo.org/records/13786014.
     ## Download necessary files, you need to install zenodo_get first
     ## by `pip install zenodo_get`, or, just download it from the link above
     subprocess.call(["zenodo_get", "10.5281/zenodo.13786013", "-o", "~/Downloads/"])
+
 
     ## read in the data
     cesm_lgm = xr.load_dataset("~/Downloads/CESM_LGM_var_regrid.nc")
@@ -86,7 +89,7 @@ You can download them from https://zenodo.org/records/13786014.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 6.258 seconds)
+   **Total running time of the script:** (1 minutes 48.528 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_other_models.py:
