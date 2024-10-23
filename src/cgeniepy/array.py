@@ -12,7 +12,7 @@ import warnings
 
 class GriddedData:
 
-    modify_in_place = True ## modify the data in place
+    modify_in_place = False ## modify the data in place
     keep_attrs = True ## keep the attributes during operations
     
     """
