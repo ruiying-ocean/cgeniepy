@@ -16,6 +16,7 @@ import subprocess
 ## by `pip install zenodo_get`, or, just download it from the link above
 subprocess.call(["zenodo_get", "10.5281/zenodo.13786013", "-o", "~/Downloads/"])
 
+
 ## read in the data
 cesm_lgm = xr.load_dataset("~/Downloads/CESM_LGM_var_regrid.nc")
 ## construct GriddedData object

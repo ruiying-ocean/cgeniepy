@@ -223,9 +223,10 @@ class GenieModel(object):
             tsvar_list = [f for f in all_bg_files.glob("*.res")]         
             return tsvar_list
 
-    def get_config(self, config_name='data_BIOGEM'):
-        file = join(self.model_path, config_name)
-        return self._parse_namelist(file)
+    def get_config(self, config_name='BIOGEM'):
+        file = join(self.model_path, f"data_{config_name}")
+        configdata = self._parse_namelist(file)[f"INI_{config_name}_NML"]
+        return configdata
 
     def _parse_namelist(self, file_path):
         namelist = {}
@@ -247,7 +248,7 @@ class GenieModel(object):
                     current_group = None
                 elif '=' in line:
                     # Parse the key-value pairs within the group
-                    key, value = [item.strip() for item in line.split('=', 1)]
+                    key, value = self._split_key_value(line)
 
                     # Convert Fortran logicals (.true., .false.) and numeric values
                     if value.lower() in ['.true.', 't']:
@@ -258,12 +259,28 @@ class GenieModel(object):
                         try:
                             value = float(value) if '.' in value or 'e' in value.lower() else int(value)
                         except ValueError:
-                            pass  # Keep as string if it's not a number
+                            # Remove trailing comma if present
+                            value = value.rstrip(',')
+                            # Remove surrounding quotes if present
+                            value = value.strip("'\"")
 
                     if current_group:
                         namelist[current_group][key] = value
 
         return namelist
+
+    def _split_key_value(self, line):
+        # Split the line into key and value, respecting quotes
+        parts = line.split('=', 1)
+        key = parts[0].strip()
+        value = parts[1].strip() if len(parts) > 1 else ''
+
+        # Handle quoted values with potential commas
+        if value.startswith(("'", '"')) and value.endswith(("'", '"')):
+            return key, value.strip("'\"")
+        
+        # For unquoted values, remove trailing comma if present
+        return key, value.rstrip(',')
 
     def get_ts(self, var: str, to_ScatterData=False):
         """
