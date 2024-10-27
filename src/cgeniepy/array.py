@@ -40,7 +40,7 @@ class GriddedData:
         self.attrs = attrs
 
         ## formatting the unit
-        if 'units' in self.attrs:
+        if 'units' in self.attrs and self.attrs['units'] is not None:
             self.attrs['units'] = Chemistry().format_unit(self.attrs['units'])
 
     def __repr__(self):
