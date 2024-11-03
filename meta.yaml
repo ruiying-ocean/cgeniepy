@@ -1,0 +1,12 @@
+package:
+  name: cgeniepy
+  version: 0.14.7
+
+build:
+  number: 3
+
+requirements:
+  run:
+    - python
+about:
+  summary: This is a Python package for analysing cGENIE model output
