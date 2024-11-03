@@ -11,8 +11,6 @@ import xarray as xr
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap, to_rgb as hex_to_rgb, LinearSegmentedColormap, rgb2hex
 import matplotlib.patheffects as pe
-from matplotlib.patheffects import Stroke, Normal
-import cartopy.mpl.geoaxes
 from cgeniepy.grid import GridOperation
 from .utils import efficient_log
 import warnings
@@ -137,9 +135,10 @@ class GriddedDataVis:
         ## if lon, lat then plot map
         ## if zt or depth then plot transec   
 
-        has_lat, has_lon, has_depth, has_time = GridOperation().check_dimension(self.data.dims)
+        has_lat, has_lon, has_depth, _ = GridOperation().check_dimension(self.data.dims)
         if has_lat and has_lon:
             return self._plot_map(*arg, **kwargs)
+        
         elif has_depth:
             return self._plot_transect(*arg, **kwargs)
         else:
@@ -147,7 +146,7 @@ class GriddedDataVis:
 
     def _plot_3d(self, *args, **kwargs):
         "plot 3D data = plot mutiple 2D plots"
-        has_lat, has_lon, has_depth, has_time = GridOperation().check_dimension(self.data.dims)
+        _, _, has_depth, has_time = GridOperation().check_dimension(self.data.dims)
         
         if has_time or has_depth:
             target_order = GridOperation().dim_order(self.data.dims)[0]
@@ -198,7 +197,7 @@ class GriddedDataVis:
         *args,
         **kwargs,
     ):
-
+        
         dim_order = GridOperation().dim_order(self.data.dims)
         lat_order = dim_order[0] ## in the case of 2D, lat is the first dimension
         lon_order = dim_order[1] ## in the case of 2D, lon is the second dimension
@@ -214,7 +213,9 @@ class GriddedDataVis:
         x_res = x_arr[1] - x_arr[0]
         x_edge = np.linspace(x_min-x_res/2, x_max+x_res/2, x_arr.size + 1)
 
-        if x_edge[0] < 0:
+
+        
+        if x_edge[0] < 0 and x_edge[1] > 0:    
             x_edge = x_edge + x_res/2
 
 
@@ -264,6 +265,7 @@ class GriddedDataVis:
                 *args,
                 **self.aes_dict["pcolormesh_kwargs"],
             )
+            
             if colorbar:
                 cbar = self._add_colorbar(p_pcolormesh, orientation="horizontal", **self.aes_dict["colorbar_kwargs"])
                 self._add_colorbar_label(cbar, **self.aes_dict["colorbar_label_kwargs"])
