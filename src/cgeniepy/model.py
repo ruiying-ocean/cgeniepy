@@ -410,7 +410,7 @@ class GenieModel(object):
         return df
         
         
-    def get_diag_avg(self, target_year, is_index=False, pattern_year=r"\d{5}",pattern_year_digit=r"\d{3}"):
+    def get_diag_avg(self, target_year, is_index=False, pattern_year=r"\d+",pattern_year_digit=r"\d{3}"):
         """
         read the diagnostic file of cGENIE
 
@@ -456,7 +456,7 @@ class GenieModel(object):
                 try:
                     target_year = sorted_years[target_year]
                 except IndexError:
-                    raise IndexError(f"Index {target_year} is out of range. Available indices are from 0 to {len(sorted_years) - 1}.")
+                    print(f"Index {target_year} is out of range. Available indices are from 0 to {len(sorted_years) - 1}.")
                 return self._render_diag_avg(sorted_diagfiles[target_year])
             else:
                 # merge two lists into a dictionary (and sort by year)
