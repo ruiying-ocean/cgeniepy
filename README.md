@@ -27,12 +27,17 @@ python3 -m pip install cgeniepy
 ```bash
 python3 -m pip install git+https://github.com/ruiying-ocean/cgeniepy.git@master
 ```
-
-3. Install extra dependency
+3. Install from conda
+```bash
+conda install --channel "ruiying" package 
+```
+ 
+4. Install extra dependency
 ```bash
 python3 -m pip install "cgeniepy[extra]"
 ```
-4. Update package
+
+5. Update package
 ```bash
 pip install --upgrade cgeniepy
 ```
