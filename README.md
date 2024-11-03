@@ -16,7 +16,7 @@
 
 ## Installation
 
-1. Install from [PyPI](https://pypi.org/project/cgeniepy/).
+1. Install from [PyPI](https://pypi.org/project/cgeniepy/) by running commands below in your terminal.
 
 ```bash
 python3 -m pip install cgeniepy
@@ -31,6 +31,10 @@ python3 -m pip install git+https://github.com/ruiying-ocean/cgeniepy.git@master
 3. Install extra dependency
 ```bash
 python3 -m pip install "cgeniepy[extra]"
+```
+4. Update package
+```bash
+pip install --upgrade cgeniepy
 ```
 
 
