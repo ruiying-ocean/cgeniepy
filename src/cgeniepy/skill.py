@@ -225,11 +225,17 @@ class ArrComparison:
         
         return p
 
-    def plot(self, ax=None, diagonal=True,title="Model vs Observation", savefig_name=None, metric=['rmse', 'r2', 'm', 'p'], *args, **kwargs):
+    def plot(self, ax=None, diagonal=True, log_scale=False,
+             title="Model vs Observation",             
+             savefig_name=None, metric=['rmse', 'r2', 'm', 'p'], *args, **kwargs):
         ## a x-y plot
         if not ax:
             fig, ax = plt.subplots()
         plt.rcParams['font.family'] = 'sans-serif'
+
+        if log_scale:
+            ax.set_xscale('log')
+            ax.set_yscale('log')
         ax.grid(True, linestyle='--', alpha=0.5)
         ax.scatter(self.model, self.data, zorder=2,*args, **kwargs)
         ax.minorticks_on()
