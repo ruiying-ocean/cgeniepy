@@ -29,7 +29,7 @@ python3 -m pip install git+https://github.com/ruiying-ocean/cgeniepy.git@master
 ```
 3. Install from conda
 ```bash
-conda install --channel "ruiying" package 
+conda install --channel "ruiying" cgeniepy
 ```
  
 4. Install extra dependency
