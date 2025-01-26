@@ -15,10 +15,9 @@ import subprocess
 ## by `pip install zenodo_get`, or, just download it from the link above
 subprocess.call(["zenodo_get", "10.5281/zenodo.13786013", "-o", "~/Downloads/"])
 
-
 ## read in the data and construct GriddedData object
 cesm_lgm = xr.load_dataset("~/Downloads/CESM_LGM_var_regrid.nc")
-cesm_13C = GriddedData(cesm_lgm['CISO_DIC_d13C'], mutable=False, attrs=cesm_lgm['CISO_DIC_d13C'].attrs)
+cesm_13C = GriddedData(cesm_lgm['CISO_DIC_d13C'], attrs=cesm_lgm['CISO_DIC_d13C'].attrs)
 cesm_13C_last = cesm_13C.isel(time=-1)
 
 ## read in the proxy data and construct ScatterData object
@@ -33,7 +32,7 @@ for i in proxy_d13C.data.index:
     depth = depth * 100 ## not necessary for cGENIE whose depth is in m
     pos = (depth, lat, lon)
     
-    data = cesm_13C_last.search_point(pos, ignore_na=True)
+    data = cesm_13C_last.search_point(pos, ignore_na=False)
 
     model_data.append(data)
 

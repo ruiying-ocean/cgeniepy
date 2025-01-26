@@ -4,9 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cgeniepy"
-version = "0.14.7"
+version = "0.14.8"
 description = "A Python package to read, analyse and visualise cGENIE Earth System Model output"
 license = {text = "GPL-3.0-only"}
 
 [project.optional-dependencies]
-extra = ["pangaeapy"]
+extra = ["pangaeapy", "gwspy"]

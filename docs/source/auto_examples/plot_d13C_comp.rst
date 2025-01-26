@@ -24,7 +24,7 @@ Search the nearest grid point for a given location
 
 This example is a combination of ScatterData and GriddedData to search the nearest grid point for a given location. I use CESM model output(You can download them from https://zenodo.org/records/13786013) and LGM d13C data from Peterson et al. 2014 (https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2013PA002552) as an example.
 
-.. GENERATED FROM PYTHON SOURCE LINES 8-46
+.. GENERATED FROM PYTHON SOURCE LINES 8-45
 
 
 
@@ -34,8 +34,19 @@ This example is a combination of ScatterData and GriddedData to search the neare
    :class: sphx-glr-single-img
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    /Users/yingrui/miniforge3/lib/python3.12/site-packages/pyproj/network.py:59: UserWarning: pyproj unable to set PROJ database path.
+      _set_context_ca_bundle_path(ca_bundle_path)
 
 
+
+
+
+
+|
 
 .. code-block:: Python
 
@@ -49,10 +60,9 @@ This example is a combination of ScatterData and GriddedData to search the neare
     ## by `pip install zenodo_get`, or, just download it from the link above
     subprocess.call(["zenodo_get", "10.5281/zenodo.13786013", "-o", "~/Downloads/"])
 
-
     ## read in the data and construct GriddedData object
     cesm_lgm = xr.load_dataset("~/Downloads/CESM_LGM_var_regrid.nc")
-    cesm_13C = GriddedData(cesm_lgm['CISO_DIC_d13C'], mutable=False, attrs=cesm_lgm['CISO_DIC_d13C'].attrs)
+    cesm_13C = GriddedData(cesm_lgm['CISO_DIC_d13C'], attrs=cesm_lgm['CISO_DIC_d13C'].attrs)
     cesm_13C_last = cesm_13C.isel(time=-1)
 
     ## read in the proxy data and construct ScatterData object
@@ -67,7 +77,7 @@ This example is a combination of ScatterData and GriddedData to search the neare
         depth = depth * 100 ## not necessary for cGENIE whose depth is in m
         pos = (depth, lat, lon)
     
-        data = cesm_13C_last.search_point(pos, ignore_na=True)
+        data = cesm_13C_last.search_point(pos, ignore_na=False)
 
         model_data.append(data)
 
@@ -81,7 +91,7 @@ This example is a combination of ScatterData and GriddedData to search the neare
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 31.225 seconds)
+   **Total running time of the script:** (0 minutes 2.828 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_d13C_comp.py:

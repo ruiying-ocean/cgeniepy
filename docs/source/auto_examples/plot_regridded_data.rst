@@ -52,9 +52,11 @@ The GLODAPV2 data is from https://glodap.info/index.php/mapped-data-product/.
 
  .. code-block:: none
 
+    /Users/yingrui/miniforge3/lib/python3.12/site-packages/pyproj/network.py:59: UserWarning: pyproj unable to set PROJ database path.
+      _set_context_ca_bundle_path(ca_bundle_path)
     /Users/yingrui/cgeniepy/src/cgeniepy/model.py:51: UserWarning: No gemflag is provided, use default gemflags: [biogem]
       warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
-    M-score of sea surface temperature 0.8293330621285011
+    M-score of sea surface temperature 0.8293330629170114
 
 
 
@@ -94,7 +96,7 @@ The GLODAPV2 data is from https://glodap.info/index.php/mapped-data-product/.
     ## here just lightly mask the glodap data for better looking
     worlg4_mask = np.isnan(model.get_var('grid_mask').normalise_longitude(method='g2n').data)
     masked_glodap_temp = glodap_temp.where(~worlg4_mask)
-    masked_glodap_temp = GriddedData(masked_glodap_temp, mutable=False, attrs=glodap_temp.attrs)
+    masked_glodap_temp = GriddedData(masked_glodap_temp, attrs=glodap_temp.attrs)
     masked_glodap_temp.attrs['long_name'] = 'GLODAPv2.2016b temperature'
     masked_glodap_temp.attrs['units'] = 'deg C'
 
@@ -109,7 +111,7 @@ The GLODAPV2 data is from https://glodap.info/index.php/mapped-data-product/.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 2.471 seconds)
+   **Total running time of the script:** (0 minutes 4.593 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_regridded_data.py:

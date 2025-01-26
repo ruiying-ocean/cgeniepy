@@ -615,8 +615,9 @@ class ScatterDataVis:
         log=False,
         land_mask=True,
         colorbar=True,
-            gridline=True,
-            zebra_frame=False,
+        gridline=True,
+        zebra_frame=False,
+        mask_age = None,
         *args,
         **kwargs,
     ):
@@ -634,12 +635,27 @@ class ScatterDataVis:
             fig, ax = self._init_fig(subplot_kw={"projection": ccrs.PlateCarree()})
 
         if land_mask:
-            ax.set_global()
-            ## plot land and coastline, zorder is the drawing order, smaller -> backer layer
-            # ax.stock_img()
-            ax.add_feature(cfeature.LAND.with_scale("110m"), zorder=2, facecolor="lightgrey")
-            ax.add_feature(cfeature.COASTLINE.with_scale("110m"), linewidth=1.4)
-            ax.add_feature(cfeature.LAKES.with_scale('110m'), zorder=3, facecolor='black')
+            if not mask_age:
+                ax.set_global()
+                ## plot land and coastline, zorder is the drawing order, smaller -> backer layer
+                # ax.stock_img()
+                ax.add_feature(cfeature.LAND.with_scale("110m"), zorder=2, facecolor="lightgrey")
+                ax.add_feature(cfeature.COASTLINE.with_scale("110m"), linewidth=1.4)
+                ax.add_feature(cfeature.LAKES.with_scale('110m'), zorder=3, facecolor='black')
+            else:
+                from gwspy import PlateModel
+
+                model = PlateModel("Muller2022")
+                coastlines_shapely = model.get_coastlines(
+                    time=mask_age, format="shapely"
+                )
+                ax.add_geometries(
+                    coastlines_shapely,
+                    crs=ccrs.PlateCarree(),
+                    facecolor="grey",
+                    edgecolor=None,
+                    alpha=0.5,
+                )
 
         if log:
             self.data[var] = efficient_log(self.data[var])

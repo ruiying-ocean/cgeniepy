@@ -20,11 +20,11 @@ subprocess.call(["zenodo_get", "10.5281/zenodo.13786013", "-o", "~/Downloads/"])
 ## read in the data
 cesm_lgm = xr.load_dataset("~/Downloads/CESM_LGM_var_regrid.nc")
 ## construct GriddedData object
-cesm_temp = GriddedData(cesm_lgm['TEMP'], mutable=False, attrs=cesm_lgm['TEMP'].attrs)
+cesm_temp = GriddedData(cesm_lgm['TEMP'], attrs=cesm_lgm['TEMP'].attrs)
 
 ## same for HadCM3L
 hadcm3_lgm=  xr.load_dataset("~/Downloads/teitu_020_o.pgclann.nc", decode_times=False)
-hadcm3_temp = GriddedData(hadcm3_lgm['temp_ym_dpth'], mutable=False, attrs=hadcm3_lgm['temp_ym_dpth'].attrs)
+hadcm3_temp = GriddedData(hadcm3_lgm['temp_ym_dpth'], attrs=hadcm3_lgm['temp_ym_dpth'].attrs)
 
 fig, axs = plt.subplots(1, 2, figsize=(10, 5), subplot_kw={'projection': ccrs.Robinson()})
 

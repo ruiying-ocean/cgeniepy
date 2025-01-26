@@ -117,6 +117,23 @@ Below is a gallery of examples
 
 .. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to add paleogeography mask according to input age">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_paleomask_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_paleomask.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Add paleogeography mask in scatter data plot</div>
+    </div>
+
+
+.. raw:: html
+
     <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to plot the 2D ScatterData object. I use a LGM d13C data from Peterson et al. 2014 (https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2013PA002552) as an example.">
 
 .. only:: html
@@ -301,6 +318,7 @@ Below is a gallery of examples
    /auto_examples/plot_sst_map
    /auto_examples/plot_timeseries
    /auto_examples/plot_logo
+   /auto_examples/plot_paleomask
    /auto_examples/plot_scatter_map
    /auto_examples/plot_scatterdata
    /auto_examples/plot_evaluation

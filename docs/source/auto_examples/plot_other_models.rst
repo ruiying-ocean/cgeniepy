@@ -39,10 +39,8 @@ You can download them from https://zenodo.org/records/13786014.
 
  .. code-block:: none
 
-    /Users/yingrui/miniforge3/lib/python3.12/site-packages/pyproj/network.py:59: UserWarning: pyproj unable to set PROJ database path.
-      _set_context_ca_bundle_path(ca_bundle_path)
 
-    <matplotlib.colorbar.Colorbar object at 0x304313320>
+    <matplotlib.colorbar.Colorbar object at 0x15e4e4380>
 
 
 
@@ -66,11 +64,11 @@ You can download them from https://zenodo.org/records/13786014.
     ## read in the data
     cesm_lgm = xr.load_dataset("~/Downloads/CESM_LGM_var_regrid.nc")
     ## construct GriddedData object
-    cesm_temp = GriddedData(cesm_lgm['TEMP'], mutable=False, attrs=cesm_lgm['TEMP'].attrs)
+    cesm_temp = GriddedData(cesm_lgm['TEMP'], attrs=cesm_lgm['TEMP'].attrs)
 
     ## same for HadCM3L
     hadcm3_lgm=  xr.load_dataset("~/Downloads/teitu_020_o.pgclann.nc", decode_times=False)
-    hadcm3_temp = GriddedData(hadcm3_lgm['temp_ym_dpth'], mutable=False, attrs=hadcm3_lgm['temp_ym_dpth'].attrs)
+    hadcm3_temp = GriddedData(hadcm3_lgm['temp_ym_dpth'], attrs=hadcm3_lgm['temp_ym_dpth'].attrs)
 
     fig, axs = plt.subplots(1, 2, figsize=(10, 5), subplot_kw={'projection': ccrs.Robinson()})
 
@@ -89,7 +87,7 @@ You can download them from https://zenodo.org/records/13786014.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 48.528 seconds)
+   **Total running time of the script:** (0 minutes 47.767 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_other_models.py:
