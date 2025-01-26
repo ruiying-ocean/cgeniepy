@@ -7,3 +7,4 @@ sphinx-autoapi==3.0.0
 matplotlib==3.9.2
 gwspy==0.1.2
 cgeniepy
+zenodo_get=1.6.1
