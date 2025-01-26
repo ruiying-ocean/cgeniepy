@@ -253,6 +253,23 @@ Below is a gallery of examples
 
 .. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="Add observational data on model output">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_data_on_model_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_data_on_model.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Add observational data on model output</div>
+    </div>
+
+
+.. raw:: html
+
     <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to use cgeniepy to plot gridded data from other models (CESM and HadCM3 here). You can download them from https://zenodo.org/records/13786014.">
 
 .. only:: html
@@ -326,6 +343,7 @@ Below is a gallery of examples
    /auto_examples/plot_multiple_vars
    /auto_examples/plot_taylor_diagram
    /auto_examples/plot_additional_cmap
+   /auto_examples/plot_data_on_model
    /auto_examples/plot_other_models
    /auto_examples/plot_d13C_comp
    /auto_examples/plot_regridded_data
