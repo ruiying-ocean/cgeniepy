@@ -24,12 +24,14 @@ Plot coastal only data
 
 This example shows how to plot the PO4 distribution in each basin.
 
-.. GENERATED FROM PYTHON SOURCE LINES 8-25
+This example is independent from GENIE's mask
+
+.. GENERATED FROM PYTHON SOURCE LINES 10-27
 
 
 
 .. image-sg:: /auto_examples/images/sphx_glr_plot_coastal_data_001.png
-   :alt: plot coastal data
+   :alt: time = 9.5 [Year mid-point]
    :srcset: /auto_examples/images/sphx_glr_plot_coastal_data_001.png
    :class: sphx-glr-single-img
 
@@ -38,10 +40,12 @@ This example shows how to plot the PO4 distribution in each basin.
 
  .. code-block:: none
 
+    /Users/yingrui/miniforge3/lib/python3.12/site-packages/pyproj/network.py:59: UserWarning: pyproj unable to set PROJ database path.
+      _set_context_ca_bundle_path(ca_bundle_path)
     /Users/yingrui/cgeniepy/src/cgeniepy/model.py:51: UserWarning: No gemflag is provided, use default gemflags: [biogem]
       warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
 
-    <matplotlib.collections.QuadMesh object at 0x1436b70e0>
+    <matplotlib.collections.QuadMesh object at 0x1442763c0>
 
 
 
@@ -67,12 +71,12 @@ This example shows how to plot the PO4 distribution in each basin.
     gc = model.grid_category()
 
     ## coastal region
-    xr.where(gc == 0, sst.data.values, np.nan).plot()
+    xr.where(gc == 0, sst.data, np.nan).plot()
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 0.072 seconds)
+   **Total running time of the script:** (0 minutes 1.449 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_coastal_data.py:
