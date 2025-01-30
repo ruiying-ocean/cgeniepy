@@ -171,12 +171,11 @@ class ScatterData:
         assert self.lon in self.index, f"{self.lon} not found in the index"
         assert self.lat in self.index, f"{self.lat} not found in the index"
 
-        result = self.data.reset_index().apply(lambda row: sub_detect_basin(row[self.lon], row[self.lat]), axis=1)
+        result = self.data.reset_index().apply(lambda row: sub_detect_basin(row[self.lon], row[self.lat]), axis=1)        
         
-
         ## add to self.data
-        if ScatterData.modify_in_place:
-            self.data['basin'] = result
+        if ScatterData.modify_in_place:            
+            self.data['basin'] = list(result)
             return self
         else:        
             tmp_data = self.data.reset_index()
