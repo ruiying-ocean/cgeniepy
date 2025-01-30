@@ -308,9 +308,9 @@ class TaylorDiagram(object):
             self.mult_comp = False
             
         self.ac = ac
-        self._extract_data()
+        self.extract_data()
 
-    def _extract_data(self):
+    def extract_data(self):
 
         if not self.mult_comp:        
             self.corr = self.ac.pearson_r()
@@ -414,14 +414,14 @@ class TaylorDiagram(object):
                          linewidth=1.5)
 
             ## add reference point (because crmse is the distance to reference point)
-            self.add_point(1, self.ref_std, marker='*',label='reference', edgecolor='k')            
+            self.add_point(1, self.ref_std, marker='*',label='ref', edgecolor='k')            
 
 
     def add_point(self, correlation, std, *args, **kwargs):
         ## x->theta, y->radiance        
         self.ax.scatter(np.arccos(correlation), std,*args, **kwargs)        
 
-    def plot(self, cmap=None, *args, **kwargs):
+    def plot(self, cmap=None,add_legend=True, *args, **kwargs):
         if not self.mult_comp:
             ## add model point
             self.add_point(self.corr, self.model_std, edgecolor='k', label=self.label, *args, **kwargs)
@@ -429,14 +429,17 @@ class TaylorDiagram(object):
             if not cmap:
                 color_list = plt.cm.get_cmap('tab10', len(self.ac)).colors
             else:
-                color_list = cmap.colors
-            
+                color_list = cmap.colors            
             
             for i in range(len(self.ac)):
                 ## normalised std
                 self.add_point(self.corr[i], self.model_std[i]/self.obs_std[i], label=self.label[i],
                                edgecolor='k', c=color_list[i],  *args, **kwargs)
-        self.ax.legend()
+
+        if add_legend:
+            # outside the box
+            self.ax.legend(loc='upper right', bbox_to_anchor=(1.3, 1.0))
+
 
     def savefig(self, *args, **kwargs):
         self.fig.savefig(*args, **kwargs)
