@@ -515,12 +515,25 @@ class GriddedData:
         gp = GridOperation()
         data = self.data
         attr = self.attrs
-        mask = gp.GENIE_grid_mask(base=base, basin=basin, subbasin=subbasin, invert=True)
+
+        if isinstance(basin, str):
+            basin = [basin]  # Convert to list if a single basin is provided
+
+        # Loop and merge masks
+        combined_mask = None
+
+        for bs in basin:
+            mask = gp.GENIE_grid_mask(base=base, basin=bs, subbasin=subbasin, invert=True)
+            
+            if combined_mask is None:
+                combined_mask = mask
+            else:
+                combined_mask = np.logical_and(combined_mask, mask)  
 
         if self.data.ndim > 2:
-            mask = np.broadcast_to(mask, (16, 36, 36))
+            combined_mask = np.broadcast_to(combined_mask, (16, 36, 36))
 
-        mask_data = np.ma.array(data, mask=mask)
+        mask_data = np.ma.array(data, mask=combined_mask)
         mask_data = np.ma.masked_invalid(mask_data)
 
         output = xr.DataArray(mask_data, dims=data.dims, coords=data.coords)
