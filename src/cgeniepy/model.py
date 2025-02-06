@@ -66,8 +66,10 @@ class GenieModel(object):
         else:
             poc_export = self.get_diag_avg(-1, is_index=True).query("variable == 'Total POC export'").iloc[:, 2].to_string(index=False)
             ocn_temp = self.get_diag_avg(-1, is_index=True).query("variable == 'Ocean temp'").iloc[:, 2].to_string(index=False)
-            repr_string = f"GenieModel({self.model_path})\nLast Year Diagnostics:\nOcean temp: {ocn_temp}\nTotal POC export: {poc_export}"
-            return repr_string    
+            atm_co2 = self.get_diag_avg(-1, is_index=True).query("variable == 'Atmospheric pCO2'").iloc[:, 2].to_string(index=False)
+            repr_str1 = f"GenieModel({self.model_path})\nLast Year Diagnostics:\n"
+            repr_str2 = f"Ocean temp: {ocn_temp}\nTotal POC export: {poc_export}\natm pCO2: {atm_co2}"
+            return repr_str1+repr_str2
 
     def _model_ncpath(self, gem="ecogem", dim="2d"):
         """

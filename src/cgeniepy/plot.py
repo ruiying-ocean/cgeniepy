@@ -71,7 +71,7 @@ class GriddedDataVis:
                 "size": 10,
                 "labelpad": 10,
             },
-            "colorbar_kwargs": {"fraction": 0.046, "pad": 0.03},
+            "colorbar_kwargs": {"fraction": 0.046, "pad": 0.03, 'orientation': 'horizontal'},
         }
 
     def plot(self, *args, **kwargs):
@@ -267,7 +267,7 @@ class GriddedDataVis:
             )
             
             if colorbar:
-                cbar = self._add_colorbar(p_pcolormesh, orientation="horizontal", **self.aes_dict["colorbar_kwargs"])
+                cbar = self._add_colorbar(p_pcolormesh,  **self.aes_dict["colorbar_kwargs"])
                 self._add_colorbar_label(cbar, **self.aes_dict["colorbar_label_kwargs"])
 
         if contour:
