@@ -495,7 +495,7 @@ class GenieModel(object):
     def grid_area(self):
         "return the grid area array in used in this model experiment, unit: m2"
         ## read grid_area from biogem
-        print("grid area returned in the unit of 'm2'")
+        ##print("grid area returned in the unit of 'm2'")
         return self.get_var("grid_area")
     
     def grid_mask_3d(self):
@@ -531,7 +531,7 @@ class GenieModel(object):
             grid_volume = depth * grid_area * ocn_mask 
             grid_volume.data.attrs["units"] = "m$^{3}$"
             grid_volume.data.attrs["long_name"] = "grid volume"
-            print("grid volume calculated in the unit of 'm3'")
+            ## print("grid volume calculated in the unit of 'm3'")
         except ValueError:
             print(
                 "Depth array not found! Please ensure 3d data is exported in the model!"
