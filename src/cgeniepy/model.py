@@ -46,6 +46,8 @@ class GenieModel(object):
             self.is_ensemble = False
             if not Path(model_path).is_dir():
                 raise ValueError(f"{model_path} is not a valid directory")
+        else:
+            self.is_ensemble = False
 
         if not gemflag:
             warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
@@ -311,8 +313,14 @@ class GenieModel(object):
             ## convert to numeric
             df = df.apply(pd.to_numeric, errors="coerce")
 
-            ## add a column of model name
-            df["model"] = self.model_path.split("/")[-1]
+            ## add a column of model name                        
+            if self.model_path.__class__.__name__ == "PosixPath":
+                df["model"] = self.model_path.name
+            elif self.model_path.__class__.__name__ == "str":
+                df["model"] = self.model_path.split("/")[-1]
+            else:
+                # do nothing
+                pass
 
             if to_ScatterData:
                 df = ScatterData(df)
