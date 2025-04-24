@@ -39,6 +39,14 @@ class GriddedData:
         self.data = array
         self.attrs = attrs
 
+        try:
+            ## to speed up the computation in search_point
+            self.ocn_index = self.ocn_only_data(index=True)
+            self.ocn_data = self.ocn_only_data(index=False)
+        except:
+            self.ocn_index = None
+            self.ocn_data = None
+
         ## formatting the unit
         if 'units' in self.attrs and self.attrs['units'] is not None:
             self.attrs['units'] = Chemistry().format_unit(self.attrs['units'])
@@ -583,7 +591,7 @@ class GriddedData:
             raise ValueError("Input point has incompatiable coordinate")
         
         if ignore_na:
-            index_pool = self.ocn_only_data(index=True)
+            index_pool = self.ocn_index
             match ndim:
                 case 3:
                     ## point: (depth, lat, lon); Index: (depth, lat, lon)
@@ -596,7 +604,7 @@ class GriddedData:
                     distances = GridOperation().geo_dis2d(point, index_pool[:, 0:3])
                     idx_min = np.argmin(distances)
             
-            nearest_value = self.ocn_only_data(index=False).values[idx_min]
+            nearest_value = self.ocn_data.values[idx_min]
             return nearest_value
         else:
             ## construct a dictionary based on self.data.dims and input point, and method ("nearest")
