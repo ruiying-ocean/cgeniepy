@@ -39,14 +39,6 @@ class GriddedData:
         self.data = array
         self.attrs = attrs
 
-        try:
-            ## to speed up the computation in search_point
-            self.ocn_index = self.ocn_only_data(index=True)
-            self.ocn_data = self.ocn_only_data(index=False)
-        except:
-            self.ocn_index = None
-            self.ocn_data = None
-
         ## formatting the unit
         if 'units' in self.attrs and self.attrs['units'] is not None:
             self.attrs['units'] = Chemistry().format_unit(self.attrs['units'])
@@ -554,7 +546,7 @@ class GriddedData:
         else:
             return GriddedData(output, attrs=output_attrs)
     
-    def ocn_only_data(self, index=False):
+    def _ocn_only_data(self, index=False):
         """
         remove the NA grid (i.e., land definition)
         :param index: return GeoIndex if True or real value if false
@@ -568,7 +560,14 @@ class GriddedData:
             return np.stack(ocn_only_data.x.values)
         else:
             return ocn_only_data
-        
+
+    def save_ocn_data(self):
+        self.ocn_index = self._ocn_only_data(index=True)
+        self.ocn_data = self._ocn_only_data(index=False)
+
+    def _ensure_ocn_data(self):
+        if not hasattr(self, 'ocn_index') or not hasattr(self, 'ocn_data'):
+            self.save_ocn_data()        
 
     def search_point(self, point, ignore_na=False, to_genielon=False, **kwargs):
         """
@@ -591,7 +590,9 @@ class GriddedData:
             raise ValueError("Input point has incompatiable coordinate")
         
         if ignore_na:
+            self._ensure_ocn_data()
             index_pool = self.ocn_index
+            
             match ndim:
                 case 3:
                     ## point: (depth, lat, lon); Index: (depth, lat, lon)
