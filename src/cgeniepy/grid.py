@@ -44,37 +44,34 @@ class GridOperation:
             lat = np.rad2deg(np.arcsin(np.linspace(lat_min, lat_max, N)))
             return lat
 
-    def get_genie_depth(self, edge=False):
-        """hard coded cGENIE vertical depth in 16 levels        
+    def get_genie_depth(self, N=16, edge=False, max_depth=5000):
+        """calculate cGENIE vertical depth
+        :param N: number of grid points
+        :param edge: if True, return edge points, otherwise return midpoints
         """
-        
-        # No idea how it is calculated yet.
-        z_edge = np.array(
-            [
-                0.0000,
-                80.8407,
-                174.7519,
-                283.8467,
-                410.5801,
-                557.8040,
-                728.8313,
-                927.5105,
-                1158.3124,
-                1426.4307,
-                1737.8987,
-                2099.7254,
-                2520.0527,
-                3008.3391,
-                3575.5723,
-                4234.45166,
-                5000.0000,
-            ]
-        )
+        ez0=0.1
+
+        z1 = ez0 * ((1.0 + 1/ez0) ** (1.0 / N) - 1.0)
+        dz = np.zeros(N)
+        tv2 = 0.0
+
+        for k in range(1, N + 1):
+            tv3 = ez0 * ((z1 / ez0 + 1) ** k - 1)
+            dz[N - k] = tv3 - tv2
+            tv2 = tv3
+
+        edges = np.zeros(N + 1)
+        for k in range(N - 1, -1, -1):
+            edges[k] = edges[k + 1] - dz[k]
+
+        edges *= -max_depth  # Convert to physical depths (0 at surface, increasing positive down)
+
         if edge:
-            return z_edge
+            return edges
         else:
-            z = np.array([(z_edge[i] + z_edge[i + 1]) / 2 for i in range(len(z_edge) - 1)])
+            z = np.array([(edges[i] + edges[i + 1]) / 2 for i in range(len(edges) - 1)])
             return z
+
 
     def get_normal_lon(self, N=36, edge=False):
         """
