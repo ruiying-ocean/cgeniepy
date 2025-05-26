@@ -140,6 +140,7 @@ class GriddedData:
         >>> Model.get_var('abc').normalise_longitude()
         """
         gp = GridOperation()
+        
 
         match method:
             case 'g2n':
@@ -635,3 +636,23 @@ class GriddedData:
         convert GriddedData to ScatterData
         """
         return ct.ScatterData(self.to_dataframe())
+
+    def fill_poles(self):
+        """
+        Fill the poles with a given value, default is NaN
+        """
+        # Create a regular latitude grid from -90 to 90
+        if hasattr(self.data, 'lat'):
+            current_lats = self.data.lat.values
+        else:
+            raise ValueError("DataArray must have a 'lat' coordinate to fill poles.")
+
+        n_points = len(current_lats) + 2  # or choose your desired resolution
+        regular_lats = np.linspace(-90, 90, n_points)
+
+        # If you have data associated with these latitudes, you can interpolate
+        # Example assuming you have a DataArray called 'da':
+        da_interp = self.data.interp(lat=regular_lats, method='linear')
+
+        self.data = da_interp
+        return self
