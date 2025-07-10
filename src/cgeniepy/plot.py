@@ -377,6 +377,9 @@ class GriddedDataVis:
         else:
             local_ax = kwargs.pop("ax")
 
+        local_ax.grid(which='major', linestyle='--', linewidth=0.5, alpha=0.7)
+
+
         if facecolor:
             self._set_facecolor(local_ax, **self.aes_dict["facecolor_kwargs"])
 
