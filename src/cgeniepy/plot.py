@@ -436,7 +436,7 @@ class GriddedDataVis:
             labelsize=self.aes_dict["general_kwargs"]["fontsize"],
             labelfontfamily=self.aes_dict["general_kwargs"]["font"],
         )
-        local_ax.minorticks_on()
+        # local_ax.minorticks_on()
 
         if pcolormesh:
             return p_pcolormesh
