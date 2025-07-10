@@ -85,6 +85,12 @@ class GriddedDataVis:
         in self.aes_dict
         """
         plt.rcParams['font.family'] = 'sans-serif'
+        plt.rcParams['lines.antialiased'] = True
+
+        ## if value has both negative and positive values, set cmap to 'RdBu_r'
+        if self.data.min() < 0 and self.data.max() > 0:
+            if 'cmap' not in kwargs:
+                self.aes_dict['pcolormesh_kwargs']['cmap'] = plt.get_cmap('RdBu_r')        
 
         ## try to update pcolor_kwargs
         if 'vmin' in kwargs:
