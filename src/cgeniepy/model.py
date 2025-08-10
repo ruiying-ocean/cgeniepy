@@ -39,13 +39,19 @@ class GenieModel(object):
         ## check if model_path is a valid directory
         if isinstance(model_path, (list, tuple)):
             self.is_ensemble = True
+            expanded_paths = []
             for path in model_path:
-                if not Path(path).is_dir():
+                expanded_path = Path(path).expanduser()
+                if not expanded_path.is_dir():
                     raise ValueError(f"{path} is not a valid directory")
+                expanded_paths.append(str(expanded_path))
+            self.model_path = expanded_paths
         elif isinstance(model_path, str):
             self.is_ensemble = False
-            if not Path(model_path).is_dir():
+            expanded_path = Path(model_path).expanduser()
+            if not expanded_path.is_dir():
                 raise ValueError(f"{model_path} is not a valid directory")
+            self.model_path = str(expanded_path)
         else:
             self.is_ensemble = False
 
@@ -78,22 +84,19 @@ class GenieModel(object):
         get the path of model NetCDF output of target gem and dimension
         if the model is an ensemble, return a list of paths
         """
-
         nc_file = f"fields_{gem}_{dim}.nc"
-
         if not self.is_ensemble:
-            model_path = self.model_path
-            nc_path = join(model_path, gem, nc_file)
-            if file_exists(nc_path):
-                return nc_path
+            model_path = Path(self.model_path).expanduser()
+            nc_path = model_path / gem / nc_file
+            if nc_path.exists():
+                return str(nc_path)
         else:
             nc_paths = []
             for path in self.model_path:
-                model_path = path
-                nc_path = join(model_path, gem, nc_file)
-                if file_exists(nc_path):
-                    nc_paths.append(nc_path)
-            ## make `nc_paths` hashable
+                model_path = Path(path).expanduser()
+                nc_path = model_path / gem / nc_file
+                if nc_path.exists():
+                    nc_paths.append(str(nc_path))
             nc_paths = tuple(nc_paths)
             return nc_paths
 
