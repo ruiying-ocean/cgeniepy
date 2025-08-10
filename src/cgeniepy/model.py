@@ -1,4 +1,3 @@
-from os.path import join
 from typing import Union, List, Tuple
 import re
 import warnings
@@ -214,7 +213,7 @@ class GenieModel(object):
         if self.is_ensemble:
             biogem_paths = []
             for path in self.model_path:
-                biogem_paths.append(join(path, "biogem"))
+                biogem_paths.append(Path(path).expanduser() / "biogem")
 
             ## return all files in all directories
             tsvar_list = [list(Path(path).glob("*.res")) for path in biogem_paths]
@@ -222,7 +221,7 @@ class GenieModel(object):
             tsvar_list = list(itertools.chain(*tsvar_list))
             return tsvar_list
         else:
-            biogem_path = join(self.model_path, "biogem")
+            biogem_path = Path(self.model_path).expanduser() / "biogem"
             ## return all files in the directory
             all_bg_files = Path(biogem_path)
 
@@ -231,7 +230,7 @@ class GenieModel(object):
             return tsvar_list
 
     def get_config(self, config_name='BIOGEM'):
-        file = join(self.model_path, f"data_{config_name}")
+        file = Path(self.model_path).expanduser() / f"data_{config_name}"
         configdata = self._parse_namelist(file)[f"INI_{config_name}_NML"]
         return configdata
 
@@ -296,15 +295,14 @@ class GenieModel(object):
         :param var: the name of the target variable
         :return: a pandas DataFrame
         """
-
         if not self.is_ensemble:
-            filename = f"biogem_series_{var}.res"            
-            f = join(self.model_path, "biogem", filename)
-            if not file_exists(f):
+            filename = f"biogem_series_{var}.res"                        
+            f = Path(self.model_path).expanduser() / "biogem" / filename
+
+            if not f.is_file():
                 raise ValueError(f"{f} does not exist")
 
-            # Read the text file into a DataFrame
-            with open(f, "r") as file:
+            with f.open("r") as file:
                 lines = file.readlines()
 
             # Remove " %" from the header and split it using " / "
@@ -337,8 +335,9 @@ class GenieModel(object):
             for path in self.model_path:
                 ## do the same thing as above
                 filename = f"biogem_series_{var}.res"
-                f = join(path, "biogem", filename)
-                if not file_exists(f):
+                f = Path(self.model_path).expanduser() / "biogem" / filename
+
+                if not f.is_file():
                     raise ValueError(f"{f} does not exist")
 
                 ## read text file into a DataFrame

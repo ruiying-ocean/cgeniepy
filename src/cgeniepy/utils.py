@@ -15,16 +15,17 @@ def check_rm(path):
 
 
 def file_exists(path):
-    """
-    Check if file exists. If not, raise FileNotFoundError.
+   """
+   Check if file exists. If not, raise FileNotFoundError.
 
-    :param path: path string of target file
-    :returns: True if file exists
-    """
-    if os.path.isfile(path):
-        return True
-    else:
-        raise FileNotFoundError(f"{path} not exist")
+   :param path: path string of target file
+   :returns: True if file exists
+   """
+   file_path = Path(path).expanduser()
+   if file_path.is_file():
+       return True
+   else:
+       raise FileNotFoundError(f"{path} not exist")
 
 
 def is_empty(path):
