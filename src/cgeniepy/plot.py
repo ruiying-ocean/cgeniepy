@@ -11,9 +11,11 @@ import xarray as xr
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap, to_rgb as hex_to_rgb, LinearSegmentedColormap, rgb2hex
 import matplotlib.patheffects as pe
+import matplotlib as mpl
 from cgeniepy.grid import GridOperation
 from .utils import efficient_log
 import warnings
+
 
 
 class GriddedDataVis:
@@ -43,18 +45,21 @@ class GriddedDataVis:
             self.plot_units = self.attrs['units']
 
         colourbar_label = f"{self.plot_name}\n{self.plot_units}"
+
+        self.has_negative_and_positive = (self.data.min() < 0 and self.data.max() > 0)
+
+        pal = CommunityPalette(name='parula').colormap
         
-        ## aesthetic parameters
+        
         self.aes_dict = {
-            ## x,ylabel
-            "general_kwargs": {"cmap": "viridis", "font": "Helvetica", "fontsize": 10},
-            "facecolor_kwargs": {"c": "silver"},
-            "borderline_kwargs": {"c": "black", "linewidth": 0.5},
-            "outline_kwargs": {"colors": "black", "linewidth": 0.5},
-            "gridline_kwargs": {"color": "black", "linewidth": 0.5, "linestyle": "dashed", "draw_labels": False},
-            "pcolormesh_kwargs": {"shading": "auto", "cmap": plt.get_cmap("viridis")},
+            "general_kwargs": {"font": "Helvetica", "fontsize": 10},
+            "facecolor_kwargs": {"c": "white"}, #silver
+            "borderline_kwargs": {"c": "black", "linewidth": 1.0},
+            "outline_kwargs": {"colors": "black", "linewidth": 1.0},
+            "gridline_kwargs": {"color": "black", "linewidth": 0.25, "linestyle": "--", "draw_labels": False},
+            "pcolormesh_kwargs": {"shading": "auto", "cmap": pal},
             "contour_kwargs": {
-                "linewidths": 0.6,
+                "linewidths": 1.35,
                 "colors": "black",
                 "linestyles": "solid",
                 "zorder": 10,
@@ -62,7 +67,7 @@ class GriddedDataVis:
             },
             "contour_label_kwargs": {
                 "colors": ["black"],
-                "fontsize": 8,
+                "fontsize": 10,
                 "inline": False,
             },
             "contourf_kwargs": {"levels": 15},
@@ -72,8 +77,9 @@ class GriddedDataVis:
                 "labelpad": 10,
             },
             "colorbar_kwargs": {"fraction": 0.046, "pad": 0.03, 'orientation': 'horizontal'},
-        }
+        }         
 
+            
     def plot(self, *args, **kwargs):
         """
         visualise the data based on the dimension of the array
@@ -87,20 +93,51 @@ class GriddedDataVis:
         plt.rcParams['font.family'] = 'sans-serif'
         plt.rcParams['lines.antialiased'] = True
 
-        ## if value has both negative and positive values, set cmap to 'RdBu_r'
-        if self.data.min() < 0 and self.data.max() > 0:
-            if 'cmap' not in kwargs:
-                self.aes_dict['pcolormesh_kwargs']['cmap'] = plt.get_cmap('RdBu_r')        
 
-        ## try to update pcolor_kwargs
-        if 'vmin' in kwargs:
-                self.aes_dict['pcolormesh_kwargs']['vmin'] = kwargs['vmin']
-        if 'vmax' in kwargs:
-            self.aes_dict['pcolormesh_kwargs']['vmax'] = kwargs['vmax']
-        if 'cmap' in kwargs:
-            self.aes_dict['pcolormesh_kwargs']['cmap'] = kwargs['cmap']
+        def validate_and_get_cmap(cmap_name):
+            "even if our cmap is not registered successfully, it will still be used"
+            try:
+                import matplotlib.cm as cm
+                return cm.get_cmap(cmap_name)
+            except ValueError:
+                try:
+                    return CommunityPalette(name=cmap_name).colormap
+                except:
+                    raise ValueError(f"Colormap '{cmap_name}' not found in matplotlib or CommunityPalette")
 
-                   
+            
+        ## if value has both negative and positive values, set cmap to 'PRGn'
+        if kwargs.get('pcolormesh', True):
+
+            ## if not specified, set cmap to 'RdBu_r'
+            if 'cmap' not in kwargs and self.has_negative_and_positive:
+                div_pal = CommunityPalette(name='cspace_BlRd').colormap                
+                self.aes_dict['pcolormesh_kwargs']['cmap'] = div_pal
+
+            ## try to update pcolor_kwargs
+            if 'vmin' in kwargs:
+                    self.aes_dict['pcolormesh_kwargs']['vmin'] = kwargs['vmin']
+            if 'vmax' in kwargs:
+                self.aes_dict['pcolormesh_kwargs']['vmax'] = kwargs['vmax']
+            if 'cmap' in kwargs:
+                validated_cmap = validate_and_get_cmap(kwargs['cmap'])
+                self.aes_dict['pcolormesh_kwargs']['cmap'] = validated_cmap
+
+
+        ## for contourf plots, do the same
+        if kwargs.get('contourf', True): 
+            if 'cmap' not in kwargs and self.has_negative_and_positive:
+                div_pal = CommunityPalette(name='cspace_BlRd').colormap
+                self.aes_dict['contourf_kwargs']['cmap'] = div_pal
+
+            ## try to update contourf_kwargs
+            if 'vmin' in kwargs:
+                    self.aes_dict['contourf_kwargs']['vmin'] = kwargs['vmin']
+            if 'vmax' in kwargs:
+                    self.aes_dict['contourf_kwargs']['vmax'] = kwargs['vmax']
+            if 'cmap' in kwargs:
+                validated_cmap = validate_and_get_cmap(kwargs['cmap'])
+                self.aes_dict['pcolormesh_kwargs']['cmap'] = validated_cmap                   
         
 
         if self.data.ndim == 1:
@@ -200,9 +237,17 @@ class GriddedDataVis:
         gridline=False,
         cfeature=None,
         zebra_frame=False,
+        engine='cartopy',
         *args,
         **kwargs,
     ):
+
+        if engine == 'pygmt':
+            import pygmt
+            fig = pygmt.Figure()
+            ## plot xarray data
+            fig.grdimage(self.data, projection="Q12c", cmap="turbo", frame=True)
+            return fig
         
         dim_order = GridOperation().dim_order(self.data.dims)
         lat_order = dim_order[0] ## in the case of 2D, lat is the first dimension
@@ -218,8 +263,7 @@ class GriddedDataVis:
         x_max = x_arr.max()
         x_res = x_arr[1] - x_arr[0]
         x_edge = np.linspace(x_min-x_res/2, x_max+x_res/2, x_arr.size + 1)
-
-
+        
         
         if x_edge[0] < 0 and x_edge[1] > 0:    
             x_edge = x_edge + x_res/2
@@ -397,7 +441,8 @@ class GriddedDataVis:
         if pcolormesh:
             ## pcolormesh uses edge coordinates
             p_pcolormesh = self._add_pcolormesh(
-                local_ax, x=x_edge, y=y_edge, *args, **self.aes_dict["pcolormesh_kwargs"]
+                local_ax, x=x_edge, y=y_edge, *args, **self.aes_dict["pcolormesh_kwargs"], 
+                
             )
             if colorbar:
                 cbar = self._add_colorbar(p_pcolormesh, orientation="vertical")
@@ -455,6 +500,12 @@ class GriddedDataVis:
 
     def _init_fig(self,dpi=120, *args, **kwargs):
         return plt.subplots(dpi=dpi, *args, **kwargs)
+
+    def _init_pygmt_fig(self, *args, **kwargs):
+        import pygmt
+        fig = pygmt.Figure()
+        fig.basemap(*args, **kwargs)
+        return fig
 
     def _add_pcolormesh(self, ax, x, y, *args, **kwargs):
         return ax.pcolormesh(x, y, self.data, *args, **kwargs)
@@ -994,4 +1045,5 @@ def add_border_ticks(ax, tick_len_scale=0.015):
     ax.tick_params(axis='x', length=tick_length)
     ax.tick_params(axis='y', length=tick_length)
 
+    
     
