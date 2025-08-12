@@ -289,3 +289,52 @@ class Chemistry:
 
         clean_string = ' '.join(unit_list)
         return clean_string
+
+
+
+class ModelCarbon:
+    
+    def __init__(self, model):
+        self.model = model
+    
+    def get_NPP(self):
+        "netprimary production (NPP) in Pg C yr-1"
+        npp = self.model.get_var("eco2D_Uptake_Fluxes_C").isel(time=-1)
+        grid_vol_sur = self.model.grid_volume().isel(time=-1).isel(zt=0) * 1E-3
+        npp = npp * grid_vol_sur
+        npp = npp * 12 * 1e-15 * 365
+        return npp
+
+    def get_poc_export(self, depth=None):
+        "particulate organic carbon (POC) export at 80 m in Pg C yr-1"
+        poc_export_80 = self.model.get_var("bio_fexport_POC").isel(time=-1) * 12.01 / 1e15
+
+        if not depth:
+            return poc_export_80
+        else:
+            # if depth is specified, return POC export at the specified depth
+            model_area = self.model.grid_area()        
+            fpart_poc = self.model.get_var("bio_fpart_POC").isel(time=-1) * 12.01 / 1e15 * model_area
+        
+            poc_export_deep = fpart_poc.sel(zt=depth, method='nearest')
+            return poc_export_deep
+
+    def get_eratio(self):
+        "export ratio (ER), calculated as POC export at 80 m divided by NPP"
+        poc_export_80 = self.model.get_var("bio_fexport_POC").isel(time=-1) * 12.01 / 1e15    
+        npp = self.get_NPP()
+        eratio = poc_export_80 / npp
+        return eratio
+
+    def get_Teff(self, zt1=80, zt2=1000):
+        """
+        transfer efficiency (Teff), default calculated as POC export at 1000 m divided by POC export at 80 m
+        """
+        model_area = self.model.grid_area()        
+        fpart_poc = self.model.get_var("bio_fpart_POC").isel(time=-1) * 12.01 / 1e15 * model_area
+        
+        poc_export_shallow = fpart_poc.sel(zt=zt1, method='nearest')
+        poc_export_deep = fpart_poc.sel(zt=zt2, method='nearest')
+
+        transfer_efficiency = poc_export_deep / poc_export_shallow
+        return transfer_efficiency
