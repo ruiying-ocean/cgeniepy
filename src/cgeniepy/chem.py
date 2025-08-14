@@ -192,7 +192,7 @@ class Chemistry:
 
     def format_base_unit(self, input_str, latex_format=True):
         """
-        Convert the base unit to the desired format
+        Convert the base unit (i.e., no whitespace) to the desired format
         
         base unit means it is not a compound unit (e.g., m2, m-2, m/s, m s-1),
         which should be handled by the function `format_unit`
@@ -218,7 +218,8 @@ class Chemistry:
             '**': '^',
             'o/oo': '‰',
             'degrees': '°',
-            'degC': '°C'
+            'degC': '°C',
+            '° C': '°C',
         }
         
         ## replace some special characters
@@ -263,7 +264,8 @@ class Chemistry:
 
     def format_unit(self, input, *args, **kwargs):
         """
-        convert a unit in a string to the desired format, which can be used in plot labels and 
+        convert a unit in a string seprated by whitespace
+        to the desired format, which can be used in plot labels and 
         facilitate the unit calculation
         
         :param input: a unit string 
@@ -283,6 +285,9 @@ class Chemistry:
 
         if '{' in input or '}' in input:
             return input
+
+        if input == '° C':
+            return '°C'
         
         unit_list = input.split(" ")
         unit_list = [self.format_base_unit(i, *args, **kwargs) for i in unit_list]
