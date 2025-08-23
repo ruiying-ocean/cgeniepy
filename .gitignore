@@ -2,7 +2,15 @@
 .DS_Store
 docs/build/*
 .Rproj.user
-docs/build/*
-docs/source/auto_examples/*
 .aider*
 .env
+docs/source/build/
+docs/build/*
+docs/source/auto_examples/*
+docs/source/sg_execution_times.rst
+
+*.egg-info/
+dist/
+build/
+__pycache__/
+

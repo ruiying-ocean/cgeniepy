@@ -705,10 +705,12 @@ class ScatterDataVis:
             else:
                 from gwspy import PlateModel
 
-                model = PlateModel("Muller2022")
-                coastlines_shapely = model.get_coastlines(
-                    time=mask_age, format="shapely"
+                plate_model = PlateModel("Muller2022")
+                coastlines_shapely = plate_model.get_coastlines(
+                    time=mask_age, 
+                    format="shapely"
                 )
+
                 ax.add_geometries(
                     coastlines_shapely,
                     crs=ccrs.PlateCarree(),

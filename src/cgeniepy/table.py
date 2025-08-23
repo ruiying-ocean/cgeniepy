@@ -38,17 +38,33 @@ class ScatterData:
             GridOperation().set_coordinates(obj=self, index=self.index)
 
     def _process_data(self, data: Union[pd.DataFrame, int, str], **kwargs) -> pd.DataFrame:
+        """
+        Process the input data and return a pandas DataFrame.
+
+        This method handles different types of input data, including:
+        - pandas DataFrame
+        - PanDataSet ID (int)
+        - file path (str)
+
+        Parameters:
+        data: The input data to process.
+
+        Returns:
+        A pandas DataFrame containing the processed data.
+        """
+
         if isinstance(data, pd.DataFrame):
             return data
-        if isinstance(data, int):
+        elif isinstance(data, int):
             try:
                 from pangaeapy.pandataset import PanDataSet
                 return PanDataSet(data).data
             except ImportError:
                 print("Unable to import PanDataSet from pangaeapy. Please make sure the package is installed.")                            
-        if isinstance(data, str):
+        elif isinstance(data, str):
             return self._process_string_data(data, **kwargs)
-        raise ValueError("Unsupported data type. Expected DataFrame, int, or str.")
+        else:
+            raise ValueError("Unsupported data type. Expected DataFrame, int, or str.")
 
     def _process_string_data(self, data: str, **kwargs) -> pd.DataFrame:
         if data.endswith(".tab"):
