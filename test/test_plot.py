@@ -29,7 +29,7 @@ def test_line():
 @image_comparison(baseline_images=['test_scatterdatavis'], remove_text=True,
                   extensions=['png'], style='mpl20')
 def test_scatterdatavis():
-    file_path = str(files("data").joinpath("EDC_CO2.tab"))
+    file_path = files(__package__ + '.data').joinpath('EDC_CO2.tab')
     data= ScatterData(file_path, sep='\t')
     data.set_index('Age [ka BP]')
     fig, ax = plt.subplots()

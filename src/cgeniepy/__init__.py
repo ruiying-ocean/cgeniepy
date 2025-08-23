@@ -4,7 +4,8 @@ from cgeniepy.ecology import EcoModel
 from cgeniepy.plot import CommunityPalette
 
 def sample_model(model_type='GenieModel', *args, **kwargs):
-    file_path=str(files('data').joinpath('sample_model'))
+    file_path = files(__package__ + '.data').joinpath('sample_model')
+    
     
     if model_type == 'GenieModel':
         model = GenieModel(file_path,*args, **kwargs)
@@ -16,7 +17,7 @@ def sample_model(model_type='GenieModel', *args, **kwargs):
     return model
 
 def load_obs(grid='worjh2'):
-    file_path=str(files('data').joinpath(grid+'_obs.nc'))
+    file_path = files(__package__ + '.data').joinpath(grid+'_obs.nc')
     import xarray as xr
     obs_data= xr.load_dataset(file_path)
     return obs_data

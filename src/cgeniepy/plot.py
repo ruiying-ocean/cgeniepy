@@ -780,7 +780,7 @@ class ScatterDataVis:
         )        
 
         if bathy_lon:
-            data_path = str(files('data').joinpath('GEBCO2002_bathy.nc'))
+            data_path = files(__package__ + '.data').joinpath('GEBCO2002_bathy.nc')
             bathy = xr.open_dataset(data_path)
 
             ## get the lat range
@@ -832,7 +832,8 @@ class CommunityPalette:
                 f"{cmap_name} not found, accepted values are {self.avail_palettes()}"
             )
 
-        data_dir = files("data").joinpath("colormaps")
+
+        data_dir = files(__package__ + '.data').joinpath('colormaps')
 
         file_path = None
         file_ext = None
@@ -895,7 +896,7 @@ class CommunityPalette:
 
     def avail_palettes(self, show_ferret_data=True):
         """return a list of colormap names"""
-        data_dir = files("data").joinpath("colormaps")
+        data_dir = files(__package__ + '.data').joinpath('colormaps')
 
         if show_ferret_data:
             return [

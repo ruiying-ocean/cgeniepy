@@ -218,7 +218,7 @@ class GridOperation:
         """
 
         filename = f"mask_{base}_{basin}{subbasin}.txt"
-        file_path=str(files('data').joinpath(filename))
+        file_path = files(__package__ + '.data').joinpath(filename)
 
         grid_mask_raw = np.loadtxt(file_path, dtype=int)
         grid_mask = np.flip(np.fliplr(grid_mask_raw))
