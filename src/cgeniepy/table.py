@@ -176,9 +176,9 @@ class ScatterData:
             if ocean_name.size > 0:
                 return ocean_name[0]
             else:
-                return ""
-            
-        file_path = str(files("data").joinpath("oceans/oceans.shp"))
+                return ""            
+
+        file_path = files(__package__ + '.data').joinpath('oceans/oceans.shp')
         oceans = gpd.read_file(file_path)
         
         if len(self.index) != 2:
