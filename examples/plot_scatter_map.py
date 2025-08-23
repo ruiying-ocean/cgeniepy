@@ -20,7 +20,7 @@ local_file_path = download_zenodo_file(record_id, filename)
 proxy_d13C = ScatterData(local_file_path, delimiter="\t", header=None)
 proxy_d13C.data.columns = ["Longitude", "Latitude", "Depth", "d13C","Event"]
 proxy_d13C.set_index(["Latitude", "Longitude"])
-cmap = CommunityPalette("BuDaRd18").colormap
+cmap = CommunityPalette("scientific_vik").colormap
 proxy_d13C.plot(var='d13C', edgecolor='k', cmap=cmap)
 
 plt.show()
