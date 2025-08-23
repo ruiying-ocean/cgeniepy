@@ -1,13 +1,3 @@
-# from pint import UnitRegistry
-# import pathlib
-
-
-# ureg = UnitRegistry()
-# Q_ = ureg.Quantity
-# file_path = pathlib.Path(__file__).parent.parent / "data/context.txt"
-# ureg.load_definitions(file_path)
-
-
 from importlib.resources import files
 from cgeniepy.model import GenieModel
 from cgeniepy.ecology import EcoModel
