@@ -9,13 +9,50 @@ This example shows how to plot the 2D ScatterData object. I use a LGM d13C data 
 from cgeniepy.table import ScatterData
 from cgeniepy.plot import CommunityPalette
 import matplotlib.pyplot as plt
-import subprocess
+import requests
+import os
 
-## Download necessary files, you need to install zenodo_get first
-## by `pip install zenodo_get`, or, just download it from the link above
-subprocess.call(["zenodo_get", "10.5281/zenodo.13786013", "-o", "~/Downloads/"])
+def download_zenodo_file(record_id, filename, download_path="~/.cgeniepy/"):
+    """
+    Downloads a specific file from a Zenodo record.
 
-proxy_d13C = ScatterData("~/Downloads/LGM_d13c_CLEAN.txt", delimiter="\t", header=None)
+    Args:
+        record_id (str): The Zenodo record ID (the numeric part of the DOI).
+        filename (str): The name of the file to download.
+        download_path (str): The directory to save the file in.
+    """
+    api_url = f"https://zenodo.org/api/records/{record_id}"
+    response = requests.get(api_url)
+    response.raise_for_status()  # Raise an exception for bad status codes
+
+    record_data = response.json()
+    file_to_download = None
+    for f in record_data.get('files', []):
+        if f['key'] == filename:
+            file_to_download = f
+            break
+
+    if not file_to_download:
+        raise FileNotFoundError(f"File '{filename}' not found in Zenodo record '{record_id}'.")
+
+    download_url = file_to_download['links']['self']
+    file_path = os.path.join(os.path.expanduser(download_path), filename)
+
+    print(f"Downloading {filename} to {file_path}...")
+    with requests.get(download_url, stream=True) as r:
+        r.raise_for_status()
+        with open(file_path, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+    print("Download complete.")
+    return file_path
+
+record_id = "13786013"
+filename = "LGM_d13c_CLEAN.txt"
+
+local_file_path = download_zenodo_file(record_id, filename)
+
+proxy_d13C = ScatterData(local_file_path, delimiter="\t", header=None)
 proxy_d13C.data.columns = ["Longitude", "Latitude", "Depth", "d13C","Event"]
 proxy_d13C.set_index(["Latitude", "Longitude"])
 cmap = CommunityPalette("BuDaRd18").colormap

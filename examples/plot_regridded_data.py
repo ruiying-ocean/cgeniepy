@@ -31,8 +31,50 @@ from cgeniepy.array import GriddedData
 from cgeniepy.model import GenieModel
 from cgeniepy.skill import ArrComparison
 
+import requests
+import os
+
+def download_zenodo_file(record_id, filename, download_path="~/.cgeniepy/"):
+    """
+    Downloads a specific file from a Zenodo record.
+
+    Args:
+        record_id (str): The Zenodo record ID (the numeric part of the DOI).
+        filename (str): The name of the file to download.
+        download_path (str): The directory to save the file in.
+    """
+    api_url = f"https://zenodo.org/api/records/{record_id}"
+    response = requests.get(api_url)
+    response.raise_for_status()  # Raise an exception for bad status codes
+
+    record_data = response.json()
+    file_to_download = None
+    for f in record_data.get('files', []):
+        if f['key'] == filename:
+            file_to_download = f
+            break
+
+    if not file_to_download:
+        raise FileNotFoundError(f"File '{filename}' not found in Zenodo record '{record_id}'.")
+
+    download_url = file_to_download['links']['self']
+    file_path = os.path.join(os.path.expanduser(download_path), filename)
+
+    print(f"Downloading {filename} to {file_path}...")
+    with requests.get(download_url, stream=True) as r:
+        r.raise_for_status()
+        with open(file_path, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+    print("Download complete.")
+    return file_path
+
+record_id = "13786013"
+filename = "GLODAPv2.2016b.temperature.nc"
+local_file_path = download_zenodo_file(record_id, filename)
+
 ## load GLODAP temperature data
-glodap_temp = xr.load_dataset("~/cgeniepy/examples/GLODAPv2.2016b.temperature.nc")['temperature']
+glodap_temp = xr.load_dataset(local_file_path)['temperature']
 ## convert to normal longitude from eastern longitude
 glodap_temp = GridOperation().xr_e2n(glodap_temp)
 ## convert to ScatterData

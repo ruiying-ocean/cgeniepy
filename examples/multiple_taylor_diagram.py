@@ -8,10 +8,10 @@ This examples shows hot to plot multiple model results in one figure
 For simplicity, we separate different variables of the sample model into two lists and we pretend
 that they are two models.
 """
-import cgeniepy
-from cgeniepy.skill import ArrComparison
-from cgeniepy.skill import TaylorDiagram
 import matplotlib.pyplot as plt
+
+import cgeniepy
+from cgeniepy.skill import ArrComparison, TaylorDiagram
 
 sample_model = cgeniepy.sample_model()
 bgc_data = cgeniepy.load_obs('worjh2')

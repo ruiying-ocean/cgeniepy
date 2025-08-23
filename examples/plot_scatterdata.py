@@ -34,7 +34,6 @@ edc_co2.plot(var='CO2', ax=ax,
 
 # # Plot the interpolated data (based on cubic spline interpolation)
 interpolated_data = edc_co2.interpolate(var='CO2')
-interpolated_data = ScatterData(interpolated_data)
 interpolated_data.plot(var='CO2', ax=ax, label='Interpolated', kind='line')
 
 ax.legend()

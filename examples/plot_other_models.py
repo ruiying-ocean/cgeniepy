@@ -10,32 +10,92 @@ from cgeniepy.array import GriddedData
 import xarray as xr
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
-import subprocess
+import requests
+import os
 
-## Download necessary files, you need to install zenodo_get first
-## by `pip install zenodo_get`, or, just download it from the link above
-subprocess.call(["zenodo_get", "10.5281/zenodo.13786013", "-o", "~/Downloads/"])
+# --- Helper function to download files from Zenodo ---
+def download_from_zenodo(record_id, files_to_download, output_dir="~/.cgeniepy/"):
+    """
+    Downloads specified files from a Zenodo record.
 
+    Args:
+        record_id (str): The numeric ID of the Zenodo record.
+        files_to_download (list): A list of filenames to download from the record.
+        output_dir (str): The directory where files will be saved.
 
-## read in the data
-cesm_lgm = xr.load_dataset("~/Downloads/CESM_LGM_var_regrid.nc")
-## construct GriddedData object
+    Returns:
+        dict: A dictionary mapping filenames to their local file paths.
+    """
+    base_api_url = f"https://zenodo.org/api/records/{record_id}"
+    output_path = os.path.expanduser(output_dir)
+    os.makedirs(output_path, exist_ok=True)
+    
+    local_file_paths = {}
+
+    try:
+        response = requests.get(base_api_url)
+        response.raise_for_status()  # Will raise an HTTPError for bad responses
+        record_info = response.json()
+        
+        file_map = {f['key']: f['links']['self'] for f in record_info['files']}
+
+        for filename in files_to_download:
+            if filename not in file_map:
+                print(f"Warning: File '{filename}' not found in Zenodo record '{record_id}'.")
+                continue
+
+            download_url = file_map[filename]
+            local_path = os.path.join(output_path, filename)
+            
+            print(f"Downloading {filename}...")
+            with requests.get(download_url, stream=True) as r:
+                r.raise_for_status()
+                with open(local_path, 'wb') as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        f.write(chunk)
+            print(f"Successfully downloaded to {local_path}")
+            local_file_paths[filename] = local_path
+
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred while trying to download from Zenodo: {e}")
+        return None
+        
+    return local_file_paths
+
+# --- Main script ---
+
+# Define the Zenodo record and the files needed
+zenodo_record_id = "13786013"
+required_files = ["CESM_LGM_var_regrid.nc", "teitu_020_o.pgclann.nc"]
+
+# Download the files
+downloaded_files = download_from_zenodo(zenodo_record_id, required_files)
+
+# Get the local paths
+cesm_file_path = downloaded_files["CESM_LGM_var_regrid.nc"]
+hadcm3_file_path = downloaded_files["teitu_020_o.pgclann.nc"]
+
+# Read in the data using the downloaded file paths
+cesm_lgm = xr.load_dataset(cesm_file_path)
+hadcm3_lgm = xr.load_dataset(hadcm3_file_path, decode_times=False)
+
+# Construct GriddedData objects
 cesm_temp = GriddedData(cesm_lgm['TEMP'], attrs=cesm_lgm['TEMP'].attrs)
-
-## same for HadCM3L
-hadcm3_lgm=  xr.load_dataset("~/Downloads/teitu_020_o.pgclann.nc", decode_times=False)
 hadcm3_temp = GriddedData(hadcm3_lgm['temp_ym_dpth'], attrs=hadcm3_lgm['temp_ym_dpth'].attrs)
 
+# Create the plot
 fig, axs = plt.subplots(1, 2, figsize=(10, 5), subplot_kw={'projection': ccrs.Robinson()})
 
-p = cesm_temp.isel(time=0,z_t=0).to_GriddedDataVis()
+p = cesm_temp.isel(time=0, z_t=0).to_GriddedDataVis()
 p.aes_dict['pcolormesh_kwargs']['vmax'] = 30
 p.plot(ax=axs[0], outline=True, colorbar=False)
 axs[0].set_title('CESM LGM')
 
-p2 = hadcm3_temp.isel(t=0,depth_1=0).to_GriddedDataVis()
+p2 = hadcm3_temp.isel(t=0, depth_1=0).to_GriddedDataVis()
 p2.aes_dict['pcolormesh_kwargs']['vmax'] = 30
 im = p2.plot(ax=axs[1], outline=True, colorbar=False)
 axs[1].set_title('HadCM3L LGM')
 
 fig.colorbar(im, ax=axs, orientation='horizontal', label='Sea surface temperature (°C)', fraction=0.05, pad=0.07)
+
+plt.show()
