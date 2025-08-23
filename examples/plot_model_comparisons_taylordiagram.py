@@ -27,7 +27,7 @@ for x,y in zip(genie_var, obs_var):
     arr_comps.append(tmp)
 
 # you can set the figure size and dpi here
-fig = plt.figure(dpi=100,figsize=(4,4))
+fig = plt.figure(dpi=200,figsize=(4,4))
 
 # Assume this your first model
 td = TaylorDiagram(arr_comps[:3])
