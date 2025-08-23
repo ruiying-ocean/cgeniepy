@@ -10,59 +10,7 @@ from cgeniepy.array import GriddedData
 import xarray as xr
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
-import requests
-import os
-
-# --- Helper function to download files from Zenodo ---
-def download_from_zenodo(record_id, files_to_download, output_dir="~/.cgeniepy/"):
-    """
-    Downloads specified files from a Zenodo record.
-
-    Args:
-        record_id (str): The numeric ID of the Zenodo record.
-        files_to_download (list): A list of filenames to download from the record.
-        output_dir (str): The directory where files will be saved.
-
-    Returns:
-        dict: A dictionary mapping filenames to their local file paths.
-    """
-    base_api_url = f"https://zenodo.org/api/records/{record_id}"
-    output_path = os.path.expanduser(output_dir)
-    os.makedirs(output_path, exist_ok=True)
-    
-    local_file_paths = {}
-
-    try:
-        response = requests.get(base_api_url)
-        response.raise_for_status()  # Will raise an HTTPError for bad responses
-        record_info = response.json()
-        
-        file_map = {f['key']: f['links']['self'] for f in record_info['files']}
-
-        for filename in files_to_download:
-            if filename not in file_map:
-                print(f"Warning: File '{filename}' not found in Zenodo record '{record_id}'.")
-                continue
-
-            download_url = file_map[filename]
-            local_path = os.path.join(output_path, filename)
-            
-            print(f"Downloading {filename}...")
-            with requests.get(download_url, stream=True) as r:
-                r.raise_for_status()
-                with open(local_path, 'wb') as f:
-                    for chunk in r.iter_content(chunk_size=8192):
-                        f.write(chunk)
-            print(f"Successfully downloaded to {local_path}")
-            local_file_paths[filename] = local_path
-
-    except requests.exceptions.RequestException as e:
-        print(f"An error occurred while trying to download from Zenodo: {e}")
-        return None
-        
-    return local_file_paths
-
-# --- Main script ---
+from cgeniepy.utils import download_zenodo_file
 
 # Define the Zenodo record and the files needed
 zenodo_record_id = "13786013"

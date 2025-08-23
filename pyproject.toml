@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools==68.2.2"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.8.13,<0.9.0"]
+build-backend = "uv_build"
 
 [project]
 name = "cgeniepy"
-version = "0.14.10"
+version = "0.15.0"
 description = "A Python package to read, analyse and visualise cGENIE Earth System Model output"
 license = {text = "GPL-3.0-only"}
 authors = [{name = "Rui Ying", email = "ying.rui@outlook.com"}]
