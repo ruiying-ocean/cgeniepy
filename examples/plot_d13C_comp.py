@@ -32,7 +32,7 @@ for i in proxy_d13C.data.index:
     depth = depth * 100 ## not necessary for cGENIE whose depth is in m
     pos = (depth, lat, lon)
     
-    data = cesm_13C_last.search_point(pos, ignore_na=False)
+    data = cesm_13C_last.search_point(pos, ignore_na=True)
 
     model_data.append(data)
 
