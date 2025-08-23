@@ -27,7 +27,7 @@ fig, axs = plt.subplots(2, 2, figsize=(10, 8), subplot_kw={'projection': ccrs.Pl
 pi_model = cgeniepy.sample_model()
 
 variable = ['ocn_sur_temp', 'bio_fexport_POC', 'ocn_sur_PO4','ocn_sur_O2']
-cmap = ['ocean_temp', 'tol_rainbow', 'parula','ODV']
+cmap = ['r_terrain', 'tol_rainbow', 'parula','ODV']
 
 for i in range(4):
     data = pi_model.get_var(variable[i]).isel(time=-1).to_GriddedDataVis()
