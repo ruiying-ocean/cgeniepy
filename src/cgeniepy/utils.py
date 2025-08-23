@@ -61,8 +61,6 @@ def download_zenodo_file(record_id, filename, download_path="~/.cgeniepy/"):
         filename (str): The name of the file to download.
         download_path (str): The directory to save the file in.
     """
-    import requests
-    from pathlib import Path
     
     api_url = f"https://zenodo.org/api/records/{record_id}"
     response = requests.get(api_url)
