@@ -1,6 +1,8 @@
 from cgeniepy.array import GriddedData
 import numpy as np
 import xarray as xr
+import pytest
+
 
 def create_testdata():
     lat = np.linspace(-89.5,89.5,180)
@@ -13,36 +15,36 @@ def create_testdata():
 
 def test_mean():
     data = create_testdata()
-    assert data.mean().data.item() == 0.5021667118489245
+    assert data.mean().data.item() == pytest.approx(0.5021667118489245)
 
 def test_sd():
     data = create_testdata()
-    assert data.sd().data.item() == 0.28845163932542145
+    assert data.sd().data.item() == pytest.approx(0.28845163932542145)
 
 def test_variance():
     data = create_testdata()
-    assert data.variance().data.item() == 0.08320434822952301
+    assert data.variance().data.item() == pytest.approx(0.08320434822952301)
 
 def test_median():
     data = create_testdata()
-    assert data.median().data.item() == 0.5036269709952814
+    assert data.median().data.item() == pytest.approx(0.5036269709952814)
 
 
 def test_min():
     data = create_testdata()
-    assert data.min().data.item() == 1.2270557283589056e-06    
+    assert data.min().data.item() ==  pytest.approx(1.2270557283589056e-06)
 
 def test_max():
     data = create_testdata()
-    assert data.max().data.item() == 0.9999894976042956
+    assert data.max().data.item() == pytest.approx(0.9999894976042956)
 
 def test_search_point():
     data = create_testdata()
     ## nemo point lat/lon
     lat = -48.876
     lon = 123.393
-    assert data.search_point((lat,lon), ignore_na=True) == 0.25995689209624817
+    assert data.search_point((lat,lon), ignore_na=True) == pytest.approx(0.25995689209624817)
 
 def test_sel_modern_basin():
     data = create_testdata()
-    assert data.sel_modern_basin(50,norm_lon_method='').mean().data.item() == 0.5019781051132972
+    assert data.sel_modern_basin(50,norm_lon_method='').mean().data.item() == pytest.approx(0.5019781051132972)

@@ -1,8 +1,10 @@
 import cgeniepy
+import pytest
+
 
 def test_model_getvar():
     model = cgeniepy.sample_model()
-    assert model.get_var("ocn_sur_temp").mean().data.values.item() == 18.055744171142578
+    assert model.get_var("ocn_sur_temp").mean().data.values.item() == pytest.approx(18.055744171142578)
     
 def test_eco_pft():
     model = cgeniepy.sample_model(model_type='EcoModel',gemflag=['ecogem'])

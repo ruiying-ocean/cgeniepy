@@ -1,7 +1,9 @@
 import cgeniepy.chem as chem
+import pytest
+
 
 def test_molcularweight():
-    assert chem.Chemistry().molecular_weight('CO2') == 44.0095
+    assert chem.Chemistry().molecular_weight('CO2') == pytest.approx(44.0095)
 
 
 def test_formatunit():
