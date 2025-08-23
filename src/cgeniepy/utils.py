@@ -55,12 +55,24 @@ def efficient_log(data, replace_zero=10):
 def download_zenodo_file(record_id, filename, download_path="~/.cgeniepy/"):
     """
     Downloads a specific file from a Zenodo record.
+    Skips download if file already exists.
     
     Args:
         record_id (str): The Zenodo record ID (the numeric part of the DOI).
         filename (str): The name of the file to download.
         download_path (str): The directory to save the file in.
     """
+    
+    # Create Path object and ensure directory exists
+    download_dir = Path(download_path).expanduser()
+    download_dir.mkdir(parents=True, exist_ok=True)
+    
+    file_path = download_dir / filename
+    
+    # Check if file already exists
+    if file_path.exists():
+        print(f"File {filename} already exists at {file_path}. Skipping download.")
+        return str(file_path)
     
     api_url = f"https://zenodo.org/api/records/{record_id}"
     response = requests.get(api_url)
@@ -78,12 +90,6 @@ def download_zenodo_file(record_id, filename, download_path="~/.cgeniepy/"):
         raise FileNotFoundError(f"File '{filename}' not found in Zenodo record '{record_id}'.")
     
     download_url = file_to_download['links']['self']
-    
-    # Create Path object and ensure directory exists
-    download_dir = Path(download_path).expanduser()
-    download_dir.mkdir(parents=True, exist_ok=True)
-    
-    file_path = download_dir / filename
     
     print(f"Downloading {filename} to {file_path}...")
     with requests.get(download_url, stream=True) as r:

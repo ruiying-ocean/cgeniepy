@@ -17,11 +17,8 @@ zenodo_record_id = "13786013"
 required_files = ["CESM_LGM_var_regrid.nc", "teitu_020_o.pgclann.nc"]
 
 # Download the files
-downloaded_files = download_from_zenodo(zenodo_record_id, required_files)
-
-# Get the local paths
-cesm_file_path = downloaded_files["CESM_LGM_var_regrid.nc"]
-hadcm3_file_path = downloaded_files["teitu_020_o.pgclann.nc"]
+cesm_file_path = download_zenodo_file(zenodo_record_id, required_files[0])
+hadcm3_file_path = download_zenodo_file(zenodo_record_id, required_files[1])
 
 # Read in the data using the downloaded file paths
 cesm_lgm = xr.load_dataset(cesm_file_path)
