@@ -32,5 +32,12 @@ def register_cmap():
 
 try:
     register_cmap()
+except ImportError as e:
+    import warnings
+    warnings.warn(f"Could not register colormaps due to missing dependencies: {e}", 
+                  ImportWarning, stacklevel=2)
 except Exception as e:
-    print(f"Error registering colormaps: {e}")
+    import warnings
+    warnings.warn(f"Failed to register some colormaps: {e}. "
+                  "This may affect colormap functionality.", 
+                  RuntimeWarning, stacklevel=2)
