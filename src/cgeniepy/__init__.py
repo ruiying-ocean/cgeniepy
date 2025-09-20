@@ -1,10 +1,12 @@
 from importlib.resources import files
+from . import data as _data_pkg
 from cgeniepy.model import GenieModel
 from cgeniepy.ecology import EcoModel
 from cgeniepy.plot import CommunityPalette
 
 def sample_model(model_type='GenieModel', *args, **kwargs):
-    file_path = files(__package__ + '.data').joinpath('sample_model')
+    # Resolve from the actual data package module for robustness
+    file_path = files(_data_pkg).joinpath('sample_model')
     
     
     if model_type == 'GenieModel':
@@ -17,7 +19,7 @@ def sample_model(model_type='GenieModel', *args, **kwargs):
     return model
 
 def load_obs(grid='worjh2'):
-    file_path = files(__package__ + '.data').joinpath(grid+'_obs.nc')
+    file_path = files(_data_pkg).joinpath(grid+'_obs.nc')
     import xarray as xr
     obs_data= xr.load_dataset(file_path)
     return obs_data

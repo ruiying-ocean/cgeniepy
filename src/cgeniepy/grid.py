@@ -1,6 +1,7 @@
 import numpy as np
 import xarray as xr
 from importlib.resources import files
+from . import data as _data_pkg
 import pandas as pd
 
 from scipy.interpolate import (
@@ -218,7 +219,8 @@ class GridOperation:
         """
 
         filename = f"mask_{base}_{basin}{subbasin}.txt"
-        file_path = files(__package__ + '.data').joinpath(filename)
+        # Use the data package module to avoid ambiguous package strings
+        file_path = files(_data_pkg).joinpath(filename)
 
         grid_mask_raw = np.loadtxt(file_path, dtype=int)
         grid_mask = np.flip(np.fliplr(grid_mask_raw))
