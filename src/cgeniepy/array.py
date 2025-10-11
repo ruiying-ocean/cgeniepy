@@ -392,10 +392,13 @@ class GriddedData:
         else:
             return GriddedData(output, attrs=output_attrs)
 
-    def sd(self, *args, **kwargs):        
-        "compute the standard deviation of the mean"
-        
-        output = np.std(self.data, *args, **kwargs)
+    def std(self, *args, **kwargs):
+        """Compute the standard deviation using xarray's API so named dimensions can be selected."""
+
+        if isinstance(self.data, xr.DataArray):
+            output = self.data.std(*args, **kwargs)
+        else:
+            output = np.std(self.data, *args, **kwargs)
         output_attrs = self.attrs if GriddedData.keep_attrs else {}
         if GriddedData.modify_in_place:
             self.data = output
@@ -403,6 +406,10 @@ class GriddedData:
             return self
         else:
             return GriddedData(output, attrs=output_attrs)
+
+    def sd(self, *args, **kwargs):
+        """Backward-compatible alias for std."""
+        return self.std(*args, **kwargs)
 
 
     def variance(self, *args, **kwargs):

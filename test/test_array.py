@@ -17,7 +17,17 @@ def test_mean():
     data = create_testdata()
     assert data.mean().data.item() == pytest.approx(0.5021667118489245)
 
-def test_sd():
+def test_std():
+    data = create_testdata()
+    assert data.std().data.item() == pytest.approx(0.28845163932542145)
+
+def test_std_dim():
+    data = create_testdata()
+    result = data.std(dim="lat")
+    expected = data.data.std(dim="lat")
+    xr.testing.assert_allclose(result.data, expected)
+
+def test_sd_alias():
     data = create_testdata()
     assert data.sd().data.item() == pytest.approx(0.28845163932542145)
 
