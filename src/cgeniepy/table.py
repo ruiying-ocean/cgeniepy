@@ -13,7 +13,7 @@ from cgeniepy.grid import Interpolator, GridOperation
 from cgeniepy.plot import ScatterDataVis
 from cgeniepy.grid import GridOperation
 import cgeniepy.array as ca
-from importlib.resources import files
+from importlib.resources import files, as_file
 
 
 class ScatterData:
@@ -178,8 +178,13 @@ class ScatterData:
             else:
                 return ""            
 
-        file_path = files(__package__ + '.data').joinpath('oceans/oceans.shp')
-        oceans = gpd.read_file(file_path)
+        data_package = f"{__package__}.data"
+        oceans_resource = files(data_package).joinpath("oceans")
+
+        # Ensure the shapefile is accessible even when the package is installed as a zip
+        with as_file(oceans_resource) as oceans_dir:
+            shapefile = oceans_dir / "oceans.shp"
+            oceans = gpd.read_file(shapefile)
         
         if len(self.index) != 2:
             raise ValueError("The index must have two columns: lon and lat")
@@ -302,4 +307,3 @@ class ScatterData:
             return self
         else:
             return self.data.rolling(window, *args, **kwargs)
-
