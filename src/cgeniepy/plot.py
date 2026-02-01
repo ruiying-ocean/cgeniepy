@@ -53,7 +53,7 @@ class GriddedDataVis:
         
         self.aes_dict = {
             "general_kwargs": {"font": "Helvetica", "fontsize": 10},
-            "facecolor_kwargs": {"c": "white"}, #silver
+            "facecolor_kwargs": {"c": "silver"}, #silver
             "borderline_kwargs": {"c": "black", "linewidth": 1.0},
             "outline_kwargs": {"colors": "black", "linewidth": 1.0},
             "gridline_kwargs": {"color": "black", "linewidth": 0.25, "linestyle": "--", "draw_labels": False},

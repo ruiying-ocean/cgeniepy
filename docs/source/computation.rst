@@ -68,7 +68,11 @@ The only input is the coordinate of the point you want to search in the order of
 
 Mask data
 -----------------------
-Similar to the selection of data by coordinate (time, lat, long etc), you can mask a ocean basin in cgeniepy. The first method is to use `mask_basin` method. It reads the pre-stored basin mask for the specific basic configration (e.g., 'worjh2' and 'worlg4' for modern ocean topography in cGNEIE).
+Similar to the selection of data by coordinate (time, lat, long etc), you can mask a ocean basin in cgeniepy.
+
+Method 1: Using pre-defined cGENIE basin masks
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The first method is to use `mask_basin` method. It reads the pre-stored basin mask for the specific basic configration (e.g., 'worjh2' and 'worlg4' for modern ocean topography in cGENIE).
 
 
 .. code-block:: python
@@ -76,14 +80,51 @@ Similar to the selection of data by coordinate (time, lat, long etc), you can ma
     sst = model.get_var("ocn_sur_temp")
     sst.mask_basin(base="worjh2", basin='Atlantic') ## -> mask the other oceans except Atlantic basin
 
+    ## You can also combine multiple basins
+    sst.mask_basin(base="worjh2", basin=['Atlantic', 'Pacific'])
 
-The other way is to use `sel_modern_basin` method. As the name suggests, it only works for the modern model output. In fact, it is based on the basin divsion in IPCC AR6 and the provided functionalisties in `regionmask` package. The only caveat is that it only works for lat-lon data.
+Method 2: Using IPCC AR6 basin definitions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The other way is to use `sel_modern_basin` method. As the name suggests, it only works for the modern model output. In fact, it is based on the basin division in IPCC AR6 and the provided functionalities in `regionmask` package. The only caveat is that it only works for lat-lon data.
 
+**Available basins:**
+
+The AR6 ocean basins include:
+
+- **46**: Arctic Ocean (AO)
+- **47**: North Pacific Ocean (NPO)
+- **48**: Equatorial Pacific Ocean (EPO)
+- **49**: South Pacific Ocean (SPO)
+- **50**: North Atlantic Ocean (NAO)
+- **51**: Equatorial Atlantic Ocean (EAO)
+- **52**: Southern Atlantic Ocean (SAO)
+- **53**: North Indian Ocean (NIO)
+- **55**: Equatorial Indian Ocean (EIO)
+- **56**: South Indian Ocean (SIO)
+- **57**: Southern Ocean (SO)
+
+You can use either basin indices (int) or abbreviations (str):
 
 .. code-block:: python
 
     sst = model.get_var("ocn_sur_temp")
+
+    ## Using basin index
+    sst.sel_modern_basin(47) ## -> select the North Pacific Ocean
+
+    ## Using basin abbreviation
     sst.sel_modern_basin('NPO') ## -> select the North Pacific Ocean
+
+    ## Select multiple basins to combine regions
+    sst.sel_modern_basin(['NAO', 'EAO', 'SAO']) ## -> entire Atlantic Ocean
+    sst.sel_modern_basin([47, 48, 49]) ## -> entire Pacific Ocean
+
+    ## You can also chain with other operations
+    atlantic_mean_sst = sst.sel_modern_basin([50, 51, 52]).mean()
+
+**Reference:** The basin definitions follow Iturbide et al., (2020) ESSD and can be visualized at: https://regionmask.readthedocs.io/en/stable/_images/plotting_ar6_all.png
+
+**See also:** :ref:`plot_basin_detection` example for comprehensive visualization of basin detection features.
 
 
 Chain computation
