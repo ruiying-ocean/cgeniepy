@@ -21,7 +21,7 @@ class GriddedData:
     It stores data in xarray.DataArray format, and provides optimalised methods for GENIE model output to compute statistics.    
     """
     
-    def __init__(self, array=np.nan, attrs={}):
+    def __init__(self, array=np.nan, attrs=None):
         """
         Initialise an instance of GriddedData
 
@@ -34,10 +34,11 @@ class GriddedData:
         data = xr.DataArray(np.random.randn(2, 3), dims=("x", "y"), coords={"x": [10, 20]}, attrs={"units": "unitless"})
         dg = GriddedData(data)
         """
-        
+
         # set data
         self.data = array
-        self.attrs = attrs
+        # Fix mutable default argument issue - use None and create new dict
+        self.attrs = attrs if attrs is not None else {}
 
         ## formatting the unit
         if 'units' in self.attrs and self.attrs['units'] is not None:

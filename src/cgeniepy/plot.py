@@ -49,8 +49,8 @@ class GriddedDataVis:
         self.has_negative_and_positive = (self.data.min() < 0 and self.data.max() > 0)
 
         pal = CommunityPalette(name='parula').colormap
-        
-        
+        self._default_cmap = pal  # store default to check if user changed it
+
         self.aes_dict = {
             "general_kwargs": {"font": "Helvetica", "fontsize": 10},
             "facecolor_kwargs": {"c": "silver"}, #silver
@@ -106,12 +106,13 @@ class GriddedDataVis:
                     raise ValueError(f"Colormap '{cmap_name}' not found in matplotlib or CommunityPalette")
 
             
-        ## if value has both negative and positive values, set cmap to 'PRGn'
+        ## if value has both negative and positive values, set cmap to diverging
         if kwargs.get('pcolormesh', True):
 
-            ## if not specified, set cmap to 'RdBu_r'
-            if 'cmap' not in kwargs and self.has_negative_and_positive:
-                div_pal = CommunityPalette(name='cspace_BlRd').colormap                
+            ## only override if cmap not in kwargs AND user hasn't changed aes_dict cmap from default
+            cmap_is_default = self.aes_dict['pcolormesh_kwargs']['cmap'] is self._default_cmap
+            if 'cmap' not in kwargs and self.has_negative_and_positive and cmap_is_default:
+                div_pal = CommunityPalette(name='cspace_BlRd').colormap
                 self.aes_dict['pcolormesh_kwargs']['cmap'] = div_pal
 
             ## try to update pcolor_kwargs
@@ -125,8 +126,11 @@ class GriddedDataVis:
 
 
         ## for contourf plots, do the same
-        if kwargs.get('contourf', True): 
-            if 'cmap' not in kwargs and self.has_negative_and_positive:
+        if kwargs.get('contourf', True):
+            ## only override if cmap not in kwargs AND user hasn't changed aes_dict cmap from default
+            contourf_cmap = self.aes_dict['contourf_kwargs'].get('cmap')
+            cmap_is_default = contourf_cmap is None or contourf_cmap is self._default_cmap
+            if 'cmap' not in kwargs and self.has_negative_and_positive and cmap_is_default:
                 div_pal = CommunityPalette(name='cspace_BlRd').colormap
                 self.aes_dict['contourf_kwargs']['cmap'] = div_pal
 
