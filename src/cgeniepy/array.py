@@ -578,13 +578,128 @@ class GriddedData:
         if not hasattr(self, 'ocn_index') or not hasattr(self, 'ocn_data'):
             self.save_ocn_data()        
 
-    def search_point(self, point, ignore_na=False, to_genielon=False, **kwargs):
+    def _curvilinear_lat_lon(self, lat_coord=None, lon_coord=None):
+        """Return 2-D latitude/longitude coordinates, when present.
+
+        Coordinates are identified from explicit names, CF metadata, or common
+        model naming conventions (in that order).
+        """
+        if (lat_coord is None) != (lon_coord is None):
+            raise ValueError("lat_coord and lon_coord must be provided together")
+        if lat_coord is not None:
+            try:
+                lat = self.data.coords[lat_coord]
+                lon = self.data.coords[lon_coord]
+            except KeyError as exc:
+                raise ValueError(f"Unknown coordinate: {exc.args[0]}") from exc
+            if lat.ndim != 2 or lon.ndim != 2 or lat.dims != lon.dims:
+                raise ValueError(
+                    "Curvilinear latitude and longitude must be 2-D and use "
+                    "the same dimensions"
+                )
+            return lat, lon
+
+        lat = lon = None
+        for coord in self.data.coords.values():
+            if coord.ndim != 2:
+                continue
+            name = (coord.name or "").lower()
+            standard_name = coord.attrs.get("standard_name", "").lower()
+            units = coord.attrs.get("units", "").lower()
+            if (name in {"lat", "latitude", "tlat", "ulat", "nav_lat", "geolat"}
+                    or standard_name == "latitude"
+                    or units in {"degrees_north", "degree_north", "degrees_n"}):
+                lat = coord
+            elif (name in {"lon", "longitude", "tlong", "ulong", "nav_lon", "geolon"}
+                    or standard_name == "longitude"
+                    or units in {"degrees_east", "degree_east", "degrees_e"}):
+                lon = coord
+
+        if lat is not None and lon is not None and lat.dims == lon.dims:
+            return lat, lon
+        return None
+
+    @staticmethod
+    def _vertical_to_km(values, units):
+        """Convert vertical distances to kilometres using CF-style units."""
+        units = (units or "m").strip().lower()
+        factors = {
+            "m": 1e-3, "meter": 1e-3, "meters": 1e-3,
+            "metre": 1e-3, "metres": 1e-3,
+            "cm": 1e-5, "centimeter": 1e-5, "centimeters": 1e-5,
+            "centimetre": 1e-5, "centimetres": 1e-5,
+            "km": 1.0, "kilometer": 1.0, "kilometers": 1.0,
+            "kilometre": 1.0, "kilometres": 1.0,
+        }
+        return np.asarray(values) * factors.get(units, 1e-3)
+
+    def _search_curvilinear(self, point, ignore_na, lat_coord=None, lon_coord=None):
+        """Search data whose geographic coordinates are two-dimensional."""
+        lat, lon = self._curvilinear_lat_lon(lat_coord, lon_coord)
+        horizontal_dims = lat.dims
+        vertical_dims = [dim for dim in self.data.dims if dim not in horizontal_dims]
+
+        if len(vertical_dims) > 1 or len(point) != self.data.ndim:
+            raise ValueError(
+                "Curvilinear search supports 2-D fields or 3-D fields with one "
+                "vertical dimension; select a time index before searching"
+            )
+
+        if vertical_dims:
+            vertical_dim = vertical_dims[0]
+            z_target, lat_target, lon_target = point
+        else:
+            vertical_dim = None
+            lat_target, lon_target = point
+
+        horizontal_distance = GridOperation().haversine_distance(
+            lat_target, lon_target, lat.values, lon.values
+        )
+
+        if not ignore_na:
+            iy, ix = np.unravel_index(
+                np.nanargmin(horizontal_distance), horizontal_distance.shape
+            )
+            indexers = {horizontal_dims[0]: iy, horizontal_dims[1]: ix}
+            if vertical_dim is not None:
+                z = self.data[vertical_dim]
+                indexers[vertical_dim] = int(np.abs(z.values - z_target).argmin())
+            return self.data.isel(indexers).values.item()
+
+        values = self.data.values
+        valid = ~np.isnan(values)
+        if not np.any(valid):
+            return np.nan
+
+        if vertical_dim is None:
+            distances = horizontal_distance
+        else:
+            z = self.data[vertical_dim]
+            z_distance = self._vertical_to_km(
+                np.abs(z.values - z_target), z.attrs.get("units")
+            )
+            # Transpose distance components into the data's dimension order.
+            horizontal = xr.DataArray(
+                horizontal_distance, dims=horizontal_dims
+            ).broadcast_like(self.data)
+            vertical = xr.DataArray(
+                z_distance, dims=(vertical_dim,)
+            ).broadcast_like(self.data)
+            distances = np.sqrt(horizontal.values ** 2 + vertical.values ** 2)
+
+        distances = np.where(valid, distances, np.inf)
+        return values.flat[np.argmin(distances)]
+
+    def search_point(self, point, ignore_na=False, to_genielon=False,
+                     lat_coord=None, lon_coord=None, **kwargs):
         """
         search the nearest grid point to the given coordinates
         
         :param point: a list/tuple of coordinate values in the same order to the data dimension (self.data.dims)
         :param ignore_na: whether only check ocean data (which ignore the NA grids)
         :param to_genielon: whether convert the input longitude to genie longitude, input point must be list if True
+        :param lat_coord: optional name of a 2-D curvilinear latitude coordinate
+        :param lon_coord: optional name of a 2-D curvilinear longitude coordinate
 
         ----------------------
         Example
@@ -597,6 +712,12 @@ class GriddedData:
         
         if len(point) != ndim:
             raise ValueError("Input point has incompatiable coordinate")
+
+        curvilinear = self._curvilinear_lat_lon(lat_coord, lon_coord)
+        if curvilinear is not None:
+            return self._search_curvilinear(
+                point, ignore_na, lat_coord=lat_coord, lon_coord=lon_coord
+            )
         
         if ignore_na:
             self._ensure_ocn_data()

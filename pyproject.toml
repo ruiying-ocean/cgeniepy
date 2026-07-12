@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "cgeniepy"
-version = "0.15.1"
+version = "0.15.2"
 description = "A Python package to read, analyse and visualise cGENIE Earth System Model output"
 license = {text = "GPL-3.0-only"}
 authors = [{name = "Rui Ying", email = "ying.rui@outlook.com"}]

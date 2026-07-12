@@ -1,7 +1,7 @@
 
 package:
   name: cgeniepy
-  version: 0.15.1
+  version: 0.15.2
 
 build:
   number: 3

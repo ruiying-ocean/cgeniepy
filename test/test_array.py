@@ -55,6 +55,72 @@ def test_search_point():
     lon = 123.393
     assert data.search_point((lat,lon), ignore_na=True) == pytest.approx(0.25995689209624817)
 
+
+def create_curvilinear_testdata():
+    depth = xr.DataArray([0.0, 10000.0], dims="z_t", attrs={"units": "cm"})
+    tlat = xr.DataArray(
+        [[0.0, 0.2], [10.0, 10.2]], dims=("nlat", "nlon"), name="TLAT"
+    )
+    tlong = xr.DataArray(
+        [[359.8, 1.0], [0.0, 2.0]], dims=("nlat", "nlon"), name="TLONG"
+    )
+    values = np.array([
+        [[1.0, np.nan], [3.0, 4.0]],
+        [[5.0, 6.0], [7.0, 8.0]],
+    ])
+    array = xr.DataArray(
+        values,
+        dims=("z_t", "nlat", "nlon"),
+        coords={"z_t": depth, "TLAT": tlat, "TLONG": tlong},
+    )
+    return GriddedData(array)
+
+
+def test_search_point_curvilinear():
+    data = create_curvilinear_testdata()
+    assert data.search_point((0.0, 0.0, 0.0)) == pytest.approx(1.0)
+
+
+def test_search_point_curvilinear_ignore_na_and_depth_units():
+    data = create_curvilinear_testdata()
+    # The geographically closest surface cell is NaN. At 100 m depth that
+    # same cell is valid and closer than distant surface cells.
+    assert data.search_point((0.0, 0.2, 1.0), ignore_na=True) == pytest.approx(6.0)
+
+
+def test_search_point_curvilinear_uses_cf_metadata():
+    y = xr.DataArray(
+        [[0.0, 0.0], [5.0, 5.0]],
+        dims=("j", "i"),
+        attrs={"standard_name": "latitude", "units": "degrees_north"},
+    )
+    x = xr.DataArray(
+        [[20.0, 21.0], [20.0, 21.0]],
+        dims=("j", "i"),
+        attrs={"standard_name": "longitude", "units": "degrees_east"},
+    )
+    array = xr.DataArray(
+        [[1.0, 2.0], [3.0, 4.0]],
+        dims=("j", "i"),
+        coords={"model_y": y, "model_x": x},
+    )
+    assert GriddedData(array).search_point((4.9, 20.9)) == pytest.approx(4.0)
+
+
+def test_search_point_curvilinear_accepts_coordinate_names():
+    array = xr.DataArray(
+        [[1.0, 2.0], [3.0, 4.0]],
+        dims=("row", "column"),
+        coords={
+            "my_y": (("row", "column"), [[0.0, 0.0], [5.0, 5.0]]),
+            "my_x": (("row", "column"), [[20.0, 21.0], [20.0, 21.0]]),
+        },
+    )
+    result = GriddedData(array).search_point(
+        (4.9, 20.9), lat_coord="my_y", lon_coord="my_x"
+    )
+    assert result == pytest.approx(4.0)
+
 def test_sel_modern_basin():
     data = create_testdata()
     assert data.sel_modern_basin(50,norm_lon_method='').mean().data.item() == pytest.approx(0.5019781051132972)
