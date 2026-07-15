@@ -29,8 +29,10 @@ def register_cmap():
 
     available_cmaps = CommunityPalette().avail_palettes()
     for cmap_name in available_cmaps:
+        if cmap_name in mpl.colormaps:
+            continue
         community_cmap = CommunityPalette(name=cmap_name).colormap
-        mpl.colormaps.register(name=cmap_name, cmap=community_cmap)
+        mpl.colormaps.register(community_cmap, name=cmap_name)
 
 try:
     register_cmap()

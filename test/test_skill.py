@@ -1,5 +1,7 @@
-from cgeniepy.skill import ArrComparison
+import matplotlib.pyplot as plt
 import numpy as np
+
+from cgeniepy.skill import ArrComparison, TaylorDiagram
 
 def create_testdata():
     x = np.linspace(0,100,100)
@@ -24,3 +26,16 @@ def test_cos_sim():
 def test_rmse():
     ac = create_testdata()
     assert ac.rmse()==0.0
+
+
+def test_taylor_diagram_default_colormap():
+    comparisons = [
+        ArrComparison(np.arange(5), np.arange(5), label="a"),
+        ArrComparison(np.arange(5) + 1, np.arange(5), label="b"),
+    ]
+    diagram = TaylorDiagram(comparisons)
+    diagram.setup_ax()
+    diagram.plot(add_legend=False)
+
+    assert len(diagram.ax.collections) == len(comparisons)
+    plt.close(diagram.fig)

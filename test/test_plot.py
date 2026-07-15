@@ -13,7 +13,7 @@ def test_map_creation():
     data = create_sample_data()
     
     # Test that plotting works without error
-    data.plot(ax=ax)
+    data.plot(ax=ax, cmap="viridis")
     
     # Test that the plot has expected properties
     assert len(ax.collections) > 0  # Has plot elements
@@ -33,6 +33,18 @@ def test_line_plot():
     assert ax.get_xlabel() != ""  # Has x-label
     assert ax.get_ylabel() != ""  # Has y-label
     
+    plt.close(fig)
+
+
+def test_contourf_uses_requested_colormap():
+    fig, ax = plt.subplots(subplot_kw={'projection': ccrs.Mollweide()})
+    data = create_sample_data()
+
+    contour_set = data.plot(
+        ax=ax, pcolormesh=False, contourf=True, cmap="plasma"
+    )
+
+    assert contour_set.cmap.name == "plasma"
     plt.close(fig)
 
 def test_scatterdata_plot():

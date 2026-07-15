@@ -1,5 +1,10 @@
-from cgeniepy.plot import CommunityPalette
+import importlib
+import warnings
+
+import cgeniepy
 import matplotlib.colors
+
+from cgeniepy.plot import CommunityPalette
 
 
 def test_txt_palette():
@@ -15,3 +20,9 @@ def test_xml_palette():
 def test_alt_init():
     hex_codes = CommunityPalette('my_rainbow').to_hex()
     assert hex_codes[0] == '#320064'
+
+
+def test_colormap_registration_is_idempotent():
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        importlib.reload(cgeniepy)

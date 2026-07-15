@@ -427,14 +427,14 @@ class TaylorDiagram(object):
             self.add_point(self.corr, self.model_std, label=self.label, *args, **kwargs)
         else:
             if not cmap:
-                color_list = plt.cm.get_cmap('tab10', len(self.ac)).colors
+                color_list = plt.get_cmap('tab10', len(self.ac)).colors
             else:
                 color_list = cmap.colors            
             
             for i in range(len(self.ac)):
                 ## normalised std
                 self.add_point(self.corr[i], self.model_std[i]/self.obs_std[i], label=self.label[i],
-                              c=color_list[i],  *args, **kwargs)
+                              color=color_list[i],  *args, **kwargs)
 
         if add_legend:
             # outside the box

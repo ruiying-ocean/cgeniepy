@@ -97,13 +97,19 @@ class GriddedDataVis:
         def validate_and_get_cmap(cmap_name):
             "even if our cmap is not registered successfully, it will still be used"
             try:
-                import matplotlib.cm as cm
-                return cm.get_cmap(cmap_name)
-            except ValueError:
+                if isinstance(cmap_name, mpl.colors.Colormap):
+                    return cmap_name
+                if cmap_name is None:
+                    cmap_name = mpl.rcParams["image.cmap"]
+                return mpl.colormaps[cmap_name]
+            except (KeyError, ValueError):
                 try:
                     return CommunityPalette(name=cmap_name).colormap
-                except:
-                    raise ValueError(f"Colormap '{cmap_name}' not found in matplotlib or CommunityPalette")
+                except (FileNotFoundError, ValueError) as exc:
+                    raise ValueError(
+                        f"Colormap '{cmap_name}' not found in matplotlib or "
+                        "CommunityPalette"
+                    ) from exc
 
             
         ## if value has both negative and positive values, set cmap to diverging
@@ -141,7 +147,7 @@ class GriddedDataVis:
                     self.aes_dict['contourf_kwargs']['vmax'] = kwargs['vmax']
             if 'cmap' in kwargs:
                 validated_cmap = validate_and_get_cmap(kwargs['cmap'])
-                self.aes_dict['pcolormesh_kwargs']['cmap'] = validated_cmap                   
+                self.aes_dict['contourf_kwargs']['cmap'] = validated_cmap
         
 
         if self.data.ndim == 1:

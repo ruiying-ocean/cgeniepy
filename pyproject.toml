@@ -9,12 +9,12 @@ description = "A Python package to read, analyse and visualise cGENIE Earth Syst
 license = {text = "GPL-3.0-only"}
 authors = [{name = "Rui Ying", email = "ying.rui@outlook.com"}]
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "xarray",
     "numpy",
     "pandas",
-    "matplotlib",
+    "matplotlib>=3.11",
     "cartopy",
     "netCDF4",
     "scipy",
