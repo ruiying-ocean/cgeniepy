@@ -356,7 +356,7 @@ class GriddedDataVis:
 
 
         if "ax" not in kwargs:
-            fig, local_ax = self._init_fig(subplot_kw={"projection": ccrs.EckertIV()})
+            fig, local_ax = self._init_fig(subplot_kw={"projection": ccrs.EqualEarth()})
         else:
             local_ax = kwargs.pop("ax")
 
