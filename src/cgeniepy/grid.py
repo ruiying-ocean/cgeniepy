@@ -269,12 +269,12 @@ class GridOperation:
         """
         ## check the depth input range
         if x >= 0 and x <= 5000:
-            depth_edge = self.get_genie_depth(edge=True)
-            depth = self.get_genie_depth(edge=False)
+            # get_genie_depth lists levels from the bottom up; bin from the surface down
+            depth_edge = self.get_genie_depth(edge=True)[::-1]
+            depth = self.get_genie_depth(edge=False)[::-1]
 
-            for i in range(16):
-                if x >= depth_edge[i] and x < depth_edge[i + 1]:
-                    x = depth[i]
+            i = np.searchsorted(depth_edge, x, side="right") - 1
+            x = depth[min(i, len(depth) - 1)]  # the sea floor belongs to the deepest cell
         else:
             raise ValueError("Depth must be in [0,5000]")
 

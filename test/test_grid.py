@@ -21,6 +21,14 @@ def test_geodistance_2d():
 
     assert go().geo_dis2d(pnt1, pnt2).item() == 1111.9492664455872
 
+def test_geniebin_depth():
+    edges = go().get_genie_depth(edge=True)[::-1]
+    depths = go().get_genie_depth(edge=False)[::-1]
+    assert go().geniebin_depth(0) == depths[0]
+    assert go().geniebin_depth(100) == depths[1]
+    assert go().geniebin_depth(edges[1]) == depths[1]
+    assert go().geniebin_depth(5000) == depths[-1]
+
 def test_checkdimension():
     input = ['lat','lon','time','dpeth'] ## intentional typo
     has_lat, has_lon, has_depth, has_time = go().check_dimension(input)
