@@ -35,6 +35,32 @@ def test_variance():
     data = create_testdata()
     assert data.variance().data.item() == pytest.approx(0.08320434822952301)
 
+def test_add_and_subtract_align_coordinates():
+    data = create_testdata()
+    ## the same field stored in a different longitude order, under another name
+    rolled = GriddedData(data.data.roll(lon=90, roll_coords=True),
+                         attrs={'long_name': 'rolled data', 'units': 'uniteless'})
+
+    xr.testing.assert_allclose((data + rolled).data.sortby('lon'), 2 * data.data)
+    xr.testing.assert_allclose((data - rolled).data.sortby('lon'), 0 * data.data)
+
+def test_add_and_subtract_need_the_same_units():
+    data = create_testdata()
+    other = GriddedData(data.data.copy(), attrs={'units': 'mol/kg'})
+    with pytest.raises(ValueError, match="units|mol"):
+        data + other
+    with pytest.raises(ValueError):
+        data - other
+
+def test_power_returns_a_new_object():
+    data = create_testdata()
+    original = data.data.copy()
+    squared = data ** 2
+
+    assert squared is not data
+    xr.testing.assert_allclose(data.data, original)
+    xr.testing.assert_allclose(squared.data, original ** 2)
+
 def test_median():
     data = create_testdata()
     assert data.median().data.item() == pytest.approx(0.5036269709952814)

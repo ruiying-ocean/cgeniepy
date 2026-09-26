@@ -171,10 +171,9 @@ class GriddedData:
         """Allow GriddedData to be added by a number or another GriddedData
         """
         sum_array = GriddedData()
-        if hasattr(other, "array"):
-            sum_array.data = self.data + other.array
-            ## check the attributes
-            np.testing.assert_equal(self.attrs, other.attrs)            
+        if isinstance(other, GriddedData):
+            self._check_same_units(other)
+            sum_array.data = self.data + other.data
             sum_array.attrs = self.attrs
         else:
             ## a scalar or xarray.DataArray
@@ -187,10 +186,9 @@ class GriddedData:
         Allow a number or another GriddedData to be added to this GriddedData
         """
         sum_array = GriddedData()
-        if hasattr(other, "data"):
+        if isinstance(other, GriddedData):
+            self._check_same_units(other)
             sum_array.data = other.data + self.data
-            ## check all the attributes
-            np.testing.assert_equal(self.attrs, other.attrs)
             sum_array.attrs = self.attrs
         else:
             sum_array.data = other + self.data
@@ -202,11 +200,9 @@ class GriddedData:
         Allow GriddedData to be subtracted by a number or another GriddedData
         """
         diff = GriddedData()
-        if hasattr(other, "data"):
-            
+        if isinstance(other, GriddedData):
+            self._check_same_units(other)
             diff.data = self.data - other.data
-            ## check all the attributes
-            np.testing.assert_equal(self.attrs, other.attrs)
             diff.attrs = self.attrs
         else:
             ## a scalar
@@ -218,10 +214,9 @@ class GriddedData:
         Allow a number or another GriddedData to be subtracted from this GriddedData
         """
         diff = GriddedData()
-        if hasattr(other, "data"):
+        if isinstance(other, GriddedData):
+            self._check_same_units(other)
             diff.data = other.data - self.data
-            # check all the attributes
-            np.testing.assert_equal(self.attrs, other.attrs)
             diff.attrs = self.attrs
         else:
             # a scalar
@@ -296,12 +291,14 @@ class GriddedData:
         """
         Allow GriddedData to be raised to a power
         """
+        return GriddedData(self.data ** other, attrs=self.attrs)
 
-        if xr.get_options()['keep_attrs']:
-            self.data = self.data ** other
-            return self
-        else:
-            return GriddedData(self.data ** other, attrs=self.attrs)
+    def _check_same_units(self, other):
+        "fields can only be added or subtracted in the same units"
+        units = self.attrs.get("units")
+        other_units = other.attrs.get("units")
+        if units != other_units:
+            raise ValueError(f"Cannot combine fields in {units} and {other_units}")
 
 
     ## allow comparison
