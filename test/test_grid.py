@@ -35,6 +35,18 @@ def test_checkdimension():
     assert has_depth == False
 
 
+def test_set_coordinates_3d():
+    class Obj: pass
+    for index in (['depth', 'lat', 'lon'], ['lat', 'lon', 'depth']):
+        obj = Obj()
+        go.set_coordinates(obj, index)
+        assert (obj.depth, obj.lat, obj.lon) == ('depth', 'lat', 'lon')
+
+    obj = Obj()
+    go.set_coordinates(obj, ['time', 'depth', 'lon'])
+    assert (obj.time, obj.depth, obj.lon) == ('time', 'depth', 'lon')
+
+
 def test_dimorder():
     input = ['lat','lon','time','depth']
     depth_order = go().dim_order(input)[1]

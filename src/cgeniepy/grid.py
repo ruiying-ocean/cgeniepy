@@ -460,7 +460,7 @@ class GridOperation:
                 if not has_lat:
                     obj.time = index[index_order[0]]
                     obj.depth = index[index_order[1]]
-                    obj.time = index[index_order[0]]                                          
+                    obj.lon = index[index_order[2]]
                 if not has_lon:
                     obj.time = index[index_order[0]]
                     obj.depth = index[index_order[1]]
@@ -470,9 +470,9 @@ class GridOperation:
                     obj.lat = index[index_order[1]]
                     obj.lon = index[index_order[2]]
                 if not has_time:
-                    obj.lat = index[index_order[0]]
-                    obj.lon = index[index_order[1]]
-                    obj.depth = index[index_order[2]]
+                    obj.depth = index[index_order[0]]
+                    obj.lat = index[index_order[1]]
+                    obj.lon = index[index_order[2]]
             case 4:
                     obj.time = index[index_order[0]]
                     obj.depth = index[index_order[1]]
