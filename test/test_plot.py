@@ -195,3 +195,44 @@ def test_scatterdata_plot():
     assert len(ax.lines) > 0 or len(ax.collections) > 0
     
     plt.close(fig)
+
+
+def test_fill_to_edges_extends_water_over_land_and_to_the_edges():
+    from cgeniepy.plot import _fill_to_edges
+
+    values = np.array([[1.0, 2.0, np.nan], [4.0, 5.0, np.nan], [7.0, 8.0, 9.0]])
+    x, y, filled, land = _fill_to_edges(
+        values, np.array([1.0, 2.0, 3.0]), np.array([0.5, 1.5, 2.5, 3.5]),
+        np.array([10.0, 30.0, 50.0]), np.array([0.0, 20.0, 40.0, 60.0]),
+    )
+    np.testing.assert_array_equal(x, [0.5, 1, 2, 3, 3.5])
+    np.testing.assert_array_equal(y, [0, 10, 30, 50, 60])
+    np.testing.assert_array_equal(land, np.isnan(values))
+    ## land takes the nearest water value; the outer rows and columns are repeated
+    np.testing.assert_array_equal(filled[1:-1, 1:-1], [[1, 2, 2], [4, 5, 5], [7, 8, 9]])
+    np.testing.assert_array_equal(filled[0], filled[1])
+    np.testing.assert_array_equal(filled[:, -1], filled[:, -2])
+
+
+def test_transect_contourf_reaches_the_coast_and_the_sea_floor():
+    from matplotlib.collections import QuadMesh
+
+    model = cgeniepy.sample_model()
+    section = (
+        model.get_var("ocn_O2").isel(time=-1)
+        .mask_basin(base="worjh2", basin="Atlantic", subbasin="").mean(dim="lon")
+    )
+    fig, ax = plt.subplots()
+    filled = section.plot(ax=ax, pcolormesh=False, contourf=True, contour=True, outline=True)
+
+    vertices = np.concatenate([path.vertices for path in filled.get_paths() if len(path.vertices)])
+    np.testing.assert_allclose(vertices[:, 1].min(), 0, atol=1e-9)
+    np.testing.assert_allclose(vertices[:, 1].max(), model.grid_zt_edges().data.values[-1], atol=1e-6)
+
+    ## land cells cover the contour lines, and the outline is drawn over the land
+    land = [c for c in ax.collections if isinstance(c, QuadMesh)]
+    lines = ax.collections[-1]
+    assert len(land) == 1
+    assert land[0].get_zorder() > section.to_GriddedDataVis().aes_dict["contour_kwargs"]["zorder"]
+    assert lines.get_zorder() > land[0].get_zorder()
+    plt.close(fig)

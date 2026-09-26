@@ -4,6 +4,7 @@ import itertools
 
 import numpy as np
 import pandas as pd
+from scipy import ndimage
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import xarray as xr
@@ -93,6 +94,28 @@ def _cell_edges(coordinate):
     if is_depth:
         return np.clip(edges, 0, None)
     return edges
+
+
+def _pad_to_edges(centres, edges):
+    """Add the outer edges around the centres, unless a centre already sits on one."""
+    before, after = int(edges[0] != centres[0]), int(edges[-1] != centres[-1])
+    return np.r_[edges[:before], centres, edges[len(edges) - after:]], (before, after)
+
+
+def _fill_to_edges(values, x, x_edge, y, y_edge):
+    """Values to contour a transect up to the coast and the domain edges, and where the land is.
+
+    Land cells (NaN) take the value of the nearest water cell, and the outer rows and
+    columns are repeated at the domain edges, so filled contours reach the coast, the
+    surface and the sea floor. Drawing the land cells over the contours leaves the
+    model's own coastline.
+    """
+    land = np.isnan(values)
+    if land.any() and not land.all():
+        nearest = ndimage.distance_transform_edt(land, return_distances=False, return_indices=True)
+        values = values[tuple(nearest)]
+    (x, x_pad), (y, y_pad) = _pad_to_edges(x, x_edge), _pad_to_edges(y, y_edge)
+    return x, y, np.pad(values, (y_pad, x_pad), mode="edge"), land
 
 
 class GriddedDataVis:
@@ -530,11 +553,11 @@ class GriddedDataVis:
                 local_ax, geo=False, **self.aes_dict["borderline_kwargs"]
             )
 
-        if outline:
-            ## outline uses edge coordinates
-            self._add_outline(
-                local_ax, x=x_edge, y=y_edge, **self.aes_dict["outline_kwargs"]
-            )
+        values = self.data.transpose(y_name, x_name).values
+        land = None
+        if contourf:
+            ## contour up to the coast, then draw the land cells over the contours
+            x_arr, y_arr, values, land = _fill_to_edges(values, x_arr, x_edge, y_arr, y_edge)
 
         plots = {}
         if pcolormesh:
@@ -547,7 +570,7 @@ class GriddedDataVis:
         if contour:
             ## contour uses center coordinates
             plots["contour"] = self._add_contour(
-                local_ax, x_arr, y_arr, **self.aes_dict["contour_kwargs"]
+                local_ax, x_arr, y_arr, data=values, **self.aes_dict["contour_kwargs"]
             )
             if contour_label:
                 self._add_contour_label(
@@ -556,7 +579,18 @@ class GriddedDataVis:
 
 
         if contourf:
-            plots["contourf"] = self._add_contourf(local_ax, x_arr, y_arr, **self.aes_dict["contourf_kwargs"])
+            plots["contourf"] = self._add_contourf(local_ax, x_arr, y_arr, data=values, **self.aes_dict["contourf_kwargs"])
+
+        outline_kwargs = self.aes_dict["outline_kwargs"]
+        if land is not None and land.any():
+            land_zorder = max(plot.get_zorder() for plot in plots.values()) + 0.5
+            land_colour = self.aes_dict["facecolor_kwargs"]["c"] if facecolor else local_ax.get_facecolor()
+            self._add_land(local_ax, x_edge, y_edge, land, colour=land_colour, zorder=land_zorder)
+            outline_kwargs = {"zorder": land_zorder + 0.5, **outline_kwargs}
+
+        if outline:
+            ## outline uses edge coordinates
+            self._add_outline(local_ax, x=x_edge, y=y_edge, **outline_kwargs)
 
         if colorbar:
             self._add_labelled_colorbar(local_ax, plots, self._TRANSECT_COLORBAR)
@@ -623,6 +657,12 @@ class GriddedDataVis:
 
     def _add_contourf(self, ax, x, y, *args, data=None, **kwargs):
         return ax.contourf(x, y, self.data if data is None else data, *args, **kwargs)
+
+    def _add_land(self, ax, x, y, land, colour, zorder):
+        """cover the land cells, e.g. after contouring values extended over them"""
+        return ax.pcolormesh(
+            x, y, np.ma.masked_where(~land, land.astype(float)), cmap=ListedColormap([colour]), zorder=zorder
+        )
 
     def _add_contour_label(self, ax, cs, *args, levels=None, **kwargs):
         """Label ``levels``, or every other contour level by default."""
