@@ -150,3 +150,12 @@ def test_search_point_curvilinear_accepts_coordinate_names():
 def test_sel_modern_basin():
     data = create_testdata()
     assert data.sel_modern_basin(50,norm_lon_method='').mean().data.item() == pytest.approx(0.5019781051132972)
+
+
+def test_mask_basin_any_levels():
+    ## e.g. a 17-level grid with a time dimension
+    data = xr.DataArray(np.ones((2, 17, 36, 36)), dims=('time', 'zt', 'lat', 'lon'))
+    masked = GriddedData(data).mask_basin(base='worjh2', basin='Atlantic', subbasin='').data
+    surface = GriddedData(data.isel(time=0, zt=0)).mask_basin(base='worjh2', basin='Atlantic', subbasin='').data
+    assert masked.shape == data.shape
+    np.testing.assert_array_equal(np.isnan(masked.values), np.broadcast_to(np.isnan(surface.values), data.shape))

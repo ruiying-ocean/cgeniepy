@@ -536,8 +536,8 @@ class GriddedData:
             else:
                 combined_mask = np.logical_and(combined_mask, mask)  
 
-        if self.data.ndim > 2:
-            combined_mask = np.broadcast_to(combined_mask, (16, 36, 36))
+        # repeat the (lat, lon) mask over any leading dimensions, e.g. time and depth
+        combined_mask = np.broadcast_to(combined_mask, data.shape)
 
         mask_data = np.ma.array(data, mask=combined_mask)
         mask_data = np.ma.masked_invalid(mask_data)
