@@ -16,6 +16,18 @@ import cgeniepy.array as ca
 from importlib.resources import files, as_file
 
 
+def _bin_to_cells(values, edges, centres, right=True):
+    """Replace each value by the centre of the cell it falls in, or NaN outside the edges.
+
+    With right=True a value on an edge goes to the cell below the edge, otherwise to the cell above.
+    """
+    values = np.asarray(values, dtype=float)
+    i = np.searchsorted(edges, values, side="left" if right else "right") - 1
+    ## model files store edges with rounding errors, e.g. a 5000 m floor as 4999.9999999999945
+    inside = ((values >= edges[0]) | np.isclose(values, edges[0])) & ((values <= edges[-1]) | np.isclose(values, edges[-1]))
+    return np.where(inside, centres[np.clip(i, 0, len(centres) - 1)], np.nan)
+
+
 class ScatterData:
 
     modify_in_place = True
@@ -242,7 +254,8 @@ class ScatterData:
     def to_geniebin(
         self,
         var,
-        agg_method="mean"
+        agg_method="mean",
+        model=None
     ):
         """
         Regrid a dataframe within certain format to cGENIE grids.
@@ -251,7 +264,10 @@ class ScatterData:
 
         :param var: The variable to regrid.
         :param agg_method: The aggregation method to use when regridding.
-        :return: An indexed data frame
+        :param model: A GenieModel whose grid to regrid onto, which takes the cell edges and
+            centres from the model output. By default, regrid onto the 36x36 grid with 16 levels down to 5000 m.
+            Points outside the model grid, e.g. below the ocean floor, are dropped.
+        :return: An indexed data frame, with longitude in (-180, 180)
         """
 
         go= GridOperation()
@@ -265,14 +281,30 @@ class ScatterData:
         # drop NAN
         src_df = src_df.dropna(axis="rows", how="any")
 
-        # regrid coordinate: genie lat x normal lon
-        ## lat
-        if hasattr(self, "lat"):
-            src_df.loc[:, self.lat] = src_df.loc[:, self.lat].apply(go.geniebin_lat)
-        if hasattr(self, "lon"):
-            src_df.loc[:, self.lon] = src_df.loc[:, self.lon].apply(go.normbin_lon)
-        if hasattr(self, "depth"):
-            src_df.loc[:, self.depth] = src_df.loc[:, self.depth].apply(go.geniebin_depth)
+        if model is None:
+            # regrid coordinate: genie lat x normal lon
+            ## lat
+            if hasattr(self, "lat"):
+                src_df.loc[:, self.lat] = src_df.loc[:, self.lat].apply(go.geniebin_lat)
+            if hasattr(self, "lon"):
+                src_df.loc[:, self.lon] = src_df.loc[:, self.lon].apply(go.normbin_lon)
+            if hasattr(self, "depth"):
+                src_df.loc[:, self.depth] = src_df.loc[:, self.depth].apply(go.geniebin_depth)
+        else:
+            # regrid coordinate onto the model cells, labelled with the model coordinates
+            if hasattr(self, "lat"):
+                lat = model.grid_mask().data.lat.values
+                src_df.loc[:, self.lat] = _bin_to_cells(src_df[self.lat], model.grid_lat_edges().data.values, lat)
+            if hasattr(self, "lon"):
+                ## bin in the model's longitude range, then label cells in normal longitude
+                lon_edges = model.grid_lon_edges().data.values
+                lon = np.array([go.lon_g2n(x) for x in model.grid_mask().data.lon.values])
+                genie_lon = lon_edges[0] + (src_df[self.lon] - lon_edges[0]) % 360
+                src_df.loc[:, self.lon] = _bin_to_cells(genie_lon, lon_edges, lon)
+            if hasattr(self, "depth"):
+                zt = model.grid_mask_3d().data.zt.values
+                src_df.loc[:, self.depth] = _bin_to_cells(src_df[self.depth], model.grid_zt_edges().data.values, zt, right=False)
+            src_df = src_df.dropna(axis="rows", how="any")
 
         # aggregated source data (in long format)
         src_df_agg = src_df.groupby(self.index).agg(agg_method)

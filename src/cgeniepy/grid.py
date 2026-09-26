@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import xarray as xr
 from importlib.resources import files
@@ -31,11 +33,18 @@ class GridOperation:
             lon = np.linspace(offset_start+resolution/2, 360+offset_start-resolution/2, N)
             return lon
 
-    def get_genie_lat(self, N=36, edge=False):
+    def get_genie_lat(self, N=36, edge=False, equal_area=True):
         """
-        return cGENIE latitude in log-sine normally degree resolution,
-        if edge is False, then return midpoint
+        return cGENIE latitude, if edge is False, then return midpoint
+
+        :param N: number of grid points
+        :param edge: if True, return edge points
+        :param equal_area: if True, cells are evenly spaced in sine of latitude (go_grid=0, the default),
+            otherwise in latitude (go_grid=1)
         """
+        if not equal_area:
+            lat_edge = np.linspace(-90, 90, N + 1)
+            return lat_edge if edge else (lat_edge[:-1] + lat_edge[1:]) / 2
         if edge:
             lat_edge = np.rad2deg(np.arcsin(np.linspace(-1, 1, N + 1)))
             return lat_edge
@@ -45,14 +54,19 @@ class GridOperation:
             lat = np.rad2deg(np.arcsin(np.linspace(lat_min, lat_max, N)))
             return lat
 
-    def get_genie_depth(self, N=16, edge=False, max_depth=5000):
-        """calculate cGENIE vertical depth
+    def get_genie_depth(self, N=16, edge=False, max_depth=5000, extra_levels=0):
+        """calculate cGENIE vertical depth, from the ocean floor up to the surface,
+        as set up in GOLDSTEIN (initialise_goldstein.F) and written out by BIOGEM
+
         :param N: number of grid points
         :param edge: if True, return edge points, otherwise return midpoints
+        :param max_depth: the depth scale (go_par_dsc), which is the depth of the ocean floor
+            unless there are extra levels
+        :param extra_levels: number of levels added below max_depth (go_par_dk)
         """
         ez0=0.1
 
-        z1 = ez0 * ((1.0 + 1/ez0) ** (1.0 / N) - 1.0)
+        z1 = ez0 * ((1.0 + 1/ez0) ** (1.0 / (N - extra_levels)) - 1.0)
         dz = np.zeros(N)
         tv2 = 0.0
 
@@ -70,8 +84,11 @@ class GridOperation:
         if edge:
             return edges
         else:
-            z = np.array([(edges[i] + edges[i + 1]) / 2 for i in range(len(edges) - 1)])
-            return z
+            # as BIOGEM writes zt: the top midpoint is halfway down the top layer, and the midpoints
+            # below it keep the spacing of the GOLDSTEIN tracer points ez0 * ((z1/ez0 + 1)**(k + 0.5) - 1)
+            tracer = ez0 * ((z1 / ez0 + 1) ** (np.arange(N) + 0.5) - 1)
+            z = max_depth * (dz[N - 1] / 2 + tracer - tracer[0])
+            return z[::-1]
 
 
     def get_normal_lon(self, N=36, edge=False):
@@ -89,16 +106,16 @@ class GridOperation:
         
     def lon_n2g(self, x, grid_lon_offset=-260):
         """
-        Convert normal longitude (-180, 180) to GENIE longitude (-270, 90)
+        Convert normal longitude (-180, 180) to GENIE longitude
+        (grid_lon_offset, grid_lon_offset + 360)
 
         :param x: normal longitude
+        :param grid_lon_offset: the par_grid_lon_offset option in main configuration file
         :return: GENIE longitude
         """
-        if grid_lon_offset == -180:
-            print("this is already normal lat")
-            return x
-        normal_lon_cut = self.lon_g2n(grid_lon_offset)
-        if x > normal_lon_cut and x < 180:
+        if x < grid_lon_offset:
+            return x + 360
+        elif x > grid_lon_offset + 360:
             return x - 360
         else:
             return x
@@ -109,11 +126,13 @@ class GridOperation:
         This is independent on the grid_offset_start option
 
         :param x: GENIE longitude
-        :return: normal longitude        
+        :return: normal longitude
         """
 
         if x < -180:
             return x + 360
+        elif x > 180:
+            return x - 360
         else:
             return x
 
@@ -149,8 +168,8 @@ class GridOperation:
         :returns: xr.Dataset        
         """
         return data.assign_coords(
-            {longitude: list(map(self.lon_n2g, data[longitude].values, *args, **kwargs))}
-        ).sortby("lon")
+            {longitude: [self.lon_n2g(x, *args, **kwargs) for x in data[longitude].values]}
+        ).sortby(longitude)
 
     def xr_g2n(self, data: xr.Dataset, longitude="lon", *args, **kwargs) -> xr.Dataset:
         """Apply longitude conversion method g2n for the input data (GENIE to normal)
@@ -193,8 +212,18 @@ class GridOperation:
         """
         mask Arctic and Meditterean Sea in cGENIE modern continent configuration
 
-        :param array: 36x36 GENIE array
+        The masked cells are fixed indices of the modern 36x36 continents (e.g. worjh2, worlg4):
+        rows 34-35 for the Arctic and rows 27-29, columns 25-29 for the Mediterranean.
+        For other continents they are the wrong cells. A warning is raised if the array is not 36x36,
+        but a 36x36 array with other continents cannot be told apart.
+
+        :param array: 36x36 GENIE array, (lat, lon)
+        :param policy: "na" to set the masked cells to NaN, "zero" to set them to 0
         """
+        if np.shape(array) != (36, 36):
+            warnings.warn(
+                f"mask_Arctic_Med masks cells of the modern 36x36 continents, but the array is {np.shape(array)}"
+            )
         if policy == "na":
             array[34:36, :] = np.nan
             array[27:30, 25:30] = np.nan
@@ -237,9 +266,9 @@ class GridOperation:
         ## check the latitude input range
         if x >= -90 and x <= 90:
             lat_edge = self.get_genie_lat(edge=True, *args,**kwargs)
-            lat = self.get_genie_lat(edge=False)
+            lat = self.get_genie_lat(edge=False, *args,**kwargs)
 
-            for i in range(36):
+            for i in range(len(lat)):
                 if x > lat_edge[i] and x <= lat_edge[i + 1]:
                     x = lat[i]
         else:
@@ -254,8 +283,7 @@ class GridOperation:
         ## check the longitude input range
         if x >= -180 and x <= 180:
             lon_edge = self.get_genie_lon(edge=True, *args,**kwargs)
-            if 'N' not in kwargs: N=36                
-            for i in range(N):
+            for i in range(len(lon_edge) - 1):
                 if x > lon_edge[i] and x <= lon_edge[i + 1]:
                     x = (lon_edge[i] + lon_edge[i + 1]) / 2  # middle value in the bin
         else:
@@ -263,20 +291,25 @@ class GridOperation:
 
         return x
 
-    def geniebin_depth(self, x, *args,**kwargs):
+    def geniebin_depth(self, x, N=16, max_depth=5000, extra_levels=0):
         """
         Categorize <depth> into cGENIE grid bins
-        """
-        ## check the depth input range
-        if x >= 0 and x <= 5000:
-            depth_edge = self.get_genie_depth(edge=True)
-            depth = self.get_genie_depth(edge=False)
 
-            for i in range(16):
-                if x >= depth_edge[i] and x < depth_edge[i + 1]:
-                    x = depth[i]
+        :param N: number of depth levels
+        :param max_depth: the depth scale (go_par_dsc), see get_genie_depth
+        :param extra_levels: number of levels added below max_depth (go_par_dk)
+        """
+        # get_genie_depth lists levels from the bottom up; bin from the surface down
+        depth_edge = self.get_genie_depth(N=N, edge=True, max_depth=max_depth, extra_levels=extra_levels)[::-1]
+        depth = self.get_genie_depth(N=N, edge=False, max_depth=max_depth, extra_levels=extra_levels)[::-1]
+        floor = depth_edge[-1]
+
+        ## check the depth input range
+        if x >= 0 and (x <= floor or np.isclose(x, floor)):
+            i = np.searchsorted(depth_edge, x, side="right") - 1
+            x = depth[min(i, len(depth) - 1)]  # the sea floor belongs to the deepest cell
         else:
-            raise ValueError("Depth must be in [0,5000]")
+            raise ValueError(f"Depth must be in [0,{floor:g}]")
 
         return x
 
@@ -287,8 +320,7 @@ class GridOperation:
         ## check the longitude input range
         if x >= -180 and x <= 180:
             lon_edge = self.get_normal_lon(edge=True, *args,**kwargs)
-            if 'N' not in kwargs: N=36                
-            for i in range(N):
+            for i in range(len(lon_edge) - 1):
                 if x > lon_edge[i] and x <= lon_edge[i + 1]:
                     x = (lon_edge[i] + lon_edge[i + 1]) / 2
         else:
@@ -460,7 +492,7 @@ class GridOperation:
                 if not has_lat:
                     obj.time = index[index_order[0]]
                     obj.depth = index[index_order[1]]
-                    obj.time = index[index_order[0]]                                          
+                    obj.lon = index[index_order[2]]
                 if not has_lon:
                     obj.time = index[index_order[0]]
                     obj.depth = index[index_order[1]]
@@ -470,9 +502,9 @@ class GridOperation:
                     obj.lat = index[index_order[1]]
                     obj.lon = index[index_order[2]]
                 if not has_time:
-                    obj.lat = index[index_order[0]]
-                    obj.lon = index[index_order[1]]
-                    obj.depth = index[index_order[2]]
+                    obj.depth = index[index_order[0]]
+                    obj.lat = index[index_order[1]]
+                    obj.lon = index[index_order[2]]
             case 4:
                     obj.time = index[index_order[0]]
                     obj.depth = index[index_order[1]]

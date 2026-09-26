@@ -28,10 +28,36 @@ def _evenly_spaced(values, rtol):
     return np.allclose(steps, steps[0], rtol=rtol)
 
 
+def _goldstein_depth_edges(values):
+    """Edges of GOLDSTEIN depth levels recovered from the depths BIOGEM writes as zt, or None.
+
+    BIOGEM puts the top zt halfway down the top layer and spaces the rest like the
+    GOLDSTEIN tracer points, so zt + a = B * g**(k + 1/2) and the edges are
+    B * g**k - B, with B = ez0 * dsc and a = B * (1 - (sqrt(g) - 1)**2 / 2).
+    Fitting a, g and B to the values finds the edges for any depth scale and
+    number of levels.
+    """
+    if values.size < 3:
+        return None
+    m = (values.size - 1) // 2
+    z0, z1, z2 = values[0], values[m], values[2 * m]
+    curvature = z0 + z2 - 2 * z1
+    if curvature <= 0:
+        return None
+    a = (z1**2 - z0 * z2) / curvature
+    u = values + a
+    g = (u[m] / u[0]) ** (1 / m)
+    if not np.allclose(u, u[0] * g ** np.arange(values.size), rtol=1e-6):
+        return None
+    B = a / (1 - (np.sqrt(g) - 1) ** 2 / 2)
+    return np.concatenate([[u[0] / np.sqrt(g)], u * np.sqrt(g)]) - B
+
+
 def _cell_edges(coordinate):
     """Edges of the cells drawn around each value of a coordinate.
 
-    Edges sit halfway between neighbouring values, measured in the space where
+    Depths written by BIOGEM get the edges of their GOLDSTEIN levels. Otherwise
+    edges sit halfway between neighbouring values, measured in the space where
     GENIE spaces its grid evenly: sine of latitude, and log(depth + 500 m).
     Other coordinates are bisected linearly. The outer cells of a node grid
     stop at the first and last node.
@@ -42,6 +68,10 @@ def _cell_edges(coordinate):
     name = coordinate.name.lower()
     is_lat, _, is_depth, _ = GridOperation.check_dimension((name,))
     is_depth = is_depth and values.min() >= 0
+    if is_depth and name not in _NODE_DIMS:
+        edges = _goldstein_depth_edges(values)
+        if edges is not None:
+            return np.clip(edges, 0, None)
     space, kind = values, "linear"
     if is_lat and _evenly_spaced(np.sin(np.deg2rad(values)), rtol=1e-5):
         space, kind = np.sin(np.deg2rad(values)), "sine"

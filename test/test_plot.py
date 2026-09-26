@@ -64,13 +64,25 @@ def test_cell_edges_follow_genie_grid():
         temp.mean(dim="lon").to_GriddedDataVis()._transect_coordinates()
     )
     np.testing.assert_allclose(lat_cells, lat_edges, atol=1e-9)
-    np.testing.assert_allclose(depth_cells, zt_edges, atol=2)
+    np.testing.assert_allclose(depth_cells, zt_edges, atol=1e-9)
 
     # MOC values are nodes: their cells split at tracer centres and stop at the
     # poles, the surface and the seafloor
     *_, lat_cells, depth_cells = opsi.to_GriddedDataVis()._transect_coordinates()
     np.testing.assert_allclose(lat_cells, np.r_[-90, lat, 90], atol=1e-9)
     np.testing.assert_allclose(depth_cells, np.r_[0, zt, zt_edges[-1]], atol=2)
+
+
+def test_depth_cell_edges_for_other_depth_scales():
+    from cgeniepy.grid import GridOperation
+    from cgeniepy.plot import _cell_edges
+
+    for kwargs in [dict(max_depth=5500), dict(N=17, extra_levels=1), dict(N=8)]:
+        zt = GridOperation().get_genie_depth(**kwargs)[::-1]
+        edges = GridOperation().get_genie_depth(edge=True, **kwargs)[::-1]
+        coordinate = xr.DataArray(zt, dims="zt", name="zt")
+        np.testing.assert_allclose(_cell_edges(coordinate), edges, atol=1e-9)
+        np.testing.assert_allclose(_cell_edges(coordinate[3:6]), edges[3:7], atol=1e-9)
 
 
 def test_cell_edges_for_subsets_and_zonal_sections():

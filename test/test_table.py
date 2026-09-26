@@ -24,3 +24,19 @@ def test_url():
     
     test_data= ScatterData(url, comment='#', delimiter='\t')
     assert test_data.data['CO2'][0] == 257.8
+
+def test_to_geniebin_model_grid():
+    import cgeniepy
+    model = cgeniepy.sample_model()
+    zt = model.grid_mask_3d().data.zt.values
+    lat = model.grid_mask().data.lat.values
+    df = pd.DataFrame({'depth': [100., 5000., 6000.], 'lat': [0.5, -90., 10.],
+                       'lon': [179., -180., 10.], 'v': [1., 2., 3.]})
+    data = ScatterData(df)
+    data.set_index(['depth', 'lat', 'lon'])
+    binned = data.to_geniebin('v', model=model).reset_index()
+    ## 6000 m is below the ocean floor of the model
+    assert len(binned) == 2
+    assert set(binned['depth']) == {zt[1], zt[-1]}
+    assert set(binned['lat']) <= set(lat)
+    assert set(binned['lon']) == {175.}
