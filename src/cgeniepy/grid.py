@@ -89,16 +89,16 @@ class GridOperation:
         
     def lon_n2g(self, x, grid_lon_offset=-260):
         """
-        Convert normal longitude (-180, 180) to GENIE longitude (-270, 90)
+        Convert normal longitude (-180, 180) to GENIE longitude
+        (grid_lon_offset, grid_lon_offset + 360)
 
         :param x: normal longitude
+        :param grid_lon_offset: the par_grid_lon_offset option in main configuration file
         :return: GENIE longitude
         """
-        if grid_lon_offset == -180:
-            print("this is already normal lat")
-            return x
-        normal_lon_cut = self.lon_g2n(grid_lon_offset)
-        if x > normal_lon_cut and x < 180:
+        if x < grid_lon_offset:
+            return x + 360
+        elif x > grid_lon_offset + 360:
             return x - 360
         else:
             return x
@@ -109,11 +109,13 @@ class GridOperation:
         This is independent on the grid_offset_start option
 
         :param x: GENIE longitude
-        :return: normal longitude        
+        :return: normal longitude
         """
 
         if x < -180:
             return x + 360
+        elif x > 180:
+            return x - 360
         else:
             return x
 
@@ -149,8 +151,8 @@ class GridOperation:
         :returns: xr.Dataset        
         """
         return data.assign_coords(
-            {longitude: list(map(self.lon_n2g, data[longitude].values, *args, **kwargs))}
-        ).sortby("lon")
+            {longitude: [self.lon_n2g(x, *args, **kwargs) for x in data[longitude].values]}
+        ).sortby(longitude)
 
     def xr_g2n(self, data: xr.Dataset, longitude="lon", *args, **kwargs) -> xr.Dataset:
         """Apply longitude conversion method g2n for the input data (GENIE to normal)

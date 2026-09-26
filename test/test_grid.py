@@ -8,6 +8,19 @@ def test_lon_g2n():
     assert go().lon_g2n(-260) == 100
 
 
+def test_lon_offset_0():
+    ## e.g. a grid with par_grid_lon_offset = 0 has longitudes in (0, 360)
+    assert go().lon_g2n(355) == -5
+    assert go().lon_n2g(-5, grid_lon_offset=0) == 355
+    assert go().lon_n2g(5, grid_lon_offset=0) == 5
+
+
+def test_xr_n2g_offset():
+    import xarray as xr
+    data = xr.DataArray([1, 2], dims="lon", coords={"lon": [-5, 5]})
+    assert list(go().xr_n2g(data, grid_lon_offset=0).lon.values) == [5, 355]
+
+
 def test_lon_e2n():
     assert go().lon_e2n(350) == -10
 
