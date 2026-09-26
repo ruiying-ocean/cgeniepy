@@ -31,11 +31,18 @@ class GridOperation:
             lon = np.linspace(offset_start+resolution/2, 360+offset_start-resolution/2, N)
             return lon
 
-    def get_genie_lat(self, N=36, edge=False):
+    def get_genie_lat(self, N=36, edge=False, equal_area=True):
         """
-        return cGENIE latitude in log-sine normally degree resolution,
-        if edge is False, then return midpoint
+        return cGENIE latitude, if edge is False, then return midpoint
+
+        :param N: number of grid points
+        :param edge: if True, return edge points
+        :param equal_area: if True, cells are evenly spaced in sine of latitude (go_grid=0, the default),
+            otherwise in latitude (go_grid=1)
         """
+        if not equal_area:
+            lat_edge = np.linspace(-90, 90, N + 1)
+            return lat_edge if edge else (lat_edge[:-1] + lat_edge[1:]) / 2
         if edge:
             lat_edge = np.rad2deg(np.arcsin(np.linspace(-1, 1, N + 1)))
             return lat_edge
@@ -45,14 +52,19 @@ class GridOperation:
             lat = np.rad2deg(np.arcsin(np.linspace(lat_min, lat_max, N)))
             return lat
 
-    def get_genie_depth(self, N=16, edge=False, max_depth=5000):
-        """calculate cGENIE vertical depth
+    def get_genie_depth(self, N=16, edge=False, max_depth=5000, extra_levels=0):
+        """calculate cGENIE vertical depth, from the ocean floor up to the surface,
+        as set up in GOLDSTEIN (initialise_goldstein.F) and written out by BIOGEM
+
         :param N: number of grid points
         :param edge: if True, return edge points, otherwise return midpoints
+        :param max_depth: the depth scale (go_par_dsc), which is the depth of the ocean floor
+            unless there are extra levels
+        :param extra_levels: number of levels added below max_depth (go_par_dk)
         """
         ez0=0.1
 
-        z1 = ez0 * ((1.0 + 1/ez0) ** (1.0 / N) - 1.0)
+        z1 = ez0 * ((1.0 + 1/ez0) ** (1.0 / (N - extra_levels)) - 1.0)
         dz = np.zeros(N)
         tv2 = 0.0
 
@@ -70,8 +82,11 @@ class GridOperation:
         if edge:
             return edges
         else:
-            z = np.array([(edges[i] + edges[i + 1]) / 2 for i in range(len(edges) - 1)])
-            return z
+            # as BIOGEM writes zt: the top midpoint is halfway down the top layer, and the midpoints
+            # below it keep the spacing of the GOLDSTEIN tracer points ez0 * ((z1/ez0 + 1)**(k + 0.5) - 1)
+            tracer = ez0 * ((z1 / ez0 + 1) ** (np.arange(N) + 0.5) - 1)
+            z = max_depth * (dz[N - 1] / 2 + tracer - tracer[0])
+            return z[::-1]
 
 
     def get_normal_lon(self, N=36, edge=False):
@@ -264,23 +279,25 @@ class GridOperation:
 
         return x
 
-    def geniebin_depth(self, x, N=16, max_depth=5000):
+    def geniebin_depth(self, x, N=16, max_depth=5000, extra_levels=0):
         """
         Categorize <depth> into cGENIE grid bins
 
         :param N: number of depth levels
-        :param max_depth: depth of the ocean floor in m
+        :param max_depth: the depth scale (go_par_dsc), see get_genie_depth
+        :param extra_levels: number of levels added below max_depth (go_par_dk)
         """
-        ## check the depth input range
-        if x >= 0 and x <= max_depth:
-            # get_genie_depth lists levels from the bottom up; bin from the surface down
-            depth_edge = self.get_genie_depth(N=N, edge=True, max_depth=max_depth)[::-1]
-            depth = self.get_genie_depth(N=N, edge=False, max_depth=max_depth)[::-1]
+        # get_genie_depth lists levels from the bottom up; bin from the surface down
+        depth_edge = self.get_genie_depth(N=N, edge=True, max_depth=max_depth, extra_levels=extra_levels)[::-1]
+        depth = self.get_genie_depth(N=N, edge=False, max_depth=max_depth, extra_levels=extra_levels)[::-1]
+        floor = depth_edge[-1]
 
+        ## check the depth input range
+        if x >= 0 and (x <= floor or np.isclose(x, floor)):
             i = np.searchsorted(depth_edge, x, side="right") - 1
             x = depth[min(i, len(depth) - 1)]  # the sea floor belongs to the deepest cell
         else:
-            raise ValueError(f"Depth must be in [0,{max_depth}]")
+            raise ValueError(f"Depth must be in [0,{floor:g}]")
 
         return x
 

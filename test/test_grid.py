@@ -74,3 +74,21 @@ def test_dimorder():
     input = ['lat','lon','time','depth']
     depth_order = go().dim_order(input)[1]
     assert input[depth_order] == 'depth'
+
+def test_genie_depth_matches_model():
+    import cgeniepy
+    model = cgeniepy.sample_model()
+    np.testing.assert_allclose(go().get_genie_depth()[::-1], model.grid_mask_3d().data.zt.values)
+    np.testing.assert_allclose(go().get_genie_depth(edge=True)[::-1], model.grid_zt_edges().data.values, atol=1e-9)
+
+
+def test_genie_depth_extra_levels():
+    ## 16 levels to 5000 m, plus one level below
+    edges = go().get_genie_depth(N=17, edge=True, extra_levels=1)[::-1]
+    np.testing.assert_allclose(edges[:17], go().get_genie_depth(edge=True)[::-1], atol=1e-9)
+    assert edges[-1] > 5000
+
+
+def test_genie_lat_equal_degree():
+    np.testing.assert_allclose(go().get_genie_lat(N=18, edge=True, equal_area=False), np.arange(-90, 91, 10))
+    np.testing.assert_allclose(go().get_genie_lat(N=18, equal_area=False), np.arange(-85, 90, 10))
