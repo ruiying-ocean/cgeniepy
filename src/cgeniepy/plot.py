@@ -17,12 +17,61 @@ from .utils import efficient_log
 import warnings
 
 
+# MOC and psi latitudes and depths are nodes that include the domain limits.
+_NODE_DIMS = ("lat_moc", "lat_psi", "lat_opsi", "zt_moc")
+# GOLDSTEIN depth levels are evenly spaced in log(depth + ez0 * dsc).
+_GENIE_DEPTH_OFFSET = 500.0  # m; ez0 = 0.1, dsc = 5000 m
+
+
+def _evenly_spaced(values, rtol):
+    steps = np.diff(values)
+    return np.allclose(steps, steps[0], rtol=rtol)
+
+
+def _cell_edges(coordinate):
+    """Edges of the cells drawn around each value of a coordinate.
+
+    Edges sit halfway between neighbouring values, measured in the space where
+    GENIE spaces its grid evenly: sine of latitude, and log(depth + 500 m).
+    Other coordinates are bisected linearly. The outer cells of a node grid
+    stop at the first and last node.
+    """
+    values = coordinate.values.astype(float)
+    if values.size < 2:
+        raise ValueError(f"Cannot derive cell edges from one {coordinate.name} value")
+    name = coordinate.name.lower()
+    is_lat, _, is_depth, _ = GridOperation.check_dimension((name,))
+    is_depth = is_depth and values.min() >= 0
+    space, kind = values, "linear"
+    if is_lat and _evenly_spaced(np.sin(np.deg2rad(values)), rtol=1e-5):
+        space, kind = np.sin(np.deg2rad(values)), "sine"
+    elif is_depth and _evenly_spaced(np.log(values + _GENIE_DEPTH_OFFSET), rtol=1e-2):
+        space, kind = np.log(values + _GENIE_DEPTH_OFFSET), "log"
+
+    middle = (space[:-1] + space[1:]) / 2
+    if name in _NODE_DIMS:
+        first, last = space[0], space[-1]
+    else:
+        first, last = 2 * space[0] - middle[0], 2 * space[-1] - middle[-1]
+    edges = np.concatenate([[first], middle, [last]])
+    if kind == "sine":
+        edges = np.rad2deg(np.arcsin(np.clip(edges, -1, 1)))
+    elif kind == "log":
+        edges = np.exp(edges) - _GENIE_DEPTH_OFFSET
+    if is_lat:
+        return np.clip(edges, -90, 90)
+    if is_depth:
+        return np.clip(edges, 0, None)
+    return edges
+
 
 class GriddedDataVis:
 
     """A class to visualise the GriddedData object"""
 
     transform_crs = ccrs.PlateCarree()  # do not change
+    _MAP_COLORBAR = {"fraction": 0.046, "pad": 0.03, "orientation": "horizontal"}
+    _TRANSECT_COLORBAR = {"orientation": "vertical"}
 
     def __init__(self, gd):
         """
@@ -52,7 +101,8 @@ class GriddedDataVis:
         self._default_cmap = pal  # store default to check if user changed it
 
         self.aes_dict = {
-            "general_kwargs": {"font": "Helvetica", "fontsize": 10},
+            ## font None follows Matplotlib's rcParams
+            "general_kwargs": {"font": None, "fontsize": 10},
             "facecolor_kwargs": {"c": "silver"}, #silver
             "borderline_kwargs": {"c": "black", "linewidth": 1.0},
             "outline_kwargs": {"colors": "black", "linewidth": 1.0},
@@ -76,8 +126,9 @@ class GriddedDataVis:
                 "size": 10,
                 "labelpad": 10,
             },
-            "colorbar_kwargs": {"fraction": 0.046, "pad": 0.03, 'orientation': 'horizontal'},
-        }         
+            ## applied over _MAP_COLORBAR or _TRANSECT_COLORBAR
+            "colorbar_kwargs": {},
+        }
 
             
     def plot(self, *args, **kwargs):
@@ -231,9 +282,50 @@ class GriddedDataVis:
             # Add a common colorbar to the figure
             fig.colorbar(im, ax=axs.tolist(), orientation='horizontal', label=f"{self.plot_name} ({self.plot_units})",
                          fraction=0.046, pad=0.05)            
-        else:            
+        else:
             raise ValueError("Not support 3D plot iterating over other dimension than time and depth")
-    
+
+    def _map_coordinates(self):
+        lat_order, lon_order = GridOperation().dim_order(self.data.dims)
+        lon = self.data[self.data.dims[lon_order]]
+        lat = self.data[self.data.dims[lat_order]]
+        return lon.values, lat.values, _cell_edges(lon), _cell_edges(lat)
+
+    def _split_at_map_edge(self, ax, x_edge):
+        """Split cells that straddle the map's edge, which cartopy fails to wrap (#4).
+
+        Both halves keep the cell's value, so nothing moves on the map.
+        """
+        data = np.asarray(self.data)
+        projection = getattr(ax, "projection", None)
+        if projection is None or not np.all(np.diff(x_edge) > 0):
+            return x_edge, data
+        lon_axis = GridOperation().dim_order(self.data.dims)[1]
+        map_edge = projection.proj4_params.get("lon_0", 0.0) + 180
+        turns = np.arange(
+            np.ceil((x_edge[0] - map_edge) / 360),
+            np.floor((x_edge[-1] - map_edge) / 360) + 1,
+        )
+        for boundary in map_edge + 360 * turns:
+            index = np.searchsorted(x_edge, boundary)
+            if (
+                0 < index < x_edge.size
+                and not np.isclose(x_edge[index - 1 : index + 1], boundary).any()
+            ):
+                x_edge = np.insert(x_edge, index, boundary)
+                data = np.insert(
+                    data, index - 1, data.take(index - 1, axis=lon_axis), axis=lon_axis
+                )
+        return x_edge, data
+
+    def _close_longitude(self, x_arr, x_edge):
+        """Repeat the first column after the last so contours close on a global grid."""
+        data = np.asarray(self.data)
+        if not np.isclose(x_edge[-1] - x_edge[0], 360):
+            return x_arr, data
+        lon_axis = GridOperation().dim_order(self.data.dims)[1]
+        data = np.concatenate([data, data.take([0], axis=lon_axis)], axis=lon_axis)
+        return np.append(x_arr, x_arr[0] + 360), data
 
     def _plot_map(
         self,
@@ -249,6 +341,7 @@ class GriddedDataVis:
         zebra_frame=False,
         engine='cartopy',
         *args,
+        contour_label=True,
         **kwargs,
     ):
 
@@ -258,28 +351,8 @@ class GriddedDataVis:
             ## plot xarray data
             fig.grdimage(self.data, projection="Q12c", cmap="turbo", frame=True)
             return fig
-        
-        dim_order = GridOperation().dim_order(self.data.dims)
-        lat_order = dim_order[0] ## in the case of 2D, lat is the first dimension
-        lon_order = dim_order[1] ## in the case of 2D, lon is the second dimension
 
-        x_name = self.data.dims[lon_order]  ## lon
-        y_name = self.data.dims[lat_order]  ## lat
-
-        x_arr = self.data[x_name].values
-        y_arr = self.data[y_name].values
-
-        x_min = x_arr.min()
-        x_max = x_arr.max()
-        x_res = x_arr[1] - x_arr[0]
-        x_edge = np.linspace(x_min-x_res/2, x_max+x_res/2, x_arr.size + 1)
-        
-        
-        if x_edge[0] < 0 and x_edge[1] > 0:    
-            x_edge = x_edge + x_res/2
-
-
-        y_edge = np.rad2deg(np.arcsin(np.linspace(-1, 1, y_arr.size + 1)))
+        x_arr, y_arr, x_edge, y_edge = self._map_coordinates()
 
 
         if "ax" not in kwargs:
@@ -314,60 +387,65 @@ class GriddedDataVis:
             )
 
 
+        plots = {}
         if pcolormesh:
             ## pcolormesh uses edge coordinates
             ## need to be transformed to PlateCarree
-            p_pcolormesh = self._add_pcolormesh(
+            mesh_x_edge, mesh_data = self._split_at_map_edge(local_ax, x_edge)
+            plots["pcolormesh"] = self._add_pcolormesh(
                 local_ax,
-                x=x_edge,
+                x=mesh_x_edge,
                 y=y_edge,
+                data=mesh_data,
                 transform=self.transform_crs,
                 *args,
                 **self.aes_dict["pcolormesh_kwargs"],
             )
-            
-            if colorbar:
-                cbar = self._add_colorbar(p_pcolormesh,  **self.aes_dict["colorbar_kwargs"])
-                self._add_colorbar_label(cbar, **self.aes_dict["colorbar_label_kwargs"])
 
+        ## contours use center coordinates, closed across the seam
+        contour_x, contour_data = self._close_longitude(x_arr, x_edge)
         if contour:
-            ## contour uses center coordinates
             ## need to be transformed to PlateCarree
-            p_contour = self._add_contour(
+            plots["contour"] = self._add_contour(
                 local_ax,
-                x_arr,
+                contour_x,
                 y_arr,
+                data=contour_data,
                 transform=self.transform_crs,
                 **self.aes_dict["contour_kwargs"],
             )
-            self._add_contour_label(
-                local_ax, p_contour, **self.aes_dict["contour_label_kwargs"]
-            )
-            ## contour will not be used to plot colorbar because it's set to black
+            if contour_label:
+                self._add_contour_label(
+                    local_ax, plots["contour"], **self.aes_dict["contour_label_kwargs"]
+                )
 
         if contourf:
-            p_contourf = self._add_contourf(
+            plots["contourf"] = self._add_contourf(
                 local_ax,
-                x_arr,
+                contour_x,
                 y_arr,
+                data=contour_data,
                 transform=self.transform_crs,
                 **self.aes_dict["contourf_kwargs"],
             )
 
+        if colorbar:
+            self._add_labelled_colorbar(local_ax, plots, self._MAP_COLORBAR)
+
         if cfeature:
             self._add_cfeature(local_ax, cfeature)
-        
+
         if zebra_frame:
             add_zebra_frame(local_ax)
 
-        if pcolormesh:
-            return p_pcolormesh
-        elif contour:
-            return p_contour
-        elif contourf:
-            return p_contourf
-        else:
-            return local_ax
+        return self._main_plot(plots, local_ax)
+
+    def _transect_coordinates(self):
+        ## the horizontal axis is latitude, or longitude for zonal sections
+        zt_order, x_order = GridOperation().dim_order(self.data.dims)
+        x = self.data[self.data.dims[x_order]]
+        zt = self.data[self.data.dims[zt_order]]
+        return x.name, zt.name, x.values, zt.values, _cell_edges(x), _cell_edges(zt)
 
     def _plot_transect(
         self,
@@ -379,6 +457,8 @@ class GriddedDataVis:
         facecolor=True,
         borderline=True,
         *args,
+        contour_label=True,
+        gridline=True,
         **kwargs,
     ):
         """
@@ -401,37 +481,15 @@ class GriddedDataVis:
         available kwargs:
         outline_kwargs = {'outline_color': 'red', 'outline_width': .5}
         """
-        ## sort the dimension
-        dim_order = GridOperation().dim_order(self.data.dims)        
+        x_name, y_name, x_arr, y_arr, x_edge, y_edge = self._transect_coordinates()
 
-        zt_order = dim_order[0] ## in the case of 2D, zt is the first dimension
-        lat_order = dim_order[1] ## in the case of 2D, lat is the second dimension
-        
-        
-        x_name = self.data.dims[lat_order]  ## lat
-        y_name = self.data.dims[zt_order]  ## zt
-
-        x_arr = self.data[x_name].values
-        y_arr = self.data[y_name].values
-
-        x_edge = np.rad2deg(np.arcsin(np.linspace(-1, 1, x_arr.size + 1)))
-        ## get y edge coordinates (starting from 0)
-        ## this assumes depth is the mid point of two edges
-        y_edge = np.zeros(len(y_arr)+1)
-        y_edge[1] = y_arr[0] * 2
-
-        for i in range(1, len(y_arr)):    
-            half_length = y_arr[i] - y_edge[i]
-            next_edge = y_arr[i] + half_length
-            y_edge[i+1] = next_edge        
-
-        
         if "ax" not in kwargs:
             fig, local_ax = self._init_fig(figsize=(5, 3))
         else:
             local_ax = kwargs.pop("ax")
 
-        local_ax.grid(which='major', linestyle='--', linewidth=0.5, alpha=0.7)
+        if gridline:
+            local_ax.grid(which='major', linestyle='--', linewidth=0.5, alpha=0.7)
 
 
         if facecolor:
@@ -448,62 +506,72 @@ class GriddedDataVis:
                 local_ax, x=x_edge, y=y_edge, **self.aes_dict["outline_kwargs"]
             )
 
+        plots = {}
         if pcolormesh:
             ## pcolormesh uses edge coordinates
-            p_pcolormesh = self._add_pcolormesh(
-                local_ax, x=x_edge, y=y_edge, *args, **self.aes_dict["pcolormesh_kwargs"], 
-                
+            plots["pcolormesh"] = self._add_pcolormesh(
+                local_ax, x=x_edge, y=y_edge, *args, **self.aes_dict["pcolormesh_kwargs"],
+
             )
-            if colorbar:
-                cbar = self._add_colorbar(p_pcolormesh, orientation="vertical")
-                self._add_colorbar_label(cbar, **self.aes_dict["colorbar_label_kwargs"])
 
         if contour:
             ## contour uses center coordinates
-            ## need to be transformed to PlateCarree
-            p_contour = self._add_contour(
+            plots["contour"] = self._add_contour(
                 local_ax, x_arr, y_arr, **self.aes_dict["contour_kwargs"]
             )
-            self._add_contour_label(
-                local_ax, p_contour, **self.aes_dict["contour_label_kwargs"]
-            )
-            ## contour will not be used to plot colorbar because it's set to black
+            if contour_label:
+                self._add_contour_label(
+                    local_ax, plots["contour"], **self.aes_dict["contour_label_kwargs"]
+                )
 
 
         if contourf:
-            p_contourf = self._add_contourf(local_ax, x_arr, y_arr, **self.aes_dict["contourf_kwargs"])
+            plots["contourf"] = self._add_contourf(local_ax, x_arr, y_arr, **self.aes_dict["contourf_kwargs"])
+
+        if colorbar:
+            self._add_labelled_colorbar(local_ax, plots, self._TRANSECT_COLORBAR)
 
         ## reverse y axis
         local_ax.set_ylim(local_ax.get_ylim()[::-1])
-        local_ax.set_ylabel(
-            y_name,
-            fontsize=self.aes_dict["general_kwargs"]["fontsize"],
-            font=self.aes_dict["general_kwargs"]["font"],
-        )
-        local_ax.set_xlabel(
-            x_name,
-            fontsize=self.aes_dict["general_kwargs"]["fontsize"],
-            font=self.aes_dict["general_kwargs"]["font"],
-        )
+        fontsize = self.aes_dict["general_kwargs"]["fontsize"]
+        family = self._font_family()
+        local_ax.set_ylabel(y_name, fontsize=fontsize, **family)
+        local_ax.set_xlabel(x_name, fontsize=fontsize, **family)
 
         ## x/y tick label
         local_ax.tick_params(
             axis="both",
             which="major",
             direction="out",
-            labelsize=self.aes_dict["general_kwargs"]["fontsize"],
-            labelfontfamily=self.aes_dict["general_kwargs"]["font"],
+            labelsize=fontsize,
+            **{f"label{key}": value for key, value in family.items()},
         )
         # local_ax.minorticks_on()
 
-        if pcolormesh:
-            return p_pcolormesh
-        elif contour:
-            return p_contour
-        elif contourf:
-            return p_contourf
-        else:
-            return local_ax
+        return self._main_plot(plots, local_ax)
+
+    def _font_family(self):
+        font = self.aes_dict["general_kwargs"]["font"]
+        return {} if font is None else {"fontfamily": font}
+
+    @staticmethod
+    def _main_plot(plots, ax):
+        """Return the filled plot first, so it can feed a colorbar."""
+        for plot_type in ("pcolormesh", "contourf", "contour"):
+            if plot_type in plots:
+                return plots[plot_type]
+        return ax
+
+    def _add_labelled_colorbar(self, ax, plots, defaults):
+        ## contour lines are black, so only filled plots get a colorbar
+        mappable = plots.get("pcolormesh", plots.get("contourf"))
+        if mappable is None:
+            return None
+        cbar = self._add_colorbar(
+            mappable, **{"ax": ax, **defaults, **self.aes_dict["colorbar_kwargs"]}
+        )
+        self._add_colorbar_label(cbar, **self.aes_dict["colorbar_label_kwargs"])
+        return cbar
 
 
     ## ------- Below is implementations -------------------------
@@ -517,17 +585,20 @@ class GriddedDataVis:
         fig.basemap(*args, **kwargs)
         return fig
 
-    def _add_pcolormesh(self, ax, x, y, *args, **kwargs):
-        return ax.pcolormesh(x, y, self.data, *args, **kwargs)
+    def _add_pcolormesh(self, ax, x, y, *args, data=None, **kwargs):
+        return ax.pcolormesh(x, y, self.data if data is None else data, *args, **kwargs)
 
-    def _add_contour(self, ax, x, y, *args, **kwargs):
-        return ax.contour(x, y, self.data, *args, **kwargs)
+    def _add_contour(self, ax, x, y, *args, data=None, **kwargs):
+        return ax.contour(x, y, self.data if data is None else data, *args, **kwargs)
 
-    def _add_contourf(self, ax, x, y, *args, **kwargs):
-        return ax.contourf(x, y, self.data, *args, **kwargs)
+    def _add_contourf(self, ax, x, y, *args, data=None, **kwargs):
+        return ax.contourf(x, y, self.data if data is None else data, *args, **kwargs)
 
-    def _add_contour_label(self, ax, cs, *args, **kwargs):
-        ax.clabel(cs, cs.levels[::2], *args, **kwargs)
+    def _add_contour_label(self, ax, cs, *args, levels=None, **kwargs):
+        """Label ``levels``, or every other contour level by default."""
+        if levels is None:
+            levels = cs.levels[::2]
+        ax.clabel(cs, levels, *args, **kwargs)
 
     def _add_gridline(self, ax, *args, **kwargs):
         gl = ax.gridlines(*args, **kwargs)        
@@ -595,7 +666,7 @@ class GriddedDataVis:
             axis="both",
             which="major",
             labelsize=self.aes_dict["general_kwargs"]["fontsize"],
-            labelfontfamily=self.aes_dict["general_kwargs"]["font"],
+            **{f"label{key}": value for key, value in self._font_family().items()},
         )
         cbar.outline.set_edgecolor("black")
         cbar.outline.set_linewidth(0.5)
