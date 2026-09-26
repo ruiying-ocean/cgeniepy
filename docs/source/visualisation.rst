@@ -11,6 +11,8 @@ Module-based plotting design
 -------------------------------
 The plot method is designed to be modular. You can choose different element: contour, pcolormesh (default), colorbar, land outline, gridline etc.
 
+With ``contourf=True``, the filled contours reach the model's coastline and the land cells are drawn over them, so pcolormesh is off unless you pass ``pcolormesh=True``. Contour lines drawn with them follow the filled levels, unless you set ``contour_kwargs["levels"]``.
+
 
 .. code-block:: python
 

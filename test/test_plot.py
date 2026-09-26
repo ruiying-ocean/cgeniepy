@@ -236,3 +236,86 @@ def test_transect_contourf_reaches_the_coast_and_the_sea_floor():
     assert land[0].get_zorder() > section.to_GriddedDataVis().aes_dict["contour_kwargs"]["zorder"]
     assert lines.get_zorder() > land[0].get_zorder()
     plt.close(fig)
+
+
+def test_contour_lines_follow_the_filled_levels():
+    from matplotlib.contour import ContourSet
+
+    model = cgeniepy.sample_model()
+    for data, kw in [
+        (create_sample_data(), {"subplot_kw": {"projection": ccrs.PlateCarree()}}),
+        (model.get_var("ocn_temp").isel(time=-1).mean(dim="lon"), {}),
+    ]:
+        fig, ax = plt.subplots(**kw)
+        vis = data.to_GriddedDataVis()
+        vis.aes_dict["contourf_kwargs"]["levels"] = [0, 5, 10, 20, 30]
+        filled = vis.plot(ax=ax, contourf=True, contour=True)
+        lines = [c for c in ax.collections if isinstance(c, ContourSet) and not c.filled][0]
+        assert set(lines.levels) <= set(filled.levels)
+        plt.close(fig)
+
+    ## levels set for the lines are kept
+    fig, ax = plt.subplots(subplot_kw={"projection": ccrs.PlateCarree()})
+    vis = create_sample_data().to_GriddedDataVis()
+    vis.aes_dict["contour_kwargs"]["levels"] = [10]
+    vis.plot(ax=ax, contourf=True, contour=True)
+    lines = [c for c in ax.collections if isinstance(c, ContourSet) and not c.filled][0]
+    assert list(lines.levels) == [10]
+    plt.close(fig)
+
+
+def test_contourf_turns_pcolormesh_off_unless_asked():
+    from matplotlib.collections import QuadMesh
+
+    fig, axes = plt.subplots(1, 2, subplot_kw={"projection": ccrs.PlateCarree()})
+    filled = create_sample_data().plot(ax=axes[0], contourf=True, colorbar=True)
+    both = create_sample_data().plot(ax=axes[1], contourf=True, pcolormesh=True)
+
+    assert filled.filled
+    assert filled.colorbar.mappable is filled
+    assert isinstance(both, QuadMesh)
+    plt.close(fig)
+
+
+def test_map_contourf_draws_land_over_the_contours():
+    from matplotlib.collections import QuadMesh
+    from matplotlib.contour import ContourSet
+
+    fig, ax = plt.subplots(subplot_kw={"projection": ccrs.PlateCarree()})
+    create_sample_data().plot(ax=ax, contourf=True, contour=True, outline=True)
+    land = [c for c in ax.collections if isinstance(c, QuadMesh)]
+    lines = [c for c in ax.collections if isinstance(c, ContourSet) and not c.filled][0]
+
+    assert len(land) == 1
+    assert land[0].get_zorder() > lines.get_zorder()
+    assert all(lines.get_zorder() < label.get_zorder() < land[0].get_zorder() for label in lines.labelTexts)
+    assert ax.collections[-1].get_zorder() > land[0].get_zorder()  # outline
+    plt.close(fig)
+
+
+def test_fill_to_edges_on_a_global_grid_closes_the_seam():
+    from cgeniepy.plot import _fill_to_edges
+
+    ## land in the first column is nearer to the water in the last column, across the seam
+    values = np.array([[np.nan, 1.0, 2.0, 3.0, 9.0]])
+    lon_edges = np.linspace(0, 360, 6)
+    x, _, filled, _ = _fill_to_edges(
+        values, (lon_edges[:-1] + lon_edges[1:]) / 2, lon_edges,
+        np.array([0.0]), np.array([-10.0, 10.0]), cyclic=True,
+    )
+    np.testing.assert_array_equal(x, [36, 108, 180, 252, 324, 396])
+    assert filled[1, 0] in (1.0, 9.0)
+    np.testing.assert_array_equal(filled[1, -1], filled[1, 0])
+
+
+def test_contourf_land_across_the_map_edge():
+    ## a 0-355 grid, whose land straddles EckertIV's edge at 180
+    lat = np.linspace(-87.5, 87.5, 36)
+    lon = np.arange(0.0, 360.0, 5.0)
+    values = np.sin(np.deg2rad(lat))[:, None] + np.cos(np.deg2rad(lon))[None, :]
+    values[10:20, 30:42] = np.nan
+    array = xr.DataArray(values, coords=[("lat", lat), ("lon", lon)])
+    fig, ax = plt.subplots(subplot_kw={"projection": ccrs.EckertIV()})
+    GriddedData(array).plot(ax=ax, contourf=True, outline=True)
+    fig.canvas.draw()
+    plt.close(fig)
