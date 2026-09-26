@@ -48,6 +48,16 @@ def test_checkdimension():
     assert has_depth == False
 
 
+def test_geniebin_other_grids():
+    assert go().geniebin_lat(10, N=18) in go().get_genie_lat(N=18)
+    assert go().geniebin_lon(5, N=18) == 10
+    assert go().normbin_lon(5, N=18) == 10
+    ## a 16-level grid down to 5500 m
+    depths = go().get_genie_depth(N=16, max_depth=5500)[::-1]
+    assert go().geniebin_depth(5500, max_depth=5500) == depths[-1]
+    assert go().geniebin_depth(100, N=8) == go().get_genie_depth(N=8)[::-1][0]
+
+
 def test_set_coordinates_3d():
     class Obj: pass
     for index in (['depth', 'lat', 'lon'], ['lat', 'lon', 'depth']):

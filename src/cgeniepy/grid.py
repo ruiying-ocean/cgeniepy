@@ -239,9 +239,9 @@ class GridOperation:
         ## check the latitude input range
         if x >= -90 and x <= 90:
             lat_edge = self.get_genie_lat(edge=True, *args,**kwargs)
-            lat = self.get_genie_lat(edge=False)
+            lat = self.get_genie_lat(edge=False, *args,**kwargs)
 
-            for i in range(36):
+            for i in range(len(lat)):
                 if x > lat_edge[i] and x <= lat_edge[i + 1]:
                     x = lat[i]
         else:
@@ -256,8 +256,7 @@ class GridOperation:
         ## check the longitude input range
         if x >= -180 and x <= 180:
             lon_edge = self.get_genie_lon(edge=True, *args,**kwargs)
-            if 'N' not in kwargs: N=36                
-            for i in range(N):
+            for i in range(len(lon_edge) - 1):
                 if x > lon_edge[i] and x <= lon_edge[i + 1]:
                     x = (lon_edge[i] + lon_edge[i + 1]) / 2  # middle value in the bin
         else:
@@ -265,20 +264,23 @@ class GridOperation:
 
         return x
 
-    def geniebin_depth(self, x, *args,**kwargs):
+    def geniebin_depth(self, x, N=16, max_depth=5000):
         """
         Categorize <depth> into cGENIE grid bins
+
+        :param N: number of depth levels
+        :param max_depth: depth of the ocean floor in m
         """
         ## check the depth input range
-        if x >= 0 and x <= 5000:
+        if x >= 0 and x <= max_depth:
             # get_genie_depth lists levels from the bottom up; bin from the surface down
-            depth_edge = self.get_genie_depth(edge=True)[::-1]
-            depth = self.get_genie_depth(edge=False)[::-1]
+            depth_edge = self.get_genie_depth(N=N, edge=True, max_depth=max_depth)[::-1]
+            depth = self.get_genie_depth(N=N, edge=False, max_depth=max_depth)[::-1]
 
             i = np.searchsorted(depth_edge, x, side="right") - 1
             x = depth[min(i, len(depth) - 1)]  # the sea floor belongs to the deepest cell
         else:
-            raise ValueError("Depth must be in [0,5000]")
+            raise ValueError(f"Depth must be in [0,{max_depth}]")
 
         return x
 
@@ -289,8 +291,7 @@ class GridOperation:
         ## check the longitude input range
         if x >= -180 and x <= 180:
             lon_edge = self.get_normal_lon(edge=True, *args,**kwargs)
-            if 'N' not in kwargs: N=36                
-            for i in range(N):
+            for i in range(len(lon_edge) - 1):
                 if x > lon_edge[i] and x <= lon_edge[i + 1]:
                     x = (lon_edge[i] + lon_edge[i + 1]) / 2
         else:
