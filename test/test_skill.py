@@ -27,6 +27,19 @@ def test_rmse():
     ac = create_testdata()
     assert ac.rmse()==0.0
 
+def test_crmse():
+    assert create_testdata().crmse() == 0.0
+
+    model = np.array([1.0, 3.0, 2.0, 5.0, np.nan])
+    obs = np.array([2.0, 2.0, 4.0, 3.0, 1.0])
+    ac = ArrComparison(model, obs)
+    m, o = model[:4], obs[:4]
+    sm, so, r = m.std(), o.std(), np.corrcoef(m, o)[0, 1]
+    # Taylor (2001): crmse**2 = sm**2 + so**2 - 2*sm*so*r
+    assert np.isclose(ac.crmse(), np.sqrt(sm**2 + so**2 - 2 * sm * so * r))
+    # a constant offset leaves the centred error unchanged
+    assert np.isclose(ArrComparison(model + 10, obs).crmse(), ac.crmse())
+
 
 def test_taylor_diagram_default_colormap():
     comparisons = [

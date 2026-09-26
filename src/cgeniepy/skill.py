@@ -186,23 +186,17 @@ class ArrComparison:
 
     def crmse(self):
         """
-        centred Root Mean Sqaure Error (rmse, or rmsd). See Talor, K. E. (2001) JGR
+        centred Root Mean Square Error (rmse, or rmsd). See Taylor, K. E. (2001) JGR
         """
         # select data
         indx = self.intersect_index()
         sub_data1 = self.model[indx].ravel()
         sub_data2 = self.data[indx].ravel()
 
-        # calculate std
-        sigma1 = np.std(sub_data1)
-        sigma2 = np.std(sub_data2)
-
-        # pearson correlation
-        corr_mat = np.corrcoef(sub_data1, sub_data2)
-        corr = corr_mat[0, 1]
-
-        # central rmse
-        crmse = sigma1**2 + sigma2**2 - 2 * sigma1 * sigma2 * corr
+        # central rmse, i.e. the rmse of the anomalies (Taylor 2001, eq. 2);
+        # its square equals sigma1**2 + sigma2**2 - 2*sigma1*sigma2*corr
+        anomaly_diff = (sub_data1 - sub_data1.mean()) - (sub_data2 - sub_data2.mean())
+        crmse = np.sqrt(np.mean(np.square(anomaly_diff)))
 
         return crmse
     
