@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import xarray as xr
 from importlib.resources import files
@@ -210,8 +212,18 @@ class GridOperation:
         """
         mask Arctic and Meditterean Sea in cGENIE modern continent configuration
 
-        :param array: 36x36 GENIE array
+        The masked cells are fixed indices of the modern 36x36 continents (e.g. worjh2, worlg4):
+        rows 34-35 for the Arctic and rows 27-29, columns 25-29 for the Mediterranean.
+        For other continents they are the wrong cells. A warning is raised if the array is not 36x36,
+        but a 36x36 array with other continents cannot be told apart.
+
+        :param array: 36x36 GENIE array, (lat, lon)
+        :param policy: "na" to set the masked cells to NaN, "zero" to set them to 0
         """
+        if np.shape(array) != (36, 36):
+            warnings.warn(
+                f"mask_Arctic_Med masks cells of the modern 36x36 continents, but the array is {np.shape(array)}"
+            )
         if policy == "na":
             array[34:36, :] = np.nan
             array[27:30, 25:30] = np.nan

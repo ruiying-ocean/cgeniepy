@@ -92,3 +92,13 @@ def test_genie_depth_extra_levels():
 def test_genie_lat_equal_degree():
     np.testing.assert_allclose(go().get_genie_lat(N=18, edge=True, equal_area=False), np.arange(-90, 91, 10))
     np.testing.assert_allclose(go().get_genie_lat(N=18, equal_area=False), np.arange(-85, 90, 10))
+
+
+def test_mask_arctic_med_warns_off_the_modern_grid():
+    import warnings
+    import pytest
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        go().mask_Arctic_Med(np.ones((36, 36)))
+    with pytest.warns(UserWarning, match="modern 36x36"):
+        go().mask_Arctic_Med(np.ones((36, 72)))
