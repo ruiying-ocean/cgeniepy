@@ -4,6 +4,7 @@ import itertools
 
 import numpy as np
 import pandas as pd
+from scipy import ndimage
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import xarray as xr
@@ -95,6 +96,36 @@ def _cell_edges(coordinate):
     return edges
 
 
+def _pad_to_edges(centres, edges):
+    """Add the outer edges around the centres, unless a centre already sits on one."""
+    before, after = int(edges[0] != centres[0]), int(edges[-1] != centres[-1])
+    return np.r_[edges[:before], centres, edges[len(edges) - after:]], (before, after)
+
+
+def _fill_to_edges(values, x, x_edge, y, y_edge, cyclic=False):
+    """Values (y, x) to contour up to the coast and the domain edges, and where the land is.
+
+    Land cells (NaN) take the value of the nearest water cell, and the outer rows and
+    columns are repeated at the domain edges, so filled contours reach the coast, the
+    surface, the sea floor and the poles. Drawing the land cells over the contours
+    leaves the model's own coastline. A cyclic x (global longitude) is closed across
+    the seam instead, and water across the seam counts as near.
+    """
+    land = np.isnan(values)
+    if land.any() and not land.all():
+        n_x = values.shape[1]
+        tiled = np.tile(values, (1, 3)) if cyclic else values
+        nearest = ndimage.distance_transform_edt(np.isnan(tiled), return_distances=False, return_indices=True)
+        values = tiled[tuple(nearest)][:, n_x:2 * n_x] if cyclic else tiled[tuple(nearest)]
+    y, y_pad = _pad_to_edges(y, y_edge)
+    if cyclic:
+        x, x_pad = np.append(x, x[0] + 360), (0, 0)
+        values = np.concatenate([values, values[:, :1]], axis=1)
+    else:
+        x, x_pad = _pad_to_edges(x, x_edge)
+    return x, y, np.pad(values, (y_pad, x_pad), mode="edge"), land
+
+
 class GriddedDataVis:
 
     """A class to visualise the GriddedData object"""
@@ -143,7 +174,8 @@ class GriddedDataVis:
                 "colors": "black",
                 "linestyles": "solid",
                 "zorder": 10,
-                "levels": 15,
+                ## None: the levels of the filled contours if drawn, otherwise 15
+                "levels": None,
             },
             "contour_label_kwargs": {
                 "colors": ["black"],
@@ -321,12 +353,13 @@ class GriddedDataVis:
         lat = self.data[self.data.dims[lat_order]]
         return lon.values, lat.values, _cell_edges(lon), _cell_edges(lat)
 
-    def _split_at_map_edge(self, ax, x_edge):
+    def _split_at_map_edge(self, ax, x_edge, data=None):
         """Split cells that straddle the map's edge, which cartopy fails to wrap (#4).
 
         Both halves keep the cell's value, so nothing moves on the map.
+        ``data`` defaults to the plotted data, and must have its shape.
         """
-        data = np.asarray(self.data)
+        data = np.asarray(self.data if data is None else data)
         projection = getattr(ax, "projection", None)
         if projection is None or not np.all(np.diff(x_edge) > 0):
             return x_edge, data
@@ -359,7 +392,7 @@ class GriddedDataVis:
 
     def _plot_map(
         self,
-        pcolormesh=True,
+        pcolormesh=None,
         contour=False,
         colorbar=False,
         contourf=False,
@@ -383,6 +416,9 @@ class GriddedDataVis:
             return fig
 
         x_arr, y_arr, x_edge, y_edge = self._map_coordinates()
+        if pcolormesh is None:
+            ## filled contours cover the whole map
+            pcolormesh = not contourf
 
 
         if "ax" not in kwargs:
@@ -396,17 +432,6 @@ class GriddedDataVis:
         if borderline:
             self._set_borderline(
                 local_ax, geo=True, **self.aes_dict["borderline_kwargs"]
-            )
-
-        if outline:
-            ## outline uses edge coordinates
-            ## need to be transformed to PlateCarree
-            self._add_outline(
-                local_ax,
-                x=x_edge,
-                y=y_edge,
-                transform=self.transform_crs,
-                **self.aes_dict["outline_kwargs"],
             )
 
         if gridline:
@@ -433,30 +458,54 @@ class GriddedDataVis:
             )
 
         ## contours use center coordinates, closed across the seam
-        contour_x, contour_data = self._close_longitude(x_arr, x_edge)
-        if contour:
+        land = None
+        if contourf:
+            ## contour up to the coast, then draw the land cells over the contours
+            cyclic = np.isclose(x_edge[-1] - x_edge[0], 360)
+            contour_x, contour_y, contour_data, land = _fill_to_edges(
+                np.asarray(self.data), x_arr, x_edge, y_arr, y_edge, cyclic=cyclic
+            )
             ## need to be transformed to PlateCarree
+            plots["contourf"] = self._add_contourf(
+                local_ax,
+                contour_x,
+                contour_y,
+                data=contour_data,
+                transform=self.transform_crs,
+                **self.aes_dict["contourf_kwargs"],
+            )
+        else:
+            contour_y = y_arr
+            contour_x, contour_data = self._close_longitude(x_arr, x_edge)
+
+        if contour:
             plots["contour"] = self._add_contour(
                 local_ax,
                 contour_x,
-                y_arr,
+                contour_y,
                 data=contour_data,
                 transform=self.transform_crs,
-                **self.aes_dict["contour_kwargs"],
+                **self._contour_kwargs(plots),
             )
             if contour_label:
                 self._add_contour_label(
                     local_ax, plots["contour"], **self.aes_dict["contour_label_kwargs"]
                 )
 
-        if contourf:
-            plots["contourf"] = self._add_contourf(
+        land_x_edge, land = self._split_at_map_edge(local_ax, x_edge, data=land) if land is not None else (x_edge, None)
+        outline_kwargs = self._cover_land(
+            local_ax, plots, land, land_x_edge, y_edge, facecolor, transform=self.transform_crs
+        )
+
+        if outline:
+            ## outline uses edge coordinates
+            ## need to be transformed to PlateCarree
+            self._add_outline(
                 local_ax,
-                contour_x,
-                y_arr,
-                data=contour_data,
+                x=x_edge,
+                y=y_edge,
                 transform=self.transform_crs,
-                **self.aes_dict["contourf_kwargs"],
+                **outline_kwargs,
             )
 
         if colorbar:
@@ -479,7 +528,7 @@ class GriddedDataVis:
 
     def _plot_transect(
         self,
-        pcolormesh=True,
+        pcolormesh=None,
         contour=False,
         colorbar=True,
         contourf=False,
@@ -512,6 +561,9 @@ class GriddedDataVis:
         outline_kwargs = {'outline_color': 'red', 'outline_width': .5}
         """
         x_name, y_name, x_arr, y_arr, x_edge, y_edge = self._transect_coordinates()
+        if pcolormesh is None:
+            ## filled contours cover the whole transect
+            pcolormesh = not contourf
 
         if "ax" not in kwargs:
             fig, local_ax = self._init_fig(figsize=(5, 3))
@@ -530,11 +582,11 @@ class GriddedDataVis:
                 local_ax, geo=False, **self.aes_dict["borderline_kwargs"]
             )
 
-        if outline:
-            ## outline uses edge coordinates
-            self._add_outline(
-                local_ax, x=x_edge, y=y_edge, **self.aes_dict["outline_kwargs"]
-            )
+        values = self.data.transpose(y_name, x_name).values
+        land = None
+        if contourf:
+            ## contour up to the coast, then draw the land cells over the contours
+            x_arr, y_arr, values, land = _fill_to_edges(values, x_arr, x_edge, y_arr, y_edge)
 
         plots = {}
         if pcolormesh:
@@ -544,19 +596,24 @@ class GriddedDataVis:
 
             )
 
+        if contourf:
+            plots["contourf"] = self._add_contourf(local_ax, x_arr, y_arr, data=values, **self.aes_dict["contourf_kwargs"])
+
         if contour:
             ## contour uses center coordinates
             plots["contour"] = self._add_contour(
-                local_ax, x_arr, y_arr, **self.aes_dict["contour_kwargs"]
+                local_ax, x_arr, y_arr, data=values, **self._contour_kwargs(plots)
             )
             if contour_label:
                 self._add_contour_label(
                     local_ax, plots["contour"], **self.aes_dict["contour_label_kwargs"]
                 )
 
+        outline_kwargs = self._cover_land(local_ax, plots, land, x_edge, y_edge, facecolor)
 
-        if contourf:
-            plots["contourf"] = self._add_contourf(local_ax, x_arr, y_arr, **self.aes_dict["contourf_kwargs"])
+        if outline:
+            ## outline uses edge coordinates
+            self._add_outline(local_ax, x=x_edge, y=y_edge, **outline_kwargs)
 
         if colorbar:
             self._add_labelled_colorbar(local_ax, plots, self._TRANSECT_COLORBAR)
@@ -600,6 +657,9 @@ class GriddedDataVis:
         cbar = self._add_colorbar(
             mappable, **{"ax": ax, **defaults, **self.aes_dict["colorbar_kwargs"]}
         )
+        if mappable is plots.get("contourf") and cbar.orientation == "horizontal":
+            ## tick every few band edges, so the labels fit along a short bar
+            cbar.locator = mpl.ticker.FixedLocator(mappable.levels, nbins=5)
         self._add_colorbar_label(cbar, **self.aes_dict["colorbar_label_kwargs"])
         return cbar
 
@@ -623,6 +683,32 @@ class GriddedDataVis:
 
     def _add_contourf(self, ax, x, y, *args, data=None, **kwargs):
         return ax.contourf(x, y, self.data if data is None else data, *args, **kwargs)
+
+    def _add_land(self, ax, x, y, land, colour, zorder, **kwargs):
+        """cover the land cells, e.g. after contouring values extended over them"""
+        return ax.pcolormesh(
+            x, y, np.ma.masked_where(~land, land.astype(float)), cmap=ListedColormap([colour]), zorder=zorder, **kwargs
+        )
+
+    def _cover_land(self, ax, plots, land, x_edge, y_edge, facecolor, **kwargs):
+        """Draw the land cells over the contours, and return the outline kwargs to draw over them."""
+        outline_kwargs = self.aes_dict["outline_kwargs"]
+        if land is None or not land.any():
+            return outline_kwargs
+        zorder = max(plot.get_zorder() for plot in plots.values()) + 0.5
+        colour = self.aes_dict["facecolor_kwargs"]["c"] if facecolor else ax.get_facecolor()
+        self._add_land(ax, x_edge, y_edge, land, colour=colour, zorder=zorder, **kwargs)
+        ## contour labels sit above their lines, so the land hides the ones on land too
+        for label in getattr(plots.get("contour"), "labelTexts", []):
+            label.set_zorder(zorder - 0.25)
+        return {"zorder": zorder + 0.5, **outline_kwargs}
+
+    def _contour_kwargs(self, plots):
+        """Contour lines on the levels of the filled contours, unless levels are set."""
+        kwargs = dict(self.aes_dict["contour_kwargs"])
+        if kwargs.get("levels") is None:
+            kwargs["levels"] = plots["contourf"].levels if "contourf" in plots else 15
+        return kwargs
 
     def _add_contour_label(self, ax, cs, *args, levels=None, **kwargs):
         """Label ``levels``, or every other contour level by default."""
