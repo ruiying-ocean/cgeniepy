@@ -741,35 +741,18 @@ class GriddedDataVis:
 
     def _add_outline(self, ax, x, y, **kwargs):
         """
-        draw outlines for the NA grids
+        draw outlines for the NA grids, all in one vlines and one hlines call
         """
-        mask_array = np.where(~np.isnan(self.data), 1, 0)
+        ## i, j index the (y, x) cells and are converted to x/y edge lines
+        ocean = ~np.isnan(np.asarray(self.data))
 
-        Ny_edge = len(y)
-        Nx_edge = len(x)
-        # dimension of array
-        Ny_array = Ny_edge - 1
-        Nx_array = Nx_edge - 1
-        # index of array
-        Ny_index = Ny_array - 1
-        Nx_index = Nx_array - 1
+        ## vertical lines between cells and their right neighbours, the last column wrapping to the first
+        i, j = np.nonzero(ocean != np.roll(ocean, -1, axis=1))
+        ax.vlines(x[j + 1], y[i], y[i + 1], **kwargs)
 
-        # i stands for yitude index, j stands for xgitude index
-        # e.g., mask_array[0, ] is Antarctic ice cap
-        # i,j are for mask array and will be converted to x/y edge lines
-        for i in range(Ny_array):
-            for j in range(Nx_array):
-                # compare with the right grid, and plot vertical line if different
-                if j < Nx_index and mask_array[i, j] != mask_array[i, j + 1]:
-                    ax.vlines(x[j + 1], y[i], y[i + 1], **kwargs)
-
-                # connect the circular xgitude axis
-                if j == Nx_index and mask_array[i, j] != mask_array[i, 0]:
-                    ax.vlines(x[j + 1], y[i], y[i + 1], **kwargs)
-
-                # compare with the above grid, and plot horizontal line if different
-                if i < Ny_index and mask_array[i, j] != mask_array[i + 1, j]:
-                    ax.hlines(y[i + 1], x[j], x[j + 1], **kwargs)
+        ## horizontal lines between cells and the ones above
+        i, j = np.nonzero(ocean[:-1] != ocean[1:])
+        ax.hlines(y[i + 1], x[j], x[j + 1], **kwargs)
 
     def _add_colorbar(self, mappable_object, *args, **kwargs):
         cbar = plt.colorbar(mappable_object, *args, **kwargs)
