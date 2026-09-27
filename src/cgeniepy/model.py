@@ -64,8 +64,22 @@ class GenieModel(object):
                 self.gemflag = [gemflag]
 
         self.model_path = model_path
+        ## datasets opened by _open_nc, closed by close()
+        self._datasets = {}
         self.ncvar_dict = self._ncvar_dict()
         self.tsvar_list = self._tsvar_list()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc_info):
+        self.close()
+
+    def close(self):
+        """Close the NetCDF files opened by this model"""
+        for ds in self._datasets.values():
+            ds.close()
+        self._datasets.clear()
 
     def __repr__(self):
         if self.is_ensemble:
@@ -121,9 +135,8 @@ class GenieModel(object):
                 else:
                     nc_path = self._model_ncpath(gem, dim)
 
-                nc = Dataset(nc_path, "r")
-                ncvar_list = list(nc.variables.keys())
-                nc.close()
+                with Dataset(nc_path, "r") as nc:
+                    ncvar_list = list(nc.variables.keys())
 
                 ## add key, value to the dictionary
                 if self.is_ensemble:
@@ -148,19 +161,25 @@ class GenieModel(object):
         raise ValueError(f"variable {var} not found in the ncvar_dict")
 
     def _open_nc(self, nc_path):
-        """Use xarray to open netcdf file
+        """Use xarray to open netcdf file, reusing it if already open
 
         :param nc_path: the path to the netcdf file
         """
         ## if path is a list of paths
         if not isinstance(nc_path, (list, tuple)):
-            ## `open_dataset` to lazy load the data
-            return xr.open_dataset(nc_path)
+            if nc_path not in self._datasets:
+                ## `open_dataset` to lazy load the data
+                self._datasets[nc_path] = xr.open_dataset(nc_path)
+            return self._datasets[nc_path]
         else:
-            datasets = [xr.open_dataset(file) for file in nc_path]
-            combined_ds = xr.concat(datasets, "model")
-            combined_ds.coords["model"] = self.model_path
-            return combined_ds
+            nc_path = tuple(nc_path)
+            if nc_path not in self._datasets:
+                ## each file is kept in self._datasets so close() closes it
+                datasets = [self._open_nc(file) for file in nc_path]
+                combined_ds = xr.concat(datasets, "model")
+                combined_ds.coords["model"] = self.model_path
+                self._datasets[nc_path] = combined_ds
+            return self._datasets[nc_path]
 
     def get_var(self, var: Union[str, List, Tuple], attrs=None):
         """

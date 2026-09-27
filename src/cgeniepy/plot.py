@@ -961,14 +961,14 @@ class ScatterDataVis:
 
         if bathy_lon:
             data_path = files(__package__ + '.data').joinpath('GEBCO2002_bathy.nc')
-            bathy = xr.open_dataset(data_path)
 
             ## get the lat range
             min_lat = self.data[self.lat].min()
             max_lat = self.data[self.lat].max()
             min_depth = self.data[self.depth].min()
 
-            up = bathy.z.sel(lon=slice(*bathy_lon)).mean(dim="lon")
+            with xr.open_dataset(data_path) as bathy:
+                up = bathy.z.sel(lon=slice(*bathy_lon)).mean(dim="lon").load()
             # up = up.sel(lat=slice(min_lat, max_lat))
             bottom = np.ones(len(up)) * -5500
 
