@@ -7,6 +7,7 @@ import pandas as pd
 from scipy import ndimage
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
+from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 import xarray as xr
 
 import matplotlib.pyplot as plt
@@ -18,6 +19,8 @@ from .utils import efficient_log
 import warnings
 
 
+# NCL and GMT label a global map every 60 degrees of longitude and 30 of latitude.
+_FRAME_LOCS = {"xlocs": np.arange(-180, 181, 60), "ylocs": np.arange(-90, 91, 30)}
 # MOC and psi latitudes and depths are nodes that include the domain limits.
 _NODE_DIMS = ("lat_moc", "lat_psi", "lat_opsi", "zt_moc")
 # GOLDSTEIN depth levels are evenly spaced in log(depth + ez0 * dsc).
@@ -167,7 +170,7 @@ class GriddedDataVis:
             "facecolor_kwargs": {"c": "silver"}, #silver
             "borderline_kwargs": {"c": "black", "linewidth": 1.0},
             "outline_kwargs": {"colors": "black", "linewidth": 1.0},
-            "gridline_kwargs": {"color": "black", "linewidth": 0.25, "linestyle": "--", "draw_labels": False},
+            "gridline_kwargs": {"color": "black", "linewidth": 0.25, "linestyle": "--", "draw_labels": True, **_FRAME_LOCS},
             "pcolormesh_kwargs": {"shading": "auto", "cmap": pal},
             "contour_kwargs": {
                 "linewidths": 1.35,
@@ -435,9 +438,9 @@ class GriddedDataVis:
             )
 
         if gridline:
-            self._add_gridline(
+            _add_gridline(
                 local_ax,
-                transform=self.transform_crs,
+                fontsize=self.aes_dict["general_kwargs"]["fontsize"],
                 **self.aes_dict["gridline_kwargs"],
             )
 
@@ -509,7 +512,11 @@ class GriddedDataVis:
             )
 
         if colorbar:
-            self._add_labelled_colorbar(local_ax, plots, self._MAP_COLORBAR)
+            defaults = self._MAP_COLORBAR
+            if local_ax.xaxis.get_visible():
+                ## leave room for the frame's tick labels
+                defaults = {**defaults, "pad": 0.1}
+            self._add_labelled_colorbar(local_ax, plots, defaults)
 
         if cfeature:
             self._add_cfeature(local_ax, cfeature)
@@ -716,15 +723,6 @@ class GriddedDataVis:
             levels = cs.levels[::2]
         ax.clabel(cs, levels, *args, **kwargs)
 
-    def _add_gridline(self, ax, *args, **kwargs):
-        gl = ax.gridlines(*args, **kwargs)        
-
-        if ax.projection == ccrs.PlateCarree():
-            gl.xlines = False  # removing gridlines
-            gl.ylines = False
-            add_border_ticks(ax, 0.015)
-
-
     def _set_borderline(self, ax, geo=True, **kwargs):
         if geo:
             ax.spines["geo"].set_edgecolor(kwargs["c"])
@@ -920,17 +918,11 @@ class ScatterDataVis:
             cbar.ax.tick_params(axis="both", which="major", direction="out", length=5)
             cbar.ax.minorticks_on()
 
+        if gridline:
+            _add_gridline(ax, linewidth=.5, color='black', alpha=0.5, linestyle='--', zorder=1, **_FRAME_LOCS)
+
         if zebra_frame:
             add_zebra_frame(ax)
-
-        if gridline:
-            gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, linewidth=.5,
-                              color='black', alpha=0.5,
-                              linestyle='--', zorder=1)
-            gl.top_labels = False
-            gl.right_labels = False
-            if isinstance(ax.projection, ccrs.PlateCarree):
-                add_border_ticks(ax, 0.01)
 
         return p    
 
@@ -1167,10 +1159,13 @@ class CommunityPalette:
         return f"Colormap: {self.name}"
 
 
-def add_zebra_frame(ax, lw=1.2):
+def add_zebra_frame(ax, lw=2):
     """
+    GMT's fancy frame: black and white segments alternating on the frame's major ticks.
     copied from https://github.com/SciTools/cartopy/issues/1830
     """
+    if not ax.xaxis.get_visible():
+        add_border_ticks(ax)
     ax.spines["geo"].set_visible(False)
     left, right, bot, top = ax.get_extent()
 
@@ -1200,7 +1195,7 @@ def add_zebra_frame(ax, lw=1.2):
                     color=bw,
                     linewidth=lw,
                     clip_on=False,
-                    transform=ccrs.PlateCarree(),
+                    transform=ax.projection,
                     solid_capstyle=capstyle,
                     # Add a black border to accentuate white segments
                     path_effects=[
@@ -1209,24 +1204,46 @@ def add_zebra_frame(ax, lw=1.2):
                     ],
                 )
 
-def add_border_ticks(ax, tick_len_scale=0.015):
+def add_border_ticks(ax, xlocs=_FRAME_LOCS["xlocs"], ylocs=_FRAME_LOCS["ylocs"], labels=True, minor_per_major=2, **tick_kwargs):
     """
-    copied from https://github.com/SciTools/cartopy/issues/2003
+    Tick marks on the frame of a rectangular map, as NCL and GMT draw them: outward on all
+    four sides, labelled in degrees on the bottom and the left, with ``minor_per_major``
+    minor ticks between the major ones. ``tick_kwargs`` go to ``ax.tick_params``.
+
+    :param xlocs: longitudes of the major ticks
+    :param ylocs: latitudes of the major ticks
     """
-    ## add ticks
-    xticks = np.linspace(-180, 180, 7)
-    yticks = np.linspace(-90, 90, 7)
-    ax.set_xticks(xticks, crs=ccrs.PlateCarree())
-    ax.set_yticks(yticks, crs=ccrs.PlateCarree())
-    ax.set_yticklabels("")
-    ax.set_xticklabels("")
-    bbox_pixels = ax.get_window_extent().get_points()
-    width_pixels = bbox_pixels[1, 0] - bbox_pixels[0, 0]
+    crs = ccrs.PlateCarree()
+    ## wrap the longitudes into the map's window, ticking both of its edges
+    lon_0 = ax.projection.proj4_params.get("lon_0", 0)
+    xlocs = np.unique(lon_0 - 180 + (np.asarray(xlocs, dtype=float) - lon_0 + 180) % 360)
+    if xlocs[0] == lon_0 - 180:
+        xlocs = np.append(xlocs, lon_0 + 180)
+    for set_ticks, axis, locs, formatter in (
+        (ax.set_xticks, ax.xaxis, xlocs, LongitudeFormatter()),
+        (ax.set_yticks, ax.yaxis, ylocs, LatitudeFormatter()),
+    ):
+        locs = np.asarray(locs, dtype=float)
+        step = (locs[1] - locs[0]) / (minor_per_major + 1)
+        set_ticks(locs, crs=crs)
+        set_ticks(np.arange(locs[0], locs[-1] + step / 2, step), minor=True, crs=crs)
+        axis.set_major_formatter(formatter)
+    ax.tick_params(which="both", direction="out", top=True, right=True, labelbottom=labels, labelleft=labels, **tick_kwargs)
+    ax.tick_params(which="minor", length=mpl.rcParams["xtick.major.size"] / 2)
 
-    # Set the tick length as a fraction of the width
-    tick_length = tick_len_scale * width_pixels            
-    ax.tick_params(axis='x', length=tick_length)
-    ax.tick_params(axis='y', length=tick_length)
 
-    
-    
+def _add_gridline(ax, fontsize="medium", **kwargs):
+    """Grid lines, with degree labels on the frame of a rectangular map as NCL and GMT draw it.
+    ``draw_labels`` switches those labels; the other ``kwargs`` go to ``ax.gridlines``.
+
+    Curved projections get no labels: cartopy's boundary labels hide whichever ones overlap,
+    and a hidden label makes cartopy 0.25 move the titles to infinity, which empties a
+    figure saved with bbox_inches="tight".
+    """
+    labels = kwargs.pop("draw_labels", True)
+    gl = ax.gridlines(draw_labels=False, **kwargs)
+    ## cartopy's own rule for which projections take axis ticks
+    if isinstance(ax.projection, (ccrs._RectangularProjection, ccrs.Mercator)):
+        locs = {key: kwargs.get(key, value) for key, value in _FRAME_LOCS.items()}
+        add_border_ticks(ax, labels=labels, labelsize=fontsize, **locs)
+    return gl

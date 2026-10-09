@@ -319,3 +319,51 @@ def test_contourf_land_across_the_map_edge():
     GriddedData(array).plot(ax=ax, contourf=True, outline=True)
     fig.canvas.draw()
     plt.close(fig)
+
+
+def test_rectangular_map_frame_is_labelled_in_degrees():
+    """gridline=True draws the NCL/GMT frame: degree labels, minor ticks, colorbar clear of them"""
+    data = create_sample_data()
+    fig, ax = plt.subplots(subplot_kw={"projection": ccrs.PlateCarree(central_longitude=180)})
+    data.plot(ax=ax, gridline=True, colorbar=True)
+    fig.canvas.draw()
+    assert [label.get_text() for label in ax.get_xticklabels()] == ["0°", "60°E", "120°E", "180°", "120°W", "60°W", "0°"]
+    assert [label.get_text() for label in ax.get_yticklabels()][:3] == ["90°S", "60°S", "30°S"]
+    assert len(ax.xaxis.get_minorticklocs()) == 2 * 6  # two minor ticks between the majors
+    renderer = fig.canvas.get_renderer()
+    colorbar_ax = fig.axes[-1]
+    assert ax.xaxis.get_tightbbox(renderer).y0 >= colorbar_ax.get_window_extent(renderer).y1
+    plt.close(fig)
+
+    obs = cgeniepy.load_obs("worjh2")["temp"].isel(zt=0).to_dataframe().dropna().reset_index()
+    scatter = ScatterData(obs[["lat", "lon", "temp"]])
+    scatter.set_index(["lat", "lon"])
+    scatter.plot(var="temp", gridline=True)
+    ax = plt.gcf().axes[0]
+    plt.gcf().canvas.draw()
+    assert ax.get_xticklabels()[1].get_text() == "120°W"
+    plt.close("all")
+
+
+def test_zebra_frame_alternates_on_the_frame_ticks():
+    data = create_sample_data()
+    fig, ax = plt.subplots(subplot_kw={"projection": ccrs.PlateCarree()})
+    data.plot(ax=ax, zebra_frame=True)
+    segments = [line for line in ax.lines if line.get_path_effects()]
+    ## 6 longitude and 6 latitude intervals, drawn on two sides each
+    assert len(segments) == 2 * (6 + 6)
+    assert [line.get_color() for line in segments[:4]] == ["k", "k", "white", "white"]
+    assert ax.xaxis.get_visible() and not ax.spines["geo"].get_visible()
+    plt.close(fig)
+
+
+def test_curved_map_gridlines_keep_the_tight_bbox():
+    """no boundary labels: cartopy hides overlapping ones and that breaks bbox_inches='tight'"""
+    data = create_sample_data()
+    fig, ax = plt.subplots(subplot_kw={"projection": ccrs.Robinson(central_longitude=180)})
+    data.plot(ax=ax, gridline=True, colorbar=True)
+    ax.set_title("title")
+    fig.canvas.draw()
+    assert not ax.xaxis.get_visible()
+    assert np.all(np.isfinite(ax.get_tightbbox(fig.canvas.get_renderer()).bounds))
+    plt.close(fig)

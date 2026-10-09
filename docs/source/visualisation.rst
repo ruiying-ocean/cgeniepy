@@ -32,6 +32,20 @@ I have to admit it is not very smart to do the customisation. Instead of like `m
 
 
 
+Map frame in the style of NCL and GMT
+---------------------------------------
+On a rectangular projection (``PlateCarree``, ``Miller``, ``Mercator``), ``gridline=True`` draws the frame that NCL and GMT draw: tick marks pointing out on all four sides, labelled in degrees on the bottom and the left, with two minor ticks between the major ones, over dotted grid lines. ``zebra_frame=True`` adds GMT's fancy black-and-white frame on top of those ticks. Curved projections such as the default Equal Earth get the grid lines only.
+
+.. code-block:: python
+
+    import cartopy.crs as ccrs
+
+    fig, ax = plt.subplots(subplot_kw={"projection": ccrs.PlateCarree()})
+    sst.plot(ax=ax, contourf=True, colorbar=True, gridline=True)        # NCL
+    sst.plot(ax=ax, colorbar=True, gridline=True, zebra_frame=True)     # GMT
+
+The tick spacing comes from ``gridline_kwargs["xlocs"]`` and ``gridline_kwargs["ylocs"]`` (every 60° and 30° by default), and ``gridline_kwargs["draw_labels"] = False`` keeps the ticks without their labels. ``cgeniepy.plot.add_border_ticks(ax)`` draws the same frame on any rectangular cartopy map.
+
 More Examples
 ------------------
 Please see the gallery section.
