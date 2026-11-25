@@ -3,9 +3,9 @@ import re
 import warnings
 from pathlib import Path
 import itertools
+from urllib.parse import urlsplit
 
 import pandas as pd
-from netCDF4 import Dataset
 import xarray as xr
 from scipy.ndimage import binary_dilation
 import numpy as np
@@ -20,12 +20,18 @@ class GenieModel(object):
     GenieModel is the interface to cGENIE output
     """
 
-    def __init__(self, model_path: Union[str, List, Tuple], gemflag=None):
+    def __init__(self, model_path: Union[str, Path, List, Tuple], gemflag=None, **open_kwargs):
         """
-        Initialise a GenieModel object with a path to cGENIE output directory
+        Initialise a GenieModel from a local output directory or OPeNDAP dataset.
 
-        :param model_path: the path to the cGENIE output directory
-        :param gemflag: the cgenie component, default is ["biogem"]
+        :param model_path: a local directory or HTTP(S) OPeNDAP dataset URL.
+            A list or tuple of directories or URLs creates an ensemble; local
+            and remote sources cannot be mixed.
+        :param gemflag: the cgenie component, default is ["biogem"]. Only used
+            to discover files in local directories.
+        :param open_kwargs: options passed to xarray.open_dataset, such as
+            engine, decode_times or backend_kwargs. Remote datasets default
+            to engine="netcdf4".
         -------
         Example
         >>> from cgeniepy.model import GenieModel
@@ -35,27 +41,34 @@ class GenieModel(object):
         >>> model = GenieModel("path_to_GENIE_output", gemflag=["biogem"])
         """
 
-        ## check if model_path is a valid directory
-        if isinstance(model_path, (list, tuple)):
-            self.is_ensemble = True
-            expanded_paths = []
-            for path in model_path:
-                expanded_path = Path(path).expanduser()
-                if not expanded_path.is_dir():
-                    raise ValueError(f"{path} is not a valid directory")
-                expanded_paths.append(str(expanded_path))
-            self.model_path = expanded_paths
-        elif isinstance(model_path, str):
-            self.is_ensemble = False
-            expanded_path = Path(model_path).expanduser()
-            if not expanded_path.is_dir():
-                raise ValueError(f"{model_path} is not a valid directory")
-            self.model_path = str(expanded_path)
+        self.is_ensemble = isinstance(model_path, (list, tuple))
+        paths = list(model_path) if self.is_ensemble else [model_path]
+        if not paths:
+            raise ValueError("model_path must contain at least one directory or URL")
+        remote = [
+            isinstance(path, str) and urlsplit(path).scheme.lower() in ("http", "https")
+            for path in paths
+        ]
+        if any(remote) and not all(remote):
+            raise ValueError("An ensemble cannot mix local directories and OPeNDAP URLs")
+        self.is_remote = all(remote)
+        if self.is_remote:
+            if any(not urlsplit(path).netloc for path in paths):
+                raise ValueError("OPeNDAP URLs must include a server name")
         else:
-            self.is_ensemble = False
+            paths = [Path(path).expanduser() for path in paths]
+            for path in paths:
+                if not path.is_dir():
+                    raise ValueError(f"{path} is not a valid directory")
+            paths = [str(path) for path in paths]
+        self.model_path = paths if self.is_ensemble else paths[0]
+        self._open_kwargs = dict(open_kwargs)
+        if self.is_remote:
+            self._open_kwargs.setdefault("engine", "netcdf4")
 
         if not gemflag:
-            warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
+            if not self.is_remote:
+                warnings.warn("No gemflag is provided, use default gemflags: [biogem]")
             self.gemflag = ["biogem"]
         else:
             self.gemflag = gemflag
@@ -63,11 +76,14 @@ class GenieModel(object):
             if isinstance(gemflag, str):
                 self.gemflag = [gemflag]
 
-        self.model_path = model_path
         ## datasets opened by _open_nc, closed by close()
         self._datasets = {}
-        self.ncvar_dict = self._ncvar_dict()
-        self.tsvar_list = self._tsvar_list()
+        try:
+            self.ncvar_dict = self._ncvar_dict()
+            self.tsvar_list = self._tsvar_list()
+        except Exception:
+            self.close()
+            raise
 
     def __enter__(self):
         return self
@@ -84,6 +100,8 @@ class GenieModel(object):
     def __repr__(self):
         if self.is_ensemble:
             return f"GenieModel(ensemble of {len(self.model_path)} models)"
+        elif self.is_remote:
+            return f"GenieModel(OPeNDAP: {self.model_path})"
         else:
             poc_export = self.get_diag_avg(-1, is_index=True).query("variable == 'Total POC export'").iloc[:, 2].to_string(index=False)
             ocn_temp = self.get_diag_avg(-1, is_index=True).query("variable == 'Ocean temp'").iloc[:, 2].to_string(index=False)
@@ -119,6 +137,11 @@ class GenieModel(object):
         NetCDF path for each model
         """
 
+        if self.is_remote:
+            paths = tuple(self.model_path) if self.is_ensemble else self.model_path
+            first_path = paths[0] if self.is_ensemble else paths
+            return {paths: list(self._open_nc(first_path).variables)}
+
         ## initialise a dictionary, key: model_path, value: ncvar_list
         var_path = {}
 
@@ -135,8 +158,7 @@ class GenieModel(object):
                 else:
                     nc_path = self._model_ncpath(gem, dim)
 
-                with Dataset(nc_path, "r") as nc:
-                    ncvar_list = list(nc.variables.keys())
+                ncvar_list = list(self._open_nc(nc_path).variables)
 
                 ## add key, value to the dictionary
                 if self.is_ensemble:
@@ -169,7 +191,7 @@ class GenieModel(object):
         if not isinstance(nc_path, (list, tuple)):
             if nc_path not in self._datasets:
                 ## `open_dataset` to lazy load the data
-                self._datasets[nc_path] = xr.open_dataset(nc_path)
+                self._datasets[nc_path] = xr.open_dataset(nc_path, **self._open_kwargs)
             return self._datasets[nc_path]
         else:
             nc_path = tuple(nc_path)
@@ -229,6 +251,8 @@ class GenieModel(object):
         file/data structure and only return the first model's timeseries list
         """
 
+        if self.is_remote:
+            return []
         if self.is_ensemble:
             biogem_paths = []
             for path in self.model_path:
@@ -248,7 +272,15 @@ class GenieModel(object):
             tsvar_list = [f for f in all_bg_files.glob("*.res")]         
             return tsvar_list
 
+    def _require_local_files(self):
+        if self.is_remote:
+            raise NotImplementedError(
+                "This operation requires local cGENIE text files. "
+                "OPeNDAP access supports NetCDF variables through get_var()."
+            )
+
     def get_config(self, config_name='BIOGEM'):
+        self._require_local_files()
         file = Path(self.model_path).expanduser() / f"data_{config_name}"
         configdata = self._parse_namelist(file)[f"INI_{config_name}_NML"]
         return configdata
@@ -314,6 +346,7 @@ class GenieModel(object):
         :param var: the name of the target variable
         :return: a pandas DataFrame
         """
+        self._require_local_files()
         if not self.is_ensemble:
             filename = f"biogem_series_{var}.res"                        
             f = Path(self.model_path).expanduser() / "biogem" / filename
@@ -457,6 +490,7 @@ class GenieModel(object):
         >>> model = GenieModel("path_to_GENIE_output")
         >>> model.get_diag_avg(9999)
         """
+        self._require_local_files()
         pattern = r"biogem_year_(?P<year>" + pattern_year + ")_" + pattern_year_digit + "_diag_GLOBAL_AVERAGE"
 
         all_years, diag_files = [], []

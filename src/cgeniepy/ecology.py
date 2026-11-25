@@ -24,6 +24,13 @@ class EcoModel(GenieModel):
         
         super().__init__(*args, **kwargs)        
 
+        if self.is_remote:
+            self.close()
+            raise NotImplementedError(
+                "EcoModel requires a local Plankton_params.txt file. "
+                "Use GenieModel to read ECOGEM variables over OPeNDAP."
+            )
+
         ## get the list of plankton variables
         ecogem2d_path = self._model_ncpath('ecogem', '2d')            
         self.eco_varlist = self.ncvar_dict[ecogem2d_path]
