@@ -1,10 +1,10 @@
 
 package:
   name: cgeniepy
-  version: 0.16.0
+  version: 0.17.0
 
 build:
-  number: 3
+  number: 0
 
 requirements:
   run:
