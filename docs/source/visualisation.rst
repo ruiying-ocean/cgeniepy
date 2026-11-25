@@ -32,29 +32,31 @@ I have to admit it is not very smart to do the customisation. Instead of like `m
 
 
 
-Map frame in the style of NCL and GMT
----------------------------------------
-On a rectangular projection (``PlateCarree``, ``Miller``, ``Mercator``), ``gridline=True`` draws the frame that NCL and GMT draw: tick marks pointing out on all four sides, labelled in degrees on the bottom and the left, with two minor ticks between the major ones, over dotted grid lines. ``zebra_frame=True`` adds GMT's fancy black-and-white frame on top of those ticks. Curved projections such as the default Equal Earth get the grid lines only.
+Map styles
+----------
+A map's style is set by its projection and its frame. ``examples/plot_map_styles.py`` in the gallery draws each one.
+
+**Projection.** ``projection`` sets the projection of the map's new axes:
+
+- ``None`` (the default): Equal Earth.
+- any cartopy CRS, for example ``ccrs.Robinson(central_longitude=180)`` or ``ccrs.PlateCarree()``.
+- ``"sine"``: GENIE's own grid, as genieplot draws it. Latitude is spaced by its sine, so every row of the 36 x 36 equal-area grid is equally tall and every cell takes the same area on the page; the map is centred on the grid's longitudes (-260 to 100 °E, so on 80 °W) in a 2:1 box. It is cartopy's cylindrical equal-area projection (``LambertCylindrical``) on a sphere.
+
+To draw on axes you made yourself, pass ``ax`` instead; ``projection`` with ``ax`` is refused, since the axes bring their own.
+
+**Frame.** On a rectangular projection (``PlateCarree``, ``Miller``, ``Mercator``, ``"sine"``), ``gridline=True`` draws the frame NCL and GMT draw: tick marks pointing out on all four sides, labelled in degrees on the bottom and the left, with two minor ticks between the major ones, over dotted grid lines. ``zebra_frame=True`` adds GMT's black-and-white frame on top of those ticks. Curved projections such as Equal Earth get the grid lines only.
 
 .. code-block:: python
 
     import cartopy.crs as ccrs
 
-    fig, ax = plt.subplots(subplot_kw={"projection": ccrs.PlateCarree()})
-    sst.plot(ax=ax, contourf=True, colorbar=True, gridline=True)        # NCL
-    sst.plot(ax=ax, colorbar=True, gridline=True, zebra_frame=True)     # GMT
+    sst.plot(colorbar=True, outline=True)                                         # Equal Earth
+    sst.plot(projection=ccrs.Robinson(central_longitude=180), colorbar=True)     # any cartopy CRS
+    sst.plot(projection="sine", colorbar=True, gridline=True)                    # GENIE's grid
+    sst.plot(projection=ccrs.PlateCarree(), contourf=True, gridline=True)        # NCL frame
+    sst.plot(projection=ccrs.PlateCarree(), gridline=True, zebra_frame=True)     # GMT frame
 
-The tick spacing comes from ``gridline_kwargs["xlocs"]`` and ``gridline_kwargs["ylocs"]`` (every 60° and 30° by default), and ``gridline_kwargs["draw_labels"] = False`` keeps the ticks without their labels. ``cgeniepy.plot.add_border_ticks(ax)`` draws the same frame on any rectangular cartopy map.
-
-GENIE's own grid view
----------------------
-``projection="sine"`` draws the map as GENIE's equal-area grid is built, and as genieplot draws it: latitude spaced by its sine, so every row of the 36 x 36 grid is equally tall and every cell takes the same area on the page. The map is centred on the grid's own longitudes (-260 to 100 °E, so centred on 80 °W), in a 2:1 box. It is cartopy's cylindrical equal-area projection (``LambertCylindrical``) on a sphere, so the frame labels of ``gridline=True`` and ``zebra_frame=True`` work on it. ``projection`` also takes any cartopy CRS for the map's new axes; with ``ax`` the axes bring their own.
-
-.. code-block:: python
-
-    sst.plot(projection="sine", colorbar=True, gridline=True)
-
-Near the poles the latitude labels crowd together (60° is at 0.87 of the height); ``p.aes_dict["gridline_kwargs"]["ylocs"] = [-60, -30, 0, 30, 60]`` leaves out the poles.
+The tick spacing comes from ``gridline_kwargs["xlocs"]`` and ``gridline_kwargs["ylocs"]`` (every 60° and 30° by default), and ``gridline_kwargs["draw_labels"] = False`` keeps the ticks without their labels. On a sine axis the latitude labels crowd near the poles (60° sits at 0.87 of the height), so ``ylocs = [-60, -30, 0, 30, 60]`` reads better there. ``cgeniepy.plot.add_border_ticks(ax)`` draws the same frame on any rectangular cartopy map.
 
 More Examples
 ------------------
