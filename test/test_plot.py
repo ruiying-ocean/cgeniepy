@@ -1,3 +1,4 @@
+import pytest
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import numpy as np
@@ -366,4 +367,24 @@ def test_curved_map_gridlines_keep_the_tight_bbox():
     fig.canvas.draw()
     assert not ax.xaxis.get_visible()
     assert np.all(np.isfinite(ax.get_tightbbox(fig.canvas.get_renderer()).bounds))
+    plt.close(fig)
+
+
+def test_sine_projection_draws_genie_rows_equally_tall():
+    """projection="sine": latitude spaced by its sine, centred on GENIE's -260..100 window, as genieplot draws it"""
+    data = create_sample_data()
+    mesh = data.plot(projection="sine")
+    ax = mesh.axes
+    assert isinstance(ax.projection, ccrs.LambertCylindrical)
+    assert ax.projection.proj4_params["lon_0"] == -80
+    lat_edges = data.to_GriddedDataVis()._map_coordinates()[3]
+    y = ax.projection.transform_points(ccrs.PlateCarree(), np.zeros_like(lat_edges), lat_edges)[:, 1]
+    np.testing.assert_allclose(np.diff(y), np.diff(y)[0], rtol=1e-6)
+    plt.close(ax.figure)
+
+
+def test_projection_with_ax_is_refused():
+    fig, ax = plt.subplots(subplot_kw={"projection": ccrs.PlateCarree()})
+    with pytest.raises(ValueError, match="projection"):
+        create_sample_data().plot(ax=ax, projection="sine")
     plt.close(fig)

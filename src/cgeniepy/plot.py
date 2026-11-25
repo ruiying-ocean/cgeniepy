@@ -99,6 +99,21 @@ def _cell_edges(coordinate):
     return edges
 
 
+def _map_projection(projection, x_edge):
+    """A map's projection from ``_plot_map``'s ``projection``: a cartopy CRS, None or "sine"."""
+    if projection is None:
+        return ccrs.EqualEarth()
+    if isinstance(projection, str):
+        if projection != "sine":
+            raise ValueError(f'projection {projection!r}: a cartopy CRS, None or "sine"')
+        ## y = sin(latitude) is the cylindrical equal-area projection
+        ## a sphere, as GENIE's grid: the default WGS84 ellipsoid spaces rows by the authalic latitude (1% off);
+        ## WGS84's radius, which cartopy's degree labels assume
+        sphere = ccrs.Globe(ellipse=None, semimajor_axis=6378137.0, semiminor_axis=6378137.0)
+        return ccrs.LambertCylindrical(central_longitude=(x_edge[0] + x_edge[-1]) / 2, globe=sphere)
+    return projection
+
+
 def _pad_to_edges(centres, edges):
     """Add the outer edges around the centres, unless a centre already sits on one."""
     before, after = int(edges[0] != centres[0]), int(edges[-1] != centres[-1])
@@ -408,8 +423,17 @@ class GriddedDataVis:
         engine='cartopy',
         *args,
         contour_label=True,
+        projection=None,
         **kwargs,
     ):
+        """
+        :param projection: the projection of the map's new axes: a cartopy CRS, None for Equal Earth, or "sine"
+            for GENIE's own view, latitude spaced by its sine so every row of the equal-area grid is equally
+            tall, centred on the grid's longitudes (cartopy's LambertCylindrical), as genieplot draws it.
+            Not with ``ax``, which brings its own projection.
+
+        Example: ``model.get_var("ocn_sur_temp").isel(time=-1).plot(projection="sine", gridline=True)``
+        """
 
         if engine == 'pygmt':
             import pygmt
@@ -425,7 +449,12 @@ class GriddedDataVis:
 
 
         if "ax" not in kwargs:
-            fig, local_ax = self._init_fig(subplot_kw={"projection": ccrs.EqualEarth()})
+            fig, local_ax = self._init_fig(subplot_kw={"projection": _map_projection(projection, x_edge)})
+            if isinstance(projection, str):
+                ## 2:1 rather than the projection's pi:1; a uniform stretch keeps every cell's area equal
+                local_ax.set_aspect(np.pi / 2)
+        elif projection is not None:
+            raise ValueError("projection is for the map's new axes; ax brings its own")
         else:
             local_ax = kwargs.pop("ax")
 
